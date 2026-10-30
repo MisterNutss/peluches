@@ -16,7 +16,10 @@ Mise en route de la bibliothèque sur Vercel (une seule fois) :
 
 1. Dans le projet Vercel : **Storage → Create → Blob**, accès **public**, puis le relier au projet.
 2. Dans **Settings → Environment Variables** : ajouter `PELUCHES_CODE` avec un code secret de ton choix.
-3. Redéployer (**Deployments → … → Redeploy**).
+3. Pour que les liens courts marchent dans FiveM (Vercel bloque son navigateur), chaque peluche est aussi copiée dans ce dépôt (`p/<nom>.json`) :
+   sur github.com, **Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token**,
+   dépôt `MisterNutss/peluches` seulement, permission **Contents : Read and write**. Mettre ce jeton dans la variable Vercel `GITHUB_TOKEN`.
+4. Redéployer (**Deployments → … → Redeploy**).
 
 Régénérer les pages après une modification :
 

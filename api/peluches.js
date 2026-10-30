@@ -24,6 +24,19 @@ const authFrom = req => {
   return t && process.env.BLOB_STORE_ID ? { oidcToken: t, storeId: process.env.BLOB_STORE_ID } : {};
 };
 
+// Copie sur GitHub : la page 3D (GitHub Pages) lit p/<nom>.json sans passer par Vercel, qui bloque le navigateur de FiveM.
+// Nécessite la variable GITHUB_TOKEN (jeton GitHub avec le droit d'écrire le contenu du dépôt).
+const REPO = process.env.GITHUB_REPO || 'MisterNutss/peluches';
+async function github(method, slug, body) {
+  if (!process.env.GITHUB_TOKEN) return 'absent';
+  const url = `https://api.github.com/repos/${REPO}/contents/p/${slug}.json`, h = { Authorization: `Bearer ${process.env.GITHUB_TOKEN}`, Accept: 'application/vnd.github+json', 'User-Agent': 'peluches' };
+  const cur = await fetch(url + '?ref=main', { headers: h });
+  const sha = cur.ok ? (await cur.json()).sha : undefined;
+  if (method === 'DELETE' && !sha) return 'ok';
+  const r = await fetch(url, { method: method === 'DELETE' ? 'DELETE' : 'PUT', headers: h, body: JSON.stringify({ message: (method === 'DELETE' ? 'Retire ' : 'Peluche ') + slug, branch: 'main', sha, ...(body ? { content: Buffer.from(body).toString('base64') } : {}) }) });
+  return r.ok ? 'ok' : 'erreur ' + r.status;
+}
+
 // Chaque envoi crée une adresse différente (?v=date), ce qui évite de lire une ancienne version en cache
 const fresh = b => b.url + '?v=' + new Date(b.uploadedAt).getTime();
 
@@ -63,15 +76,18 @@ export default async function handler(req, res) {
       if (req.method === 'DELETE') {
         const { blobs } = await list({ prefix: `peluches/${slug}.`, ...AUTH });
         if (blobs.length) await del(blobs.map(x => x.url), AUTH);
+        await github('DELETE', slug).catch(() => {});
         return res.status(200).json({ ok: true });
       }
       if (typeof b.p !== 'string' || !/^~?[A-Za-z0-9_-]{4,40000}$/.test(b.p)) return res.status(400).json({ erreur: 'Peluche invalide.' });
       const opts = { access: 'public', addRandomSuffix: false, allowOverwrite: true, cacheControlMaxAge: 60, ...AUTH };
-      await put(`peluches/${slug}.json`, JSON.stringify({ nom: String(b.nom).trim().slice(0, 40), p: b.p, date: new Date().toISOString() }), { ...opts, contentType: 'application/json' });
+      const data = JSON.stringify({ nom: String(b.nom).trim().slice(0, 40), p: b.p, date: new Date().toISOString() });
+      await put(`peluches/${slug}.json`, data, { ...opts, contentType: 'application/json' });
+      const gh = await github('PUT', slug, data).catch(e => 'erreur ' + (e && e.message || e));
       let image = null;
       if (typeof b.image === 'string' && b.image.startsWith('data:image/png;base64,') && b.image.length < 2000000)
         image = (await put(`peluches/${slug}.png`, Buffer.from(b.image.split(',')[1], 'base64'), { ...opts, contentType: 'image/png' })).url + '?v=' + Date.now();
-      return res.status(200).json({ ok: true, slug, image });
+      return res.status(200).json({ ok: true, slug, image, github: gh });
     }
     res.setHeader('Allow', 'GET, POST, DELETE');
     return res.status(405).json({ erreur: 'Méthode non permise.' });
