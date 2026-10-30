@@ -18,9 +18,9 @@ const ENUM={st:['classique','ours','lapin','chat','monstre','avatar'],po:['assis
 bd:['aucune','barbe3j','barbe','longue','moustache','bouc'],gl:['aucune','lunettes','soleil','aviateur','tete','masque'],
 hw:['aucun','capuche','casquette','inverse','bonnet','chapeau','bandeau','durag','pompier','police'],tp:['tshirt','chemise','sweat','zip','veste','costume','gilet'],
 mt:['uni','rayures','camo','carreaux','taches'],hm:['uni','rayures','camo','carreaux','taches'],bt:['pantalon','jogging','short','salopette'],sh:['bottes','baskets','chaussures'],ex:['sourire','content','neutre','serieux'],
-it:['aucun','lance','coeur','telephone','cafe','donut','trousse'],
+it:['aucun','lance','coeur','telephone','cafe','donut','trousse','bouquet','billets','manette','ballon','cle','micro'],
 hp:['aucune','gauche','milieu','droite'],hf:['aucune','courte','droite','balayee','rideau','longue','arriere'],hx:['lisse','ondule','boucle','crepu','pique','dreads'],ht:['aucune','queue','haute','couettes','chignon','tresse','demi'],hd:['normaux','courts','rases'],ms:['aucune','monstre','lapin','ours','chat','chien','oiseau'],mp:['droite','gauche','tete','mains']};
-const ACC='rbmscowkehan';
+const ACC='rbmscowkehanudqfvyzlp';
 // Proportions par style : h = taille de la tête, b = corps [largeur, hauteur, profondeur], a = bras [épaisseur, longueur], l = jambes [largeur, hauteur, longueur]
 // Ourson : ventre rond, membres épais. Lapin : corps allongé, longues pattes. Chaton : tête un peu plus grosse.
 // h peut être [largeur, hauteur, profondeur] pour une tête ovale.
@@ -271,6 +271,7 @@ if(mSb&&longS)for(const a0 of[-0.24,0.24]){const pts=[];for(let y=4.2;y>=-3.6;y-
 if(longS)seam(ring(2.2,2.2,'y',-3.3),shade(c.tp==='gilet'?c.t2:c.tc,0.55),true,a);
 const gl=mk(blob(1.75,1.65,1.75),mHand);gl.position.set(0,-4.8,0);a.add(gl);const th=mk(blob(0.6,0.95,0.6,{lump:0}),mHand);th.position.set(-s*1.3,-4.1,0.9);th.rotation.z=s*0.5;a.add(th);
 if(c.gv){const cf=mk(new THREE.TorusGeometry(1.75,0.35,10,32),mHand);cf.position.set(0,-4.0,0);cf.rotation.x=Math.PI/2;a.add(cf);}
+if(has('l')&&s>0){const mB1=SM({color:c.ac,roughness:0.5}),mB2=SM({color:0xd9a833,roughness:0.3,metalness:0.6});for(const[k,mt]of[[0,mB1],[1,mB2]]){const br=mk(new THREE.TorusGeometry(1.95,0.22,8,32),mt);br.position.set(0,-3.0-k*0.55,0);br.rotation.x=Math.PI/2;a.add(br);}}
 if(has('w')&&s<0){const wb=mk(new THREE.TorusGeometry(1.98,0.36,10,32),mDark);wb.position.set(0,-3.2,0);wb.rotation.x=Math.PI/2;a.add(wb);const fc=mk(new THREE.CylinderGeometry(0.75,0.75,0.35,20),mGold);fc.rotation.x=Math.PI/2;fc.position.set(0,-3.2,2.15);a.add(fc);}}
 
 // Jambes et chaussures
@@ -557,6 +558,16 @@ let n=d.clone();const p=h?h.point.clone():ctr.clone().addScaledVector(d,9.5);if(
 const g=new THREE.Group();g.add(mk(shape(E[1]),mFur));const inn=mk(shape(E[2]),mIn);inn.position.set(0,-E[1][1]*0.05,E[1][2]*0.55);g.add(inn);
 g.position.copy(p).addScaledVector(n,E[1][1]*0.55);g.quaternion.setFromUnitVectors(Y,n).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0,0,-s*E[3])));G.add(g);g.updateMatrixWorld(true);}}
 
+// Accessoires de tête, posés sur ce qui est le plus à l'extérieur (cheveux, capuche, chapeau)
+const headTg=tops.concat((st==='monstre'?[hairCap,head]:[hairCap,hairS,head]).filter(Boolean));
+function onHead(d,g,lift){d=d.clone().normalize();const ctr=V(0,24.6,0.6);ray.set(ctr.clone().addScaledVector(d,80),d.clone().negate());const h=ray.intersectObjects(headTg,false)[0];
+const p=h?h.point.clone():ctr.clone().addScaledVector(d,10);g.position.copy(p).addScaledVector(d,lift||0.3);g.quaternion.setFromUnitVectors(V(0,0,1),d);g.userData.part='head';G.add(g);g.updateMatrixWorld(true);return g;}
+if(has('q')){// Nœud dans les cheveux : deux boucles et un nœud central
+const g=new THREE.Group();for(const s of[-1,1]){const l=mk(blob(1.6,1.1,0.55,{lump:0}),mAcc);l.position.set(s*1.45,0,0);l.rotation.z=s*0.25;g.add(l);}g.add(mk(blob(0.65,0.75,0.6,{lump:0}),mAcc));onHead(V(0.55,0.8,0.35),g,0.35);}
+if(has('f')){// Fleur dans les cheveux : cinq pétales blancs, cœur jaune
+const g=new THREE.Group(),mPe=FZ({color:0xfdf6f0,map:FAB,roughness:0.8});for(let i=0;i<5;i++){const a=i/5*Math.PI*2,pe=mk(blob(0.85,0.55,0.25,{lump:0}),mPe);pe.position.set(Math.cos(a)*0.85,Math.sin(a)*0.85,0);pe.rotation.z=a;g.add(pe);}
+g.add(mk(blob(0.5,0.5,0.35,{lump:0}),SM({color:0xf2c418,roughness:0.6})));onHead(V(-0.6,0.62,0.45),g,0.25);}
+
 // Queues des animaux
 if(st==='ours')add(mk(blob(1.7,1.6,1.5,{lump:0.06}),mFur),[0,6.6,-7.6]);
 if(st==='lapin')add(mk(blob(2.2,2.1,2.1,{lump:0.12}),mFurL),[0,6.6,-7.9]);
@@ -580,6 +591,20 @@ if(has('k')){const mK=FZ({color:c.ac,map:FAB,bumpMap:BMP,bumpScale:0.15,roughnes
 add(mk(blob(5.4,6.2,2.6,{lump:0.01,sq:0.6}),mK),[0,11.8,-9.2]);add(mk(blob(4.2,2.6,1.4,{lump:0.01,sq:0.6}),mK),[0,9.6,-11.4]);
 for(const s of[-1,1]){const pts=[];for(let b=-1.6;b<=1.25;b+=0.15){const d=V(0,Math.cos(b),Math.sin(b));pts.push([V(s*4.3,11.5,0).addScaledVector(d,30),d.clone().negate()]);}tube(onSurf(torso,pts,0.35),0.42,mKs);}}
 
+if(has('u')){// Sac banane sur le ventre, sangle autour de la taille
+add(mk(blob(3.3,1.55,1.3,{lump:0.01,sq:0.5}),mAcc),[0,7.2,7.9]);tor(8.75,0.28,mDark,7.0,0.9);add(mk(new THREE.BoxGeometry(4.6,0.12,0.1),mSilver),[0,7.75,9.1]);}
+if(has('d')){// Plaques militaires sur une chaînette
+const pts=[];for(let a=0;a<Math.PI*2-0.01;a+=Math.PI/24){const d=V(Math.sin(a),0,Math.cos(a)),y=17.0-3.6*Math.pow(Math.max(0,Math.cos(a)),1.4);pts.push([V(0,y,0).addScaledVector(d,30),d.clone().negate()]);}
+tube(onSurf(torso,pts,0.18),0.09,mSilver,true);for(const k of[0,1]){const pl=stick(mk(blob(0.62,0.95,0.12,{lump:0,sq:0.4}),mSilver),torso,k*0.45-0.1,12.9-k*0.3,-0.12);pl.rotateZ(k*0.25);}}
+if(has('p')){// Pins ronds sur le haut, côté gauche de l'image
+const pc=['#ff7eb6','#7fc8f8','#ffd166'];pc.forEach((cl,i)=>stick(mk(new THREE.CylinderGeometry(0.55,0.55,0.18,20).rotateX(Math.PI/2),SM({color:cl,roughness:0.4,metalness:0.2})),torso,-4.6+i*0.4,13.6-i*1.25,-0.08));}
+if(has('v')){// Étui à la ceinture, sur la hanche droite de l'image
+const g=new THREE.Group(),mLe=SM({color:0x3b2416,roughness:0.6});g.add(mk(blob(1.15,2.1,0.75,{lump:0,sq:0.5}),mLe));const gr=mk(blob(0.5,0.8,0.45,{lump:0,sq:0.5}),mDark);gr.position.set(0,2.2,0);g.add(gr);add(g,[8.4,5.4,2.8],[0,0.55,0.12]);}
+if(has('y')){// Lampe torche à la ceinture, à gauche de l'image
+add(mk(new THREE.CylinderGeometry(0.45,0.45,3.0,16),mDark),[-8.3,5.6,2.4],[0,0,0.1]);add(mk(new THREE.CylinderGeometry(0.62,0.5,0.8,16),mDark),[-8.38,7.4,2.4],[0,0,0.1]);add(mk(new THREE.CylinderGeometry(0.52,0.52,0.06,16),SM({color:0xfff6c8,emissive:0xfff0a0,emissiveIntensity:0.4})),[-8.42,7.82,2.4],[0,0,0.1]);}
+if(has('z')){// Menottes accrochées à la ceinture
+for(const k of[0,1])add(mk(new THREE.TorusGeometry(0.8,0.17,8,24),mSilver),[-4.4+k*1.0,4.7-k*0.4,7.0],[0.3,0.2,k*0.6]);}
+
 // Objet dans les mains (étiqueté pour suivre les mains quand la longueur des bras change)
 PART='item';const iy=c.po==='coeur'?6.6:0;
 if(showIt==='lance'){const mR=FZ({color:0xc8261f,map:FAB,bumpMap:BMP,bumpScale:0.1,roughness:0.6});
@@ -595,6 +620,21 @@ if(showIt==='cafe'){add(mk(new THREE.CylinderGeometry(1.25,1.0,2.8,24),mWhite),[
 add(mk(new THREE.CylinderGeometry(1.35,1.35,0.45,24),SM({color:0x2b1d14,roughness:0.5})),[0,10.4,10.4]);}
 if(showIt==='donut'){add(mk(new THREE.TorusGeometry(1.5,0.78,16,32),SM({color:0xd9a25e,roughness:0.8})),[0,8.6,10.3]);const gz=add(mk(new THREE.TorusGeometry(1.5,0.8,16,32),SM({color:0xf28fb8,roughness:0.35})),[0,8.6,10.6]);gz.scale.z=0.55;
 const sp=['#ffffff','#5bc0eb','#fde74c','#9bc53d'];for(let i=0;i<14;i++){const a=R()*Math.PI*2,r2=1.0+R()*1.0;add(mk(new THREE.BoxGeometry(0.4,0.12,0.12),SM({color:sp[i%4]})),[Math.cos(a)*r2,8.6+Math.sin(a)*r2,11.05],[0,0,R()*3]);}}
+if(showIt==='bouquet'){// Bouquet : papier en cornet, fleurs de couleurs
+add(mk(new THREE.ConeGeometry(1.9,4.2,20,1,true),FZ({color:c.ac,map:FAB,roughness:0.8,side:THREE.DoubleSide})),[0,8.0,10.6],[Math.PI,0,0]);
+['#ff7eb6','#ffd166','#fdf6f0','#c9a7ff','#ff9f6b'].forEach((cl,i)=>{const a=i/5*Math.PI*2;add(mk(blob(0.95,0.85,0.95,{lump:0.08}),FZ({color:cl,map:FAB,roughness:0.8})),[Math.cos(a)*1.0,10.6+Math.sin(a)*0.35,10.6+Math.sin(a)*0.9]);});
+for(let i=0;i<4;i++)add(mk(blob(0.5,0.9,0.15,{lump:0,tip:0.6}),SM({color:0x5aa357,roughness:0.7})),[(i-1.5)*1.1,10.0,9.8],[0.3,0,(i-1.5)*0.4]);}
+if(showIt==='billets'){// Liasse de billets avec une bande
+const mN=SM({color:0x7fb069,roughness:0.8});for(let i=0;i<4;i++)add(mk(new THREE.BoxGeometry(4.6,0.4,2.3),mN),[0,8.3+i*0.42,10.6],[0,0,(i-1.5)*0.05]);add(mk(new THREE.BoxGeometry(0.9,1.9,2.36),SM({color:0xf2e6c8,roughness:0.8})),[0,8.65,10.4]);}
+if(showIt==='manette'){// Manette de jeu
+const mM=SM({color:0x24262b,roughness:0.5});add(mk(blob(2.3,1.0,0.8,{lump:0,sq:0.6}),mM),[0,8.7,10.6],[-0.5,0,0]);for(const s of[-1,1])add(mk(blob(0.85,1.2,0.75,{lump:0}),mM),[s*1.7,8.0,10.2],[-0.5,0,s*0.3]);
+['#ff5d5d','#5dd6ff','#ffd166','#7cff8a'].forEach((cl,i)=>add(mk(new THREE.SphereGeometry(0.2,10,8),SM({color:cl,roughness:0.3})),[1.1+(i%2)*0.45-0.2,9.05+(i<2?0.25:-0.15),11.2],[0,0,0]));add(mk(new THREE.CylinderGeometry(0.32,0.32,0.3,12),mDark),[-1.0,9.0,11.25],[Math.PI/2-0.5,0,0]);}
+if(showIt==='ballon'){// Ballon de basket
+const mBa=FZ({color:0xe8752a,map:FAB,roughness:0.7}),bl=add(mk(new THREE.SphereGeometry(2.9,28,20),mBa),[0,9.6,11.0]);for(const r of[[0,0,0],[0,Math.PI/2,0],[Math.PI/2,0,0]]){const t=mk(new THREE.TorusGeometry(2.91,0.09,6,48),mDark);t.rotation.set(r[0],r[1],r[2]);bl.add(t);}}
+if(showIt==='cle'){// Clé de voiture avec télécommande
+add(mk(blob(1.3,1.8,0.5,{lump:0,sq:0.5}),SM({color:0x1c1c1e,roughness:0.4})),[0,9.0,10.8]);add(mk(new THREE.TorusGeometry(0.75,0.16,8,20),mSilver),[0,11.4,10.8]);add(mk(new THREE.BoxGeometry(0.5,2.4,0.16),mSilver),[0,6.6,10.8]);add(mk(new THREE.SphereGeometry(0.32,10,8),SM({color:0xd23a3a,roughness:0.3})),[0,9.4,11.3]);}
+if(showIt==='micro'){// Micro de chanteur
+add(mk(new THREE.CylinderGeometry(0.45,0.3,3.2,16),mDark),[0,8.4,10.6],[0.35,0,0]);add(mk(new THREE.SphereGeometry(0.9,18,14),SM({color:0xb8bec6,roughness:0.35,metalness:0.6})),[0,10.2,11.2]);}
 if(showIt==='trousse'){add(mk(blob(2.7,1.9,1.1,{lump:0,sq:0.35}),SM({color:0xd23a3a,roughness:0.6})),[0,8.4,10.6]);const mW=SM({color:0xffffff,roughness:0.5});
 add(mk(new THREE.BoxGeometry(1.6,0.5,0.2),mW),[0,8.4,11.7]);add(mk(new THREE.BoxGeometry(0.5,1.6,0.2),mW),[0,8.4,11.7]);add(mk(new THREE.TorusGeometry(0.8,0.18,8,20,Math.PI),mDark),[0,10.2,10.6]);}
 

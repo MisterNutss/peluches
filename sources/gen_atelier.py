@@ -62,7 +62,7 @@ if(P){P.group.rotation.y=ry;PL.aim(cam,P.fit,el,zoom,camFill);r.render(scene,cam
 </html>
 """
 
-ATELIER = r"""<title>Atelier peluches</title>
+ATELIER = r"""<title>Blake & Billy</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -70,25 +70,27 @@ ATELIER = r"""<title>Atelier peluches</title>
 <style>
 /* Layout: a toy-maker's studio — the plush on a big turntable stage pinned on the left, a tabbed workbench on the right (photos, réglages, lien); on phones the stage sits on top of the tabs. */
 :root{
-  --bg:#f2eff6; --surface:#ffffff; --surface-2:#f7f4fa; --fg:#251b30; --muted:#6c6279; --line:rgba(37,27,48,.11);
-  --accent:#d63a74; --accent-soft:#fbe3ec; --mint:#178a84; --on-accent:#ffffff; --stage-a:#ffffff; --stage-b:#ece7f3;
-  --shadow:0 1px 2px rgba(37,27,48,.05),0 10px 28px rgba(37,27,48,.08);
+  --bg:#fff4f8; --surface:#ffffff; --surface-2:#fff0f6; --fg:#4a2b3f; --muted:#9a6f88; --line:rgba(226,120,170,.22);
+  --accent:#ff5fa2; --accent-soft:#ffe1ef; --mint:#3fb59c; --mint-soft:#dcf6ef; --on-accent:#ffffff; --stage-a:#fff8fb; --stage-b:#ffe9f3;
+  --shadow:0 2px 4px rgba(255,95,162,.07),0 14px 34px rgba(255,95,162,.13);
   --display:"Fredoka","Trebuchet MS",system-ui,sans-serif; --body:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"DM Mono",ui-monospace,Consolas,monospace;
+  --heart:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cpath d='M16 22c-3-5-11-3-10 3 1 5 10 10 10 10s9-5 10-10c1-6-7-8-10-3z' fill='%23ff5fa2' fill-opacity='.08'/%3E%3Ccircle cx='48' cy='46' r='2.5' fill='%233fb59c' fill-opacity='.12'/%3E%3C/svg%3E");
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#15111b; --surface:#1f1927; --surface-2:#1a1521; --fg:#f3eef8; --muted:#a79cb4; --line:rgba(243,238,248,.11);
-  --accent:#ff6c9f; --accent-soft:#3a1d2a; --mint:#4fc7bf; --on-accent:#1a0c12; --stage-a:#2a2234; --stage-b:#231c2c;
-  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.35); color-scheme:dark}}
+  --bg:#21162a; --surface:#2c1e37; --surface-2:#271a31; --fg:#ffeaf4; --muted:#d0a7c1; --line:rgba(255,190,225,.15);
+  --accent:#ff86bd; --accent-soft:#4a2540; --mint:#6fd6bf; --mint-soft:#1f3a36; --on-accent:#2a0f1f; --stage-a:#33233f; --stage-b:#2c1e37;
+  --shadow:0 2px 4px rgba(0,0,0,.3),0 14px 34px rgba(0,0,0,.35); color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#15111b; --surface:#1f1927; --surface-2:#1a1521; --fg:#f3eef8; --muted:#a79cb4; --line:rgba(243,238,248,.11);
-  --accent:#ff6c9f; --accent-soft:#3a1d2a; --mint:#4fc7bf; --on-accent:#1a0c12; --stage-a:#2a2234; --stage-b:#231c2c;
-  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.35); color-scheme:dark}
+  --bg:#21162a; --surface:#2c1e37; --surface-2:#271a31; --fg:#ffeaf4; --muted:#d0a7c1; --line:rgba(255,190,225,.15);
+  --accent:#ff86bd; --accent-soft:#4a2540; --mint:#6fd6bf; --mint-soft:#1f3a36; --on-accent:#2a0f1f; --stage-a:#33233f; --stage-b:#2c1e37;
+  --shadow:0 2px 4px rgba(0,0,0,.3),0 14px 34px rgba(0,0,0,.35); color-scheme:dark}
 [hidden]{display:none!important}
-body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5}
+body{background:var(--heart) 0 0/64px 64px,var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5}
 .app{max-width:1360px;margin:0 auto;padding-block:20px 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:18px}
 .top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px}
 .brand{display:flex;align-items:center;gap:12px;min-width:0}
-.logo{width:46px;height:46px;flex:none}
+.logo{width:64px;height:48px;flex:none}
+.amp{color:var(--accent);font-weight:600}
 h1{font-family:var(--display);font-weight:700;font-size:clamp(26px,3.4vw,34px);line-height:1;margin:0;letter-spacing:-.01em}
 .brand p{margin:4px 0 0;color:var(--muted);font-size:14px;max-width:46ch}
 .steps{list-style:none;margin:0;padding:4px;display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;box-shadow:var(--shadow)}
@@ -99,12 +101,13 @@ h1{font-family:var(--display);font-weight:700;font-size:clamp(26px,3.4vw,34px);l
 .studio{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:18px;align-items:start}
 .viewer{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);display:grid;gap:10px;min-width:0}
 @media (max-width:920px){.studio{grid-template-columns:minmax(0,1fr)}.viewer{position:static}}
-.stage{position:relative;width:100%;aspect-ratio:1;max-height:calc(100vh - 160px);min-height:320px;border-radius:24px;overflow:hidden;cursor:grab;touch-action:pan-y;border:1px solid var(--line);box-shadow:var(--shadow);
+.stage{position:relative;width:100%;aspect-ratio:1;max-height:calc(100vh - 160px);min-height:320px;border-radius:32px;overflow:hidden;cursor:grab;touch-action:pan-y;border:1px solid var(--line);box-shadow:var(--shadow);
   background:repeating-conic-gradient(var(--stage-a) 0 25%,var(--stage-b) 0 50%) 0 0/28px 28px}
 .stage.drag{cursor:grabbing}
 .stage canvas{display:block;width:100%;height:100%}
 .stage-bar{position:absolute;top:12px;left:12px;right:12px;display:flex;flex-wrap:wrap;gap:6px;justify-content:space-between;pointer-events:none}
 .grp{display:flex;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px;pointer-events:auto;box-shadow:var(--shadow)}
+.grp button:disabled{opacity:.35;cursor:default}
 .grp button{font:700 13px/1 var(--body);border:0;background:none;color:var(--fg);padding:8px 12px;border-radius:999px;cursor:pointer}
 .grp button:hover{background:var(--surface-2)}
 .grp button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
@@ -119,10 +122,11 @@ h1{font-family:var(--display);font-weight:700;font-size:clamp(26px,3.4vw,34px);l
 .tabs button:hover{color:var(--fg);background:var(--surface-2)}
 .tabs button[aria-selected="true"]{background:var(--accent-soft);color:var(--accent)}
 .tabpanel,#settings{display:grid;gap:14px;min-width:0}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px 20px;display:grid;gap:12px;min-width:0;box-shadow:var(--shadow)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:26px;padding:18px 20px;display:grid;gap:12px;min-width:0;box-shadow:var(--shadow)}
 h2{font-family:var(--display);font-weight:600;font-size:19px;line-height:1.2;margin:0;color:var(--fg)}
+h2::before{content:'♡ ';color:var(--accent)}
 label{font-size:14px;color:var(--muted);font-weight:700}
-input[type=text],input[type=url],select{font:16px var(--body);padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);color:var(--fg);width:100%;min-width:0;box-sizing:border-box}
+input[type=text],input[type=url],input[type=password],select{font:16px var(--body);padding:10px 14px;border-radius:16px;border:1px solid var(--line);background:var(--surface-2);color:var(--fg);width:100%;min-width:0;box-sizing:border-box}
 input[readonly]{font-family:var(--mono);font-size:13px}
 input.example{color:var(--muted)}
 input[type=color]{width:52px;height:40px;padding:3px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);cursor:pointer;flex:none}
@@ -136,8 +140,15 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{ou
 .rangehead{justify-content:space-between;flex-wrap:nowrap}
 .check{display:flex;gap:8px;align-items:center;color:var(--fg);font-size:15px;font-weight:600;cursor:pointer}
 .check input{width:18px;height:18px;accent-color:var(--accent)}
-.flags{display:flex;flex-wrap:wrap;gap:8px 18px}
-.btn,.pip{font:700 14px/1 var(--body);padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;white-space:nowrap;text-decoration:none}
+.flags{display:grid;gap:12px}
+.fgroup{display:grid;gap:6px}.fgroup>span{font:600 13px var(--display);color:var(--muted);letter-spacing:.02em}
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pills .check{font-size:14px;padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);gap:6px}
+.pills .check:has(input:checked){background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.pills .check input{position:absolute;opacity:0;width:1px;height:1px}
+.pills .check:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.seg.small .btn{padding:8px 12px;font-size:13px}
+.btn,.pip{font:700 14px/1 var(--body);padding:10px 15px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;white-space:nowrap;text-decoration:none}
 .pip{font-size:13px;padding:8px 10px}
 .btn:hover,.pip:hover{border-color:var(--accent)}
 .btn:disabled{opacity:.45;cursor:not-allowed}
@@ -169,8 +180,8 @@ code{font-family:var(--mono);font-size:13px;overflow-wrap:anywhere}
 <div class="app">
   <header class="top">
     <div class="brand">
-      <svg class="logo" viewBox="0 0 48 48" aria-hidden="true"><circle cx="13" cy="12" r="7" fill="var(--accent)"/><circle cx="35" cy="12" r="7" fill="var(--accent)"/><circle cx="24" cy="26" r="17" fill="var(--accent)"/><circle cx="24" cy="31" r="7.5" fill="var(--accent-soft)"/><circle cx="17.5" cy="23" r="2.4" fill="var(--fg)"/><circle cx="30.5" cy="23" r="2.4" fill="var(--fg)"/><ellipse cx="24" cy="29" rx="2.6" ry="1.9" fill="var(--fg)"/><path d="M14 38 l4 2 M30 40 l4 -2" stroke="var(--on-accent)" stroke-width="1.6" stroke-dasharray="1.6 1.6" fill="none"/></svg>
-      <div><h1>Atelier peluches</h1><p>Des peluches 3D sans fond, faites d'après une photo, pour tes items FiveM.</p></div>
+      <svg class="logo" viewBox="0 0 64 48" aria-hidden="true"><g><circle cx="10" cy="12" r="5.5" fill="var(--accent)"/><circle cx="26" cy="12" r="5.5" fill="var(--accent)"/><circle cx="18" cy="24" r="13" fill="var(--accent)"/><circle cx="18" cy="28" r="5.5" fill="var(--accent-soft)"/><circle cx="13.5" cy="22" r="1.8" fill="var(--fg)"/><circle cx="22.5" cy="22" r="1.8" fill="var(--fg)"/></g><g><circle cx="38" cy="16" r="5.5" fill="var(--mint)"/><circle cx="54" cy="16" r="5.5" fill="var(--mint)"/><circle cx="46" cy="28" r="13" fill="var(--mint)"/><circle cx="46" cy="32" r="5.5" fill="var(--mint-soft)"/><circle cx="41.5" cy="26" r="1.8" fill="var(--fg)"/><circle cx="50.5" cy="26" r="1.8" fill="var(--fg)"/></g><path d="M32 41c-2-3-6-2-5 1 .5 2 5 5 5 5s4.5-3 5-5c1-3-3-4-5-1z" fill="var(--accent)"/></svg>
+      <div><h1>Blake <span class="amp">&amp;</span> Billy</h1><p>L'atelier des peluches toutes douces ♡ faites d'après une photo, pour tes items FiveM.</p></div>
     </div>
     <ol class="steps">
       <li data-step="photos"><button type="button"><span class="n">1</span>Photos</button></li>
@@ -183,7 +194,7 @@ code{font-family:var(--mono);font-size:13px;overflow-wrap:anywhere}
       <div class="stage" id="stage" role="img" aria-label="Aperçu 3D de la peluche sur fond transparent">
         <div class="stage-bar">
           <div class="grp"><button type="button" id="v-front">Face</button><button type="button" id="v-side">Profil</button><button type="button" id="v-back">Dos</button></div>
-          <div class="grp"><button type="button" id="v-spin" aria-pressed="false">Tourner</button></div>
+          <div class="grp"><button type="button" id="undo" title="Annuler" aria-label="Annuler" disabled>↶</button><button type="button" id="redo" title="Rétablir" aria-label="Rétablir" disabled>↷</button><button type="button" id="v-spin" aria-pressed="false">Tourner</button></div>
         </div>
         <p class="stage-status" id="stage-status" aria-live="polite"></p>
       </div>
@@ -285,13 +296,20 @@ PL.setup(r);const camFill=PL.lights(scene);PL.HOOKS.onTex=()=>{dirty=true;};
 let cfg=PL.clean(PL.NEUTRAL),cur=null,ry=-0.25,el=0.24,dirty=true,drag=false,lx=0,ly=0;
 function fitSize(){const w=stage.clientWidth||480,h=stage.clientHeight||480;r.setPixelRatio(Math.min(2,window.devicePixelRatio||1));r.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();dirty=true;}
 fitSize();if(window.ResizeObserver)new ResizeObserver(fitSize).observe(stage);window.addEventListener('resize',fitSize);
-function rebuild(){if(cur){scene.remove(cur.group);cur.dispose();}cur=PL.build(cfg);scene.add(cur.group);dirty=true;}
+// Historique des réglages pour annuler / rétablir
+let hist=[],hi=-1,restoring=false;
+function record(){const t=JSON.stringify(cfg);if(hist[hi]===t)return;hist=hist.slice(0,hi+1);hist.push(t);if(hist.length>80)hist.shift();hi=hist.length-1;updUndo();}
+function updUndo(){$('undo').disabled=hi<=0;$('redo').disabled=hi>=hist.length-1;}
+function goHist(d){const n=hi+d;if(n<0||n>=hist.length)return;hi=n;cfg=JSON.parse(hist[hi]);restoring=true;syncForm();rebuild();updateLink();restoring=false;updUndo();}
+function rebuild(){if(cur){scene.remove(cur.group);cur.dispose();}cur=PL.build(cfg);scene.add(cur.group);dirty=true;if(!restoring)record();}
 let rbT=0;function changed(){updateLink();clearTimeout(rbT);rbT=setTimeout(rebuild,140);}
 stage.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;drag=true;lx=e.clientX;ly=e.clientY;stage.classList.add('drag');});
 window.addEventListener('pointermove',e=>{if(!drag)return;ry+=(e.clientX-lx)*0.01;el=Math.min(0.8,Math.max(-0.15,el+(e.clientY-ly)*0.006));lx=e.clientX;ly=e.clientY;dirty=true;});
 const up=()=>{drag=false;stage.classList.remove('drag');};window.addEventListener('pointerup',up);window.addEventListener('pointercancel',up);
+$('undo').addEventListener('click',()=>goHist(-1));$('redo').addEventListener('click',()=>goHist(1));
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&!/^(INPUT|SELECT|TEXTAREA)$/.test((document.activeElement||{}).tagName||'')){if(e.key==='z'&&!e.shiftKey){e.preventDefault();goHist(-1);}else if(e.key==='y'||(e.key==='z'&&e.shiftKey)||e.key==='Z'){e.preventDefault();goHist(1);}}});
 stage.addEventListener('dblclick',()=>{ry=-0.25;el=0.24;dirty=true;});
-(function loop(){if(spin&&!drag&&!reduceMotion){ry+=0.008;dirty=true;}if(dirty&&cur){cur.group.rotation.y=ry;PL.aim(cam,cur.fit,el,1.04,camFill);r.render(scene,cam);dirty=false;}requestAnimationFrame(loop);})();
+(function loop(){if(spin&&!drag&&!reduceMotion){ry+=0.008;dirty=true;}if(dirty&&cur){cur.group.rotation.y=ry;PL.aim(cam,cur.fit,el,1.16,camFill);r.render(scene,cam);dirty=false;}requestAnimationFrame(loop);})();
 
 // Réglages
 const CHOICES={hs:{court:'Courts',banane:'Banane (plaqués en arrière)',meches:'Mi-longs en mèches',herisse:'Hérissés',iroquoise:'Iroquoise',carre:'Carré',long:'Longs',tresse:"Tresse sur l'épaule",couettes:'Couettes',queue:'Queue de cheval',chignon:'Chignon',boucle:'Bouclés',afro:'Afro',dreads:'Dreads',rase:'Rasés',chauve:'Chauve'},
@@ -300,7 +318,7 @@ gl:{aucune:'Aucunes',lunettes:'Lunettes de vue',soleil:'Lunettes de soleil',avia
 hw:{aucun:'Aucun',capuche:'Capuche relevée',casquette:'Casquette',inverse:"Casquette à l'envers",bonnet:'Bonnet',chapeau:'Chapeau',bandeau:'Bandeau',durag:'Durag',pompier:'Casque de pompier',police:'Casquette de police'},
 tp:{tshirt:'T-shirt',chemise:'Chemise',sweat:'Sweat à capuche',zip:'Veste zippée fermée (survêtement)',veste:'Veste ouverte',costume:'Costume',gilet:'Gilet sur manches'},mt:{uni:'Uni',rayures:'Rayures',camo:'Camouflage',carreaux:'Carreaux',taches:'Taches'},
 bt:{pantalon:'Pantalon',jogging:'Jogging',short:'Short',salopette:'Salopette'},sh:{bottes:'Bottes',baskets:'Baskets',chaussures:'Chaussures de ville'},
-it:{aucun:'Rien',lance:'Lance à incendie',coeur:'Cœur',telephone:'Téléphone',cafe:'Café',donut:'Donut',trousse:'Trousse de secours'}};
+it:{aucun:'Rien',lance:'Lance à incendie',coeur:'Cœur',telephone:'Téléphone',cafe:'Café',donut:'Donut',trousse:'Trousse de secours',bouquet:'Bouquet de fleurs',billets:'Liasse de billets',manette:'Manette de jeu',ballon:'Ballon de basket',cle:'Clé de voiture',micro:'Micro de chanteur'}};
 CHOICES.hm=CHOICES.mt;
 CHOICES.hp={aucune:'Pas de raie',gauche:"Raie à gauche de l'image",milieu:'Raie au milieu',droite:"Raie à droite de l'image"};
 CHOICES.hf={aucune:'Pas de frange (coiffés en arrière ou sur les côtés)',courte:'Frange courte',droite:'Frange droite (au ras des sourcils)',balayee:'Frange balayée sur le côté',rideau:'Frange rideau (ouverte au milieu)',longue:'Frange longue (sur les yeux)',arriere:'Relevés en arrière (banane, houppe)'};
@@ -312,7 +330,10 @@ CHOICES.po={assis:'Assise',debout:'Debout',coucou:'Coucou',bravo:'Bras levés',c
 CHOICES.ey={kawaii:'Mignons (peluche)',realiste:'Réalistes'};
 CHOICES.st={classique:'Classique',ours:'Ourson',lapin:'Lapin',chat:'Chaton',monstre:'Petit monstre',avatar:'Avatar'};
 CHOICES.mp={droite:"Sur l'épaule, à droite de l'image",gauche:"Sur l'épaule, à gauche de l'image",tete:'Sur la tête',mains:'Dans les mains'};
-const FLAGS={r:'Radio',b:'Badge',m:'Micro-casque',s:'Sacoche',c:'Chaîne en or',o:"Boucles d'oreilles",w:'Montre',k:'Sac à dos',e:'Écharpe',h:'Casque audio au cou',a:'Bandana sur le visage',n:'Sac en bandoulière'};
+const FLAGS={m:'Micro-casque',o:"Boucles d'oreilles",a:'Bandana sur le visage',q:'Nœud dans les cheveux',f:'Fleur dans les cheveux',
+r:'Radio',b:'Badge',c:'Chaîne en or',d:'Plaques militaires',e:'Écharpe',h:'Casque audio au cou',p:'Pins',n:'Sac en bandoulière',
+s:'Sacoche',u:'Sac banane',v:'Étui à la ceinture',y:'Lampe torche',z:'Menottes',w:'Montre',l:'Bracelets',k:'Sac à dos'};
+const FLAG_GROUPS=[['Tête et visage','moaqf'],['Haut du corps','rbcdehpn'],['Ceinture','suvyz'],['Bras et dos','wlk']];
 const hairOn=c=>!['rase','chauve','iroquoise'].includes(c.hs);
 const SECTIONS=[
 {t:'Style, pose et nom',f:[{k:'st',type:'chips',l:'Style de peluche',wide:1},{k:'po',type:'chips',l:'Position',wide:1},{k:'fc',type:'color',l:'Couleur de la fourrure',show:c=>['ours','lapin','chat','monstre'].includes(c.st)},{k:'n',type:'text',l:'Nom',max:24,wide:1}]},
@@ -336,6 +357,7 @@ const TAB_OF={'Style, pose et nom':'style',Visage:'visage',Cheveux:'tete','Tête
 for(const sec of SECTIONS){const grid=el2('div',{className:'fields'});$('tab-'+TAB_OF[sec.t]).append(el2('section',{className:'card'},[el2('h2',{textContent:sec.t}),grid]));
 for(const f of sec.f){const id='f-'+f.k,row=el2('div',{className:'field'+(f.wide?' wide':'')});const lab=el2('label',{htmlFor:id});f.lab=lab;
 if(f.type==='color'){row.append(lab,colorRow(f.k,id));row.querySelector('.pip').dataset.pip=f.k;}
+else if(f.type==='choice'&&Object.keys(CHOICES[f.k]).length<=6){f.type='chips';const g=el2('div',{className:'seg small',id});for(const[v,t]of Object.entries(CHOICES[f.k])){const b=el2('button',{type:'button',className:'btn',textContent:t});b.dataset.v=v;g.append(b);}row.append(lab,g);lab.htmlFor='';}
 else if(f.type==='choice'){const s=el2('select',{id});for(const[v,t]of Object.entries(CHOICES[f.k]))s.append(el2('option',{value:v,textContent:t}));row.append(lab,s);}
 else if(f.type==='text'){row.append(lab,el2('input',{type:'text',id,maxLength:f.max,autocomplete:'off'}));}
 else if(f.type==='check'){row.append(el2('label',{className:'check'},[el2('input',{type:'checkbox',id}),f.l]));f.lab=null;}
@@ -344,13 +366,13 @@ else if(f.type==='optcolor'){row.append(el2('label',{className:'check'},[el2('in
 else if(f.type==='range'){row.append(el2('div',{className:'row rangehead'},[lab,el2('span',{className:'help',id:id+'-v'})]),el2('input',{type:'range',id,min:f.min,max:f.max,step:f.step}));}
 else if(f.type==='print'){const im=el2('img',{id:id+'-img',alt:'Imprimé pris sur la photo',className:'printimg'});row.append(el2('span',{className:'help',textContent:f.l}),el2('div',{className:'row'},[im,el2('button',{type:'button',className:'btn',id:id+'-pick',textContent:'Choisir sur la photo'}),el2('button',{type:'button',className:'btn',id:id+'-rm',textContent:'Retirer'})]));f.lab=null;}
 else if(f.type==='chips'){const g=el2('div',{className:'seg',id});for(const[v,t]of Object.entries(CHOICES[f.k])){const b=el2('button',{type:'button',className:'btn',textContent:t});b.dataset.v=v;g.append(b);}row.append(el2('span',{className:'help',textContent:f.l}),g);f.lab=null;}
-else if(f.type==='flags'){row.append(el2('span',{className:'help',textContent:f.l}),el2('div',{className:'flags'},Object.entries(FLAGS).map(([v,t])=>el2('label',{className:'check'},[el2('input',{type:'checkbox',id:id+'-'+v,value:v}),t]))));f.lab=null;}
+else if(f.type==='flags'){row.append(el2('span',{className:'help',textContent:f.l}),el2('div',{className:'flags'},FLAG_GROUPS.map(([gt,ks])=>el2('div',{className:'fgroup'},[el2('span',{textContent:gt}),el2('div',{className:'pills'},[...ks].map(v=>el2('label',{className:'check'},[el2('input',{type:'checkbox',id:id+'-'+v,value:v}),FLAGS[v]])))]))));f.lab=null;}
 f.row=row;F[f.k]=f;grid.append(row);}}
 function syncForm(){const HV=PL.hair(cfg),val=k=>PL.HAIRK.includes(k)?HV[k]:cfg[k];for(const k in F){const f=F[k],id='f-'+k;if(f.lab)f.lab.textContent=typeof f.l==='function'?f.l(cfg):f.l;f.row.hidden=!!(f.show&&!f.show(cfg));
 if(f.type==='color'||f.type==='choice'||f.type==='text'){if(document.activeElement!==$(id))$(id).value=k==='fc'?(cfg.fc||cfg.hc):val(k);}
 else if(f.type==='range'){if(document.activeElement!==$(id))$(id).value=val(k);const v=Number(val(k));$(id+'-v').textContent=f.fmt==='len'?[[0.6,'Ras'],[1.4,'Courts'],[2.2,'Aux oreilles'],[2.8,'Mi-longs'],[3.5,'Au menton'],[4.5,'Aux épaules'],[9,'Dans le dos']].find(x=>v<x[0])[1]+' ('+v.toFixed(1).replace('.',',')+')':f.fmt==='pct'?Math.round(v*100)+' %':f.fmt==='deg'?Math.round(v)+'°':f.fmt==='off'?(v>0?'+':'')+v.toFixed(2).replace('.',','):'× '+v.toFixed(2).replace('.',',');}
 else if(f.type==='print'){const on=!!cfg.im;$(id+'-img').hidden=!on;if(on)$(id+'-img').src='data:image/'+cfg.imt+';base64,'+cfg.im;$(id+'-rm').hidden=!on;$(id+'-pick').disabled=!anyPhoto();}
-else if(f.type==='chips')$(id).querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===cfg[k])));
+else if(f.type==='chips')$(id).querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===val(k))));
 else if(f.type==='check')$(id).checked=!!cfg[k];
 else if(f.type==='glove'){$(id+'-on').checked=!!cfg.gv;if(cfg.gv)lastGlove=cfg.gv;$(id).value=lastGlove;$(id).disabled=!cfg.gv;}
 else if(f.type==='optcolor'){$(id+'-on').checked=!!cfg[k];if(cfg[k])lastOpt[k]=cfg[k];$(id).value=lastOpt[k];$(id).disabled=!cfg[k];}
@@ -474,8 +496,8 @@ function keysText(){return "Regarde d'abord ce qui rend la personne reconnaissab
 +'- "sh" : chaussures, parmi "bottes", "baskets", "chaussures" (de ville)\n'
 +'- "sc" : couleur des chaussures, "#rrggbb"\n'
 +'- "gv" : couleur des gants, "#rrggbb", ou "" sans gants\n'
-+'- "acc" : lettres des accessoires visibles, "" s\'il n\'y en a aucun : r = radio ou talkie, b = badge ou insigne, m = micro-casque ou oreillette, s = sacoche à la ceinture, c = chaîne ou collier, o = boucles d\'oreilles, w = montre, k = sac à dos, e = écharpe, h = casque audio autour du cou, a = bandana ou masque sur le bas du visage, n = sac en bandoulière\n'
-+'- "it" : objet tenu en main, parmi "aucun", "lance" (lance à incendie), "coeur", "telephone", "cafe", "donut", "trousse" (trousse de secours)\n'
++'- "acc" : lettres des accessoires visibles, "" s\'il n\'y en a aucun : r = radio ou talkie, b = badge ou insigne, m = micro-casque ou oreillette, s = sacoche à la ceinture, c = chaîne ou collier, o = boucles d\'oreilles, w = montre, k = sac à dos, e = écharpe, h = casque audio autour du cou, a = bandana ou masque sur le bas du visage, n = sac en bandoulière, u = sac banane, d = plaques militaires, q = nœud dans les cheveux, f = fleur dans les cheveux, v = étui ou holster à la ceinture, y = lampe torche à la ceinture, z = menottes à la ceinture, l = bracelets, p = pins sur le haut\n'
++'- "it" : objet tenu en main, parmi "aucun", "lance" (lance à incendie), "coeur", "telephone", "cafe", "donut", "trousse" (trousse de secours), "bouquet" (fleurs), "billets" (liasse d\'argent), "manette" (manette de jeu), "ballon" (ballon de basket ou de sport), "cle" (clé de voiture), "micro" (micro de chanteur)\n'
 +'- "ms" : petite peluche ou petit animal porté par la personne (sur l\'épaule, accroché au sac ou dans les bras), parmi "aucune", "monstre" (petite peluche monstre à longues oreilles, visage clair et grand sourire plein de dents, comme les figurines de collection à la mode), "lapin" (lapin classique), "ours", "chat", "chien", "oiseau" (oiseau ou perroquet) ; prends la forme la plus proche\n'
 +'- "mc" : couleur de cette mascotte, "#rrggbb"\n'
 +'- "mp" : place de la mascotte, parmi "droite" (sur l\'épaule à droite de l\'image), "gauche" (sur l\'épaule à gauche de l\'image), "mains"\n'
