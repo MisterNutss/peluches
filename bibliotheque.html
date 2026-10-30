@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bibliothèque des peluches</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* Même atelier de jouets que l'atelier : une étagère de vignettes, chaque peluche avec son lien court */
+:root{
+  --bg:#f2eff6; --surface:#ffffff; --surface-2:#f7f4fa; --fg:#251b30; --muted:#6c6279; --line:rgba(37,27,48,.11);
+  --accent:#d63a74; --accent-soft:#fbe3ec; --on-accent:#ffffff; --stage-a:#ffffff; --stage-b:#ece7f3;
+  --shadow:0 1px 2px rgba(37,27,48,.05),0 10px 28px rgba(37,27,48,.08);
+  --display:"Fredoka","Trebuchet MS",system-ui,sans-serif; --body:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#15111b; --surface:#1f1927; --surface-2:#1a1521; --fg:#f3eef8; --muted:#a79cb4; --line:rgba(243,238,248,.11);
+  --accent:#ff6c9f; --accent-soft:#3a1d2a; --on-accent:#1a0c12; --stage-a:#2a2234; --stage-b:#231c2c;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.35); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#15111b; --surface:#1f1927; --surface-2:#1a1521; --fg:#f3eef8; --muted:#a79cb4; --line:rgba(243,238,248,.11);
+  --accent:#ff6c9f; --accent-soft:#3a1d2a; --on-accent:#1a0c12; --stage-a:#2a2234; --stage-b:#231c2c;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.35); color-scheme:dark}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5}
+.app{max-width:1200px;margin:0 auto;padding:20px 16px 40px;display:grid;gap:18px}
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(26px,3.4vw,34px);line-height:1;margin:0}
+.top p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+input{font:16px var(--body);padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--fg);min-width:0}
+input:focus-visible,a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{font:700 14px/1 var(--body);padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center}
+.btn:hover{border-color:var(--accent)}
+.btn.main{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.danger{color:var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;display:grid;min-width:0}
+.thumb{aspect-ratio:1;background:repeating-conic-gradient(var(--stage-a) 0 25%,var(--stage-b) 0 50%) 0 0/22px 22px;display:grid;place-items:center}
+.thumb img{width:88%;height:88%;object-fit:contain}
+.thumb span{font:600 48px var(--display);color:var(--muted)}
+.info{padding:12px 14px 14px;display:grid;gap:10px}
+.info h2{font-family:var(--display);font-weight:600;font-size:19px;line-height:1.2;margin:0;overflow-wrap:anywhere}
+.date{font-size:13px;color:var(--muted);margin:-6px 0 0}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.acts .btn{justify-content:center}
+.status{margin:0;color:var(--muted);font-size:15px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div><h1>Bibliothèque des peluches</h1><p>Toutes les peluches enregistrées, chacune avec son lien court pour l'item FiveM.</p></div>
+    <div class="bar">
+      <input id="q" type="search" placeholder="Chercher une peluche" aria-label="Chercher une peluche">
+      <a class="btn main" href="atelier">Nouvelle peluche</a>
+    </div>
+  </header>
+  <p class="status" id="status" aria-live="polite">Chargement…</p>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}catch(e){}return null;}
+let all=[];
+const link=s=>location.origin+'/p/'+s;
+function el(tag,props,kids){const n=document.createElement(tag);Object.assign(n,props||{});(kids||[]).forEach(k=>n.append(k));return n;}
+function render(){const q=$('q').value.trim().toLowerCase(),list=all.filter(x=>!q||String(x.nom).toLowerCase().includes(q));$('grid').textContent='';
+$('status').textContent=all.length?(list.length?'':'Aucune peluche ne correspond.'):"La bibliothèque est vide. Crée une peluche dans l'atelier, puis enregistre-la depuis l'onglet « Lien ».";
+for(const x of list){const thumb=el('div',{className:'thumb'},[x.image?el('img',{src:x.image,alt:'Peluche '+x.nom,loading:'lazy'}):el('span',{textContent:(x.nom||'?')[0].toUpperCase()})]);
+const copy=el('button',{type:'button',className:'btn main',textContent:'Copier le lien'});copy.addEventListener('click',()=>{const t=link(x.slug);try{navigator.clipboard.writeText(t).then(()=>{copy.textContent='Lien copié';setTimeout(()=>{copy.textContent='Copier le lien';},1500);});}catch(e){}});
+const rm=el('button',{type:'button',className:'btn danger',textContent:'Supprimer'});let armed=false;
+rm.addEventListener('click',async()=>{if(!armed){armed=true;rm.textContent='Confirmer';setTimeout(()=>{armed=false;rm.textContent='Supprimer';},3000);return;}
+const code=store('peluches-code');if(!code){$('status').textContent="Enregistre d'abord une peluche depuis l'atelier : il retient ton code secret.";return;}
+const r=await fetch('/api/peluches',{method:'DELETE',headers:{'content-type':'application/json'},body:JSON.stringify({nom:x.slug,code})}),d=await r.json().catch(()=>({}));
+if(!r.ok){$('status').textContent=d.erreur||'La suppression a échoué.';return;}all=all.filter(y=>y.slug!==x.slug);render();});
+$('grid').append(el('article',{className:'card'},[thumb,el('div',{className:'info'},[el('h2',{textContent:x.nom}),el('p',{className:'date',textContent:x.date?'Enregistrée le '+new Date(x.date).toLocaleDateString('fr-FR'):''}),
+el('div',{className:'acts'},[copy,el('a',{className:'btn',href:link(x.slug),target:'_blank',rel:'noopener',textContent:'Voir en 3D'}),el('a',{className:'btn',href:'atelier?nom='+encodeURIComponent(x.slug),textContent:'Modifier'}),rm])])]));}}
+$('q').addEventListener('input',render);
+fetch('/api/peluches').then(r=>r.ok?r.json():r.json().then(d=>Promise.reject(d))).then(d=>{all=Array.isArray(d)?d:[];render();})
+.catch(d=>{$('status').textContent=(d&&d.erreur)||"La bibliothèque n'est pas joignable. Elle fonctionne seulement sur le site Vercel, une fois le stockage Blob relié au projet.";});
+</script>
+</body>
+</html>

@@ -21,12 +21,13 @@ VIEWER_HEAD = """<!doctype html>
 
 VIEWER_TAIL = r"""
 // Page 3D : la peluche est décrite dans l'adresse (?p=...). Glisser : tourner. Molette ou deux doigts : zoomer. Double-clic : remettre en place.
-// Option : &tourne=non pour qu'elle ne tourne pas toute seule.
+// Option : &tourne=non pour qu'elle ne tourne pas toute seule. Une peluche de la bibliothèque s'ouvre avec /p/son-nom.
 const q=new URLSearchParams(location.search);
 const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(22,1,0.1,500);
 const r=new THREE.WebGLRenderer({antialias:true,alpha:true});r.setClearColor(0x000000,0);r.setPixelRatio(Math.min(2,window.devicePixelRatio||1));r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;document.body.appendChild(r.domElement);
 PL.setup(r);const camFill=PL.lights(scene);let P=null;
-PL.unpack(q.get('p')).then(c=>{const cfg=c||PL.clean(PL.PRESETS.pompier);if(cfg.n)document.title=cfg.n;P=PL.build(cfg);scene.add(P.group);});
+const nom=q.get('nom')||decodeURIComponent((location.pathname.match(/\/p\/([^/?#]+)\/?$/)||[])[1]||'');
+(nom?fetch('/api/peluches?nom='+encodeURIComponent(nom)).then(x=>x.ok?x.json():null).then(d=>d?PL.unpack(d.p):null).catch(()=>null):PL.unpack(q.get('p'))).then(c=>{const cfg=c||PL.clean(PL.PRESETS.pompier);if(cfg.n)document.title=cfg.n;P=PL.build(cfg);scene.add(P.group);});
 const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches,autoSpin=q.get('tourne')!=='non'&&!reduce;
 const START={ry:-0.25,el:0.24,zoom:1.05};let ry=START.ry,el=START.el,zoom=START.zoom,idle=0;
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
@@ -220,6 +221,15 @@ code{font-family:var(--mono);font-size:13px;overflow-wrap:anywhere}
             <p class="help">Envoie ce lien à quelqu'un : la peluche s'ouvre dans l'atelier, prête à être modifiée, sans compte Claude.</p>
             <div class="row"><a class="btn" id="open" target="_blank" rel="noopener" hidden>Ouvrir la page</a><button class="btn" id="icon" type="button" disabled>Télécharger l'icône PNG</button></div>
             <p class="status" id="dl-status" aria-live="polite"></p>
+          </section>
+          <section class="card" id="lib-card" hidden>
+            <h2>Bibliothèque</h2>
+            <p class="help">Enregistre la peluche sous un nom : elle rejoint ta bibliothèque et reçoit un lien très court.</p>
+            <div class="fields"><div class="field"><label for="lib-nom">Nom</label><input id="lib-nom" type="text" maxlength="40" autocomplete="off"></div>
+            <div class="field"><label for="lib-code">Code secret</label><input id="lib-code" type="password" autocomplete="off"></div></div>
+            <div class="row"><button class="cta" id="lib-save" type="button">Enregistrer dans la bibliothèque</button><a class="btn" href="bibliotheque">Ouvrir la bibliothèque</a></div>
+            <div class="field" id="lib-link" hidden><label for="lib-out">Lien court de cette peluche</label><div class="row"><input id="lib-out" type="text" readonly><button class="btn" id="lib-copy" type="button">Copier</button></div></div>
+            <p class="status" id="lib-status" aria-live="polite"></p>
           </section>
           <section class="card setup">
             <h2>Mettre la page 3D en ligne (une seule fois)</h2>
@@ -501,7 +511,7 @@ const baseIn=$('base');baseIn.value=store('peluches-base')||(/(github\.io|vercel
 baseIn.addEventListener('input',()=>{store('peluches-base',baseIn.value.trim());updateLink();});
 function baseUrl(){const v=baseIn.value.trim();if(!/^https?:\/\//i.test(v))return '';try{const u=new URL(v);if(!/\.[a-z0-9]+$/i.test(u.pathname)&&!u.pathname.endsWith('/'))u.pathname+='/';u.search='';u.hash='';return u.toString();}catch(e){return '';}}
 let linkN=0;function updateLink(){const my=++linkN;PL.pack(cfg).then(code=>{if(my===linkN)showLink(code);});}
-function showLink(code){const b=baseUrl(),url=(b||'https://misternutss.github.io/peluches/')+'?p='+code;$('out').value=url;$('out2').value=url;$('edit').value=(b||'https://misternutss.github.io/peluches/').replace(/[^/]*$/,'')+'atelier.html?p='+code;$('out').classList.toggle('example',!b);
+function showLink(code){if($('lib-nom')&&document.activeElement!==$('lib-nom')&&!$('lib-nom').value)$('lib-nom').value=cfg.n||'';const b=baseUrl(),url=(b||'https://misternutss.github.io/peluches/')+'?p='+code;$('out').value=url;$('out2').value=url;$('edit').value=(b||'https://misternutss.github.io/peluches/').replace(/[^/]*$/,'')+'atelier.html?p='+code;$('out').classList.toggle('example',!b);
 $('open').hidden=!b;$('open').href=url;say('link-help',b?'Colle ce lien dans URLS, avec le type Site Web.':"Lien d'exemple : renseigne d'abord l'adresse de ta page 3D (étapes en bas de page).");}
 // Reprendre une peluche depuis son lien (page 3D ou atelier)
 $('import-go').addEventListener('click',()=>{const v=$('import').value.trim();let code=null;try{code=new URL(v).searchParams.get('p');}catch(e){const m=v.match(/[?&]p=(~?[A-Za-z0-9_-]+)/);code=m?m[1]:(/^~?[A-Za-z0-9_-]{8,}$/.test(v)?v:null);}
@@ -529,8 +539,21 @@ $('icon').addEventListener('click',async()=>{if(!dl||!cur)return;$('icon').disab
 $('get-viewer').addEventListener('click',async()=>{if(!dl)return;await save('index.html',VIEWER_HEAD+$('pl-src').textContent.trim()+'\n'+VIEWER_TAIL,'setup-status');});
 
 syncForm();rebuild();updateLink();
-// Atelier ouvert avec ?p=… : la peluche du lien
-{let p=null;try{p=new URLSearchParams(location.search).get('p');}catch(e){}if(p)PL.unpack(p).then(c=>{if(c){cfg=c;syncForm();rebuild();updateLink();}});}
+// Atelier ouvert avec ?p=… ou ?nom=… : la peluche du lien ou de la bibliothèque
+{let p=null,n=null;try{const u=new URLSearchParams(location.search);p=u.get('p');n=u.get('nom');}catch(e){}
+const got=c=>{if(c){cfg=c;syncForm();rebuild();updateLink();}};
+if(n)fetch('/api/peluches?nom='+encodeURIComponent(n)).then(x=>x.ok?x.json():null).then(d=>{if(d){$('lib-nom').value=d.nom||'';return PL.unpack(d.p);}}).then(got).catch(()=>{});else if(p)PL.unpack(p).then(got);}
+// Bibliothèque : seulement sur le site (Vercel), là où le petit serveur existe
+if(/^https?:$/.test(location.protocol))fetch('/api/peluches?nom=__test__').then(x=>{if((x.headers.get('content-type')||'').includes('json'))$('lib-card').hidden=false;}).catch(()=>{});
+$('lib-code').value=store('peluches-code')||'';
+$('lib-save').addEventListener('click',async()=>{const nom=$('lib-nom').value.trim()||cfg.n,code=$('lib-code').value;if(!nom){say('lib-status','Donne un nom à la peluche.');return;}if(!code){say('lib-status','Entre le code secret.');return;}
+$('lib-save').disabled=true;say('lib-status','Enregistrement…');
+try{const p=await PL.pack(cfg),image=cur?renderIcon(256).toDataURL('image/png'):'';
+const x=await fetch('/api/peluches',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({nom,p,image,code})}),d=await x.json().catch(()=>({}));
+if(!x.ok){say('lib-status',d.erreur||"L'enregistrement a échoué.");return;}
+store('peluches-code',code);$('lib-out').value=location.origin+'/p/'+d.slug;$('lib-link').hidden=false;say('lib-status','Peluche enregistrée dans la bibliothèque.');}
+catch(e){say('lib-status',"L'enregistrement a échoué. Vérifie ta connexion.");}finally{$('lib-save').disabled=false;}});
+$('lib-copy').addEventListener('click',()=>{const t=$('lib-out').value;try{navigator.clipboard.writeText(t).then(()=>{$('lib-copy').textContent='Copié';setTimeout(()=>{$('lib-copy').textContent='Copier';},1500);});}catch(e){$('lib-out').select();}});
 </script>
 """
 

@@ -666,12 +666,13 @@ return{build,clean,encode,decode,pack,unpack,lights,setup,aim,hair,HAIRK,HSDEF,P
 })();
 
 // Page 3D : la peluche est décrite dans l'adresse (?p=...). Glisser : tourner. Molette ou deux doigts : zoomer. Double-clic : remettre en place.
-// Option : &tourne=non pour qu'elle ne tourne pas toute seule.
+// Option : &tourne=non pour qu'elle ne tourne pas toute seule. Une peluche de la bibliothèque s'ouvre avec /p/son-nom.
 const q=new URLSearchParams(location.search);
 const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(22,1,0.1,500);
 const r=new THREE.WebGLRenderer({antialias:true,alpha:true});r.setClearColor(0x000000,0);r.setPixelRatio(Math.min(2,window.devicePixelRatio||1));r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;document.body.appendChild(r.domElement);
 PL.setup(r);const camFill=PL.lights(scene);let P=null;
-PL.unpack(q.get('p')).then(c=>{const cfg=c||PL.clean(PL.PRESETS.pompier);if(cfg.n)document.title=cfg.n;P=PL.build(cfg);scene.add(P.group);});
+const nom=q.get('nom')||decodeURIComponent((location.pathname.match(/\/p\/([^/?#]+)\/?$/)||[])[1]||'');
+(nom?fetch('/api/peluches?nom='+encodeURIComponent(nom)).then(x=>x.ok?x.json():null).then(d=>d?PL.unpack(d.p):null).catch(()=>null):PL.unpack(q.get('p'))).then(c=>{const cfg=c||PL.clean(PL.PRESETS.pompier);if(cfg.n)document.title=cfg.n;P=PL.build(cfg);scene.add(P.group);});
 const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches,autoSpin=q.get('tourne')!=='non'&&!reduce;
 const START={ry:-0.25,el:0.24,zoom:1.05};let ry=START.ry,el=START.el,zoom=START.zoom,idle=0;
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));

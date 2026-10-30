@@ -9,6 +9,15 @@ Peluches 3D sans fond pour des items « Site Web » FiveM.
   - `plush_model.js` : le modèle 3D de la peluche, partagé par l'atelier et la page 3D. Les cheveux sont faits de vraies mèches, réglées par longueur, volume, raie, frange, texture, attache et côtés.
   - `gen_atelier.py` : construit les trois pages à partir du modèle (mise en page, réglages, consignes données à Claude pour analyser les photos).
 
+- `bibliotheque.html` : la bibliothèque de toutes les peluches enregistrées, avec leur lien court `/p/nom`.
+- `api/peluches.js` : le petit serveur Vercel qui enregistre les peluches (stockage Vercel Blob).
+
+Mise en route de la bibliothèque sur Vercel (une seule fois) :
+
+1. Dans le projet Vercel : **Storage → Create → Blob**, accès **public**, puis le relier au projet.
+2. Dans **Settings → Environment Variables** : ajouter `PELUCHES_CODE` avec un code secret de ton choix.
+3. Redéployer (**Deployments → … → Redeploy**).
+
 Régénérer les pages après une modification :
 
 ```bash
