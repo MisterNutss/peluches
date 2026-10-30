@@ -3,6 +3,7 @@ import json, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 atelier_out, viewer_out = sys.argv[1], sys.argv[2]
+site_out = sys.argv[3] if len(sys.argv) > 3 else None
 model = open(os.path.join(HERE, "plush_model.js"), encoding="utf-8").read()
 
 VIEWER_HEAD = """<!doctype html>
@@ -99,7 +100,8 @@ h1{font-family:var(--display);font-weight:700;font-size:clamp(26px,3.4vw,34px);l
 .quick{display:flex;gap:8px;align-items:center;min-width:0}
 .quick input{flex:1}
 .panel{display:grid;gap:14px;min-width:0}
-.tabs{display:flex;gap:4px;overflow-x:auto;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+.tabs{display:flex;flex-wrap:wrap;gap:4px;overflow-x:auto;scrollbar-width:none;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+.tabs::-webkit-scrollbar{display:none}
 .tabs button{font:700 14px/1 var(--body);border:0;background:none;color:var(--muted);padding:10px 14px;border-radius:12px;cursor:pointer;white-space:nowrap}
 .tabs button:hover{color:var(--fg);background:var(--surface-2)}
 .tabs button[aria-selected="true"]{background:var(--accent-soft);color:var(--accent)}
@@ -199,6 +201,8 @@ code{font-family:var(--mono);font-size:13px;overflow-wrap:anywhere}
             <label class="check"><input type="checkbox" id="review" checked> Vérifier la ressemblance et corriger tout seul (plus lent, plus fidèle)</label>
             <button class="cta" id="analyse" type="button" disabled hidden>Créer la peluche avec la photo</button>
             <p class="status" id="ai-status" aria-live="polite">Ajoute une photo de face : la peluche se crée toute seule.</p>
+            <div class="field" id="key-box" hidden><label for="api-key">Clé API Claude, pour la création automatique sur ce site</label><div class="row"><input id="api-key" type="password" placeholder="sk-ant-…" autocomplete="off" spellcheck="false"><button class="btn" id="key-save" type="button">Enregistrer</button></div>
+            <p class="help">Facultatif. La clé reste dans ce navigateur et ne part que vers api.anthropic.com. Elle se crée sur platform.claude.com (facturée à l'usage, à part de l'abonnement Claude). Sans clé, règle la peluche à la main.</p></div>
           </section>
         </div>
         <div class="tabpanel" data-tab="style" id="tab-style" hidden>
@@ -211,7 +215,7 @@ code{font-family:var(--mono);font-size:13px;overflow-wrap:anywhere}
         <div class="tabpanel" data-tab="lien" id="tab-lien" hidden>
           <section class="card">
             <h2>Lien pour ton item</h2>
-            <div class="field"><label for="base">Adresse de ta page 3D</label><input id="base" type="url" placeholder="https://ton-pseudo.github.io/peluches/" autocomplete="off" spellcheck="false"></div>
+            <div class="field"><label for="base">Adresse de ta page 3D</label><input id="base" type="url" placeholder="https://misternutss.github.io/peluches/" autocomplete="off" spellcheck="false"></div>
             <div class="field"><label for="out">Lien de cette peluche</label><div class="row"><input id="out" type="text" readonly><button class="btn" id="copy" type="button">Copier</button></div></div>
             <p class="help" id="link-help"></p>
             <div class="row"><a class="btn" id="open" target="_blank" rel="noopener" hidden>Ouvrir la page</a><button class="btn" id="icon" type="button" disabled>Télécharger l'icône PNG</button></div>
@@ -220,10 +224,10 @@ code{font-family:var(--mono);font-size:13px;overflow-wrap:anywhere}
           <section class="card setup">
             <h2>Mettre la page 3D en ligne (une seule fois)</h2>
             <ol>
-              <li>Télécharge la page 3D : <button class="btn" id="get-viewer" type="button" disabled>Télécharger index.html</button></li>
-              <li>Sur github.com, crée un dépôt public nommé <code>peluches</code>, puis <b>Add file → Upload files</b> et dépose <code>index.html</code>.</li>
-              <li>Dans <b>Settings → Pages</b>, choisis la branche <code>main</code> et clique <b>Save</b>. Une ou deux minutes après, ton adresse est <code>https://ton-pseudo.github.io/peluches/</code>.</li>
-              <li>Colle cette adresse dans « Adresse de ta page 3D ». Elle reste enregistrée dans ce navigateur. Chaque peluche est entièrement décrite dans son lien : rien d'autre à mettre en ligne.</li>
+              <li>La page 3D est déjà dans ton dépôt <code>peluches</code> (fichier <code>index.html</code>). Pour la mettre à jour à la main : <button class="btn" id="get-viewer" type="button" disabled>Télécharger index.html</button></li>
+              <li>Sur github.com, dans le dépôt, ouvre <b>Settings → Pages</b>, choisis la branche <code>main</code> et le dossier <code>/ (root)</code>, puis <b>Save</b>. Une ou deux minutes après, l'adresse <code>https://misternutss.github.io/peluches/</code> fonctionne.</li>
+              <li>L'atelier est aussi en ligne à <code>https://misternutss.github.io/peluches/atelier.html</code>.</li>
+              <li>Chaque peluche est entièrement décrite dans son lien : chaque nouvelle peluche a son propre lien, rien d'autre à mettre en ligne.</li>
             </ol>
             <h2>Dans « Créer une image item »</h2>
             <ol>
@@ -271,19 +275,27 @@ bd:{aucune:'Aucune',barbe3j:'Barbe de 3 jours',barbe:'Barbe',longue:'Barbe longu
 gl:{aucune:'Aucunes',lunettes:'Lunettes de vue',soleil:'Lunettes de soleil',aviateur:'Lunettes aviateur',tete:'Lunettes relevées sur la tête',masque:'Lunettes de protection'},
 hw:{aucun:'Aucun',capuche:'Capuche relevée',casquette:'Casquette',inverse:"Casquette à l'envers",bonnet:'Bonnet',chapeau:'Chapeau',bandeau:'Bandeau',pompier:'Casque de pompier',police:'Casquette de police'},
 tp:{tshirt:'T-shirt',chemise:'Chemise',sweat:'Sweat à capuche',veste:'Veste ouverte',costume:'Costume',gilet:'Gilet sur manches'},mt:{uni:'Uni',rayures:'Rayures',camo:'Camouflage',carreaux:'Carreaux',taches:'Taches'},
-bt:{pantalon:'Pantalon',jogging:'Jogging',short:'Short'},sh:{bottes:'Bottes',baskets:'Baskets',chaussures:'Chaussures de ville'},
+bt:{pantalon:'Pantalon',jogging:'Jogging',short:'Short',salopette:'Salopette'},sh:{bottes:'Bottes',baskets:'Baskets',chaussures:'Chaussures de ville'},
 it:{aucun:'Rien',lance:'Lance à incendie',coeur:'Cœur',telephone:'Téléphone',cafe:'Café',donut:'Donut',trousse:'Trousse de secours'}};
 CHOICES.hm=CHOICES.mt;
+CHOICES.hp={aucune:'Pas de raie',gauche:"Raie à gauche de l'image",milieu:'Raie au milieu',droite:"Raie à droite de l'image"};
+CHOICES.hf={aucune:'Pas de frange (coiffés en arrière ou sur les côtés)',courte:'Frange courte',droite:'Frange droite (au ras des sourcils)',balayee:'Frange balayée sur le côté',rideau:'Frange rideau (ouverte au milieu)',longue:'Frange longue (sur les yeux)',arriere:'Relevés en arrière (banane, houppe)'};
+CHOICES.hx={lisse:'Lisses',ondule:'Ondulés',boucle:'Bouclés',crepu:'Crépus (afro)',pique:'En pics',dreads:'Dreadlocks'};
+CHOICES.ht={aucune:'Détachés',queue:'Queue de cheval basse',haute:'Queue de cheval haute',couettes:'Deux couettes',chignon:'Chignon',tresse:"Tresse sur l'épaule",demi:'Demi-queue (dessus attaché)'};
+CHOICES.hd={normaux:'Comme le reste',courts:'Courts (dégradé)',rases:'Rasés'};
 CHOICES.ms={aucune:'Aucune',monstre:'Petit monstre (oreilles et dents)',lapin:'Lapin',ours:'Ours',chat:'Chat',chien:'Chien',oiseau:'Oiseau / perroquet'};
 CHOICES.po={assis:'Assise',debout:'Debout',coucou:'Coucou',bravo:'Bras levés',calin:'Câlin',coeur:'Cœur',pensif:'Pensive',tailleur:'En tailleur',dab:'Dab'};
 CHOICES.ey={kawaii:'Mignons (peluche)',realiste:'Réalistes'};
 CHOICES.st={classique:'Classique',ours:'Ourson',lapin:'Lapin',chat:'Chaton',monstre:'Petit monstre',avatar:'Avatar'};
 CHOICES.mp={droite:"Sur l'épaule, à droite de l'image",gauche:"Sur l'épaule, à gauche de l'image",tete:'Sur la tête',mains:'Dans les mains'};
 const FLAGS={r:'Radio',b:'Badge',m:'Micro-casque',s:'Sacoche',c:'Chaîne en or',o:"Boucles d'oreilles",w:'Montre',k:'Sac à dos',e:'Écharpe',h:'Casque audio au cou',a:'Bandana sur le visage',n:'Sac en bandoulière'};
+const hairOn=c=>!['rase','chauve','iroquoise'].includes(c.hs);
 const SECTIONS=[
 {t:'Style, pose et nom',f:[{k:'st',type:'chips',l:'Style de peluche',wide:1},{k:'po',type:'chips',l:'Position',wide:1},{k:'fc',type:'color',l:'Couleur de la fourrure',show:c=>['ours','lapin','chat','monstre'].includes(c.st)},{k:'n',type:'text',l:'Nom',max:24,wide:1}]},
 {t:'Visage',f:[{k:'ey',type:'chips',l:'Yeux',wide:1},{k:'sk',type:'color',l:'Peau'},{k:'ec',type:'color',l:'Yeux'},{k:'ex',type:'choice',l:'Expression'},{k:'bd',type:'choice',l:'Barbe'},{k:'fr',type:'check',l:'Taches de rousseur'},{k:'cl',type:'check',l:'Longs cils'}]},
-{t:'Cheveux',f:[{k:'hs',type:'choice',l:'Coiffure'},{k:'hc',type:'color',l:'Couleur des cheveux'}]},
+{t:'Cheveux',f:[{k:'hs',type:'choice',l:'Coiffure de départ'},{k:'hc',type:'color',l:'Couleur des cheveux'},{k:'h2',type:'optcolor',l:"Mèches d'une autre couleur",show:hairOn},
+{k:'hl',type:'range',l:'Longueur',min:0.3,max:5,step:0.1,fmt:'len',show:hairOn},{k:'hv',type:'range',l:'Volume',min:0,max:1,step:0.05,fmt:'pct',show:hairOn},
+{k:'hx',type:'choice',l:'Texture',show:hairOn},{k:'hp',type:'choice',l:'Raie',show:hairOn},{k:'hf',type:'choice',l:'Frange',show:hairOn},{k:'ht',type:'choice',l:'Attache',show:hairOn},{k:'hd',type:'choice',l:'Côtés et nuque',show:hairOn}]},
 {t:'Tête',f:[{k:'hw',type:'choice',l:'Couvre-chef'},{k:'hwc',type:'color',l:'Couleur du couvre-chef',show:c=>c.hw!=='aucun'},{k:'hwt',type:'text',l:'Texte ou numéro',max:6,show:c=>['casquette','bonnet','pompier'].includes(c.hw)},{k:'hm',type:'choice',l:'Motif du couvre-chef',show:c=>['capuche','casquette','inverse','chapeau'].includes(c.hw)},
 {k:'gl',type:'choice',l:'Lunettes'},{k:'glc',type:'color',l:'Monture',show:c=>c.gl!=='aucune'},{k:'lc',type:'color',l:'Couleur des verres',show:c=>['soleil','aviateur','tete'].includes(c.gl)}]},
 {t:'Tenue',f:[{k:'tp',type:'choice',l:'Haut'},{k:'mt',type:'choice',l:'Motif'},{k:'tc',type:'color',l:c=>({gilet:'Gilet',veste:'Veste',costume:'Veste de costume'})[c.tp]||'Couleur du haut'},
@@ -292,7 +304,7 @@ const SECTIONS=[
 {k:'sh',type:'choice',l:'Chaussures'},{k:'sc',type:'color',l:'Couleur des chaussures'},{k:'gv',type:'glove',l:'Gants'}]},
 {t:'Accessoires',f:[{k:'acc',type:'flags',l:'Équipement',wide:1},{k:'it',type:'choice',l:'Dans les mains'},{k:'ac',type:'color',l:"Couleur d'accent"},
 {k:'ms',type:'choice',l:'Mascotte (mini-peluche)'},{k:'mc',type:'color',l:'Couleur de la mascotte',show:c=>c.ms!=='aucune'},{k:'mp',type:'choice',l:'Place de la mascotte',show:c=>c.ms!=='aucune'},{k:'mz',type:'range',l:'Taille de la mascotte',min:0.5,max:2,step:0.05,show:c=>c.ms!=='aucune'},{k:'mx',type:'range',l:'Mascotte : gauche / droite',min:-1,max:1,step:0.05,fmt:'off',show:c=>c.ms!=='aucune'},{k:'my',type:'range',l:'Mascotte : bas / haut',min:-1,max:1,step:0.05,fmt:'off',show:c=>c.ms!=='aucune'},{k:'mf',type:'range',l:'Mascotte : arrière / avant',min:-1,max:1,step:0.05,fmt:'off',show:c=>c.ms!=='aucune'},{k:'mr',type:'range',l:'Mascotte : rotation',min:-180,max:180,step:5,fmt:'deg',show:c=>c.ms!=='aucune'}]}];
-const F={};let lastGlove='#86ace6';
+const F={};let lastGlove='#86ace6';const lastOpt={h2:'#f3dc9a'};
 function el2(tag,props,kids){const n=document.createElement(tag);Object.assign(n,props||{});(kids||[]).forEach(k=>n.append(k));return n;}
 function colorRow(k,id){return el2('div',{className:'colorrow'},[el2('input',{type:'color',id}),el2('button',{type:'button',className:'pip',textContent:'Pipette',title:'Prendre la couleur sur la photo'})]);}
 const TAB_OF={'Style, pose et nom':'style',Visage:'visage',Cheveux:'tete','Tête':'tete',Tenue:'tenue',Accessoires:'accessoires'};
@@ -303,18 +315,20 @@ else if(f.type==='choice'){const s=el2('select',{id});for(const[v,t]of Object.en
 else if(f.type==='text'){row.append(lab,el2('input',{type:'text',id,maxLength:f.max,autocomplete:'off'}));}
 else if(f.type==='check'){row.append(el2('label',{className:'check'},[el2('input',{type:'checkbox',id}),f.l]));f.lab=null;}
 else if(f.type==='glove'){row.append(el2('label',{className:'check'},[el2('input',{type:'checkbox',id:id+'-on'}),'Gants']),colorRow(f.k,id));row.querySelector('.pip').dataset.pip=f.k;f.lab=null;}
+else if(f.type==='optcolor'){row.append(el2('label',{className:'check'},[el2('input',{type:'checkbox',id:id+'-on'}),f.l]),colorRow(f.k,id));row.querySelector('.pip').dataset.pip=f.k;f.lab=null;}
 else if(f.type==='range'){row.append(el2('div',{className:'row rangehead'},[lab,el2('span',{className:'help',id:id+'-v'})]),el2('input',{type:'range',id,min:f.min,max:f.max,step:f.step}));}
 else if(f.type==='print'){const im=el2('img',{id:id+'-img',alt:'Imprimé pris sur la photo',className:'printimg'});row.append(el2('span',{className:'help',textContent:f.l}),el2('div',{className:'row'},[im,el2('button',{type:'button',className:'btn',id:id+'-pick',textContent:'Choisir sur la photo'}),el2('button',{type:'button',className:'btn',id:id+'-rm',textContent:'Retirer'})]));f.lab=null;}
 else if(f.type==='chips'){const g=el2('div',{className:'seg',id});for(const[v,t]of Object.entries(CHOICES[f.k])){const b=el2('button',{type:'button',className:'btn',textContent:t});b.dataset.v=v;g.append(b);}row.append(el2('span',{className:'help',textContent:f.l}),g);f.lab=null;}
 else if(f.type==='flags'){row.append(el2('span',{className:'help',textContent:f.l}),el2('div',{className:'flags'},Object.entries(FLAGS).map(([v,t])=>el2('label',{className:'check'},[el2('input',{type:'checkbox',id:id+'-'+v,value:v}),t]))));f.lab=null;}
 f.row=row;F[f.k]=f;grid.append(row);}}
-function syncForm(){for(const k in F){const f=F[k],id='f-'+k;if(f.lab)f.lab.textContent=typeof f.l==='function'?f.l(cfg):f.l;f.row.hidden=!!(f.show&&!f.show(cfg));
-if(f.type==='color'||f.type==='choice'||f.type==='text'){if(document.activeElement!==$(id))$(id).value=k==='fc'?(cfg.fc||cfg.hc):cfg[k];}
-else if(f.type==='range'){if(document.activeElement!==$(id))$(id).value=cfg[k];const v=Number(cfg[k]);$(id+'-v').textContent=f.fmt==='deg'?Math.round(v)+'°':f.fmt==='off'?(v>0?'+':'')+v.toFixed(2).replace('.',','):'× '+v.toFixed(2).replace('.',',');}
+function syncForm(){const HV=PL.hair(cfg),val=k=>PL.HAIRK.includes(k)?HV[k]:cfg[k];for(const k in F){const f=F[k],id='f-'+k;if(f.lab)f.lab.textContent=typeof f.l==='function'?f.l(cfg):f.l;f.row.hidden=!!(f.show&&!f.show(cfg));
+if(f.type==='color'||f.type==='choice'||f.type==='text'){if(document.activeElement!==$(id))$(id).value=k==='fc'?(cfg.fc||cfg.hc):val(k);}
+else if(f.type==='range'){if(document.activeElement!==$(id))$(id).value=val(k);const v=Number(val(k));$(id+'-v').textContent=f.fmt==='len'?[[0.6,'Ras'],[1.4,'Courts'],[2.2,'Aux oreilles'],[2.8,'Mi-longs'],[3.5,'Au menton'],[4.5,'Aux épaules'],[9,'Dans le dos']].find(x=>v<x[0])[1]+' ('+v.toFixed(1).replace('.',',')+')':f.fmt==='pct'?Math.round(v*100)+' %':f.fmt==='deg'?Math.round(v)+'°':f.fmt==='off'?(v>0?'+':'')+v.toFixed(2).replace('.',','):'× '+v.toFixed(2).replace('.',',');}
 else if(f.type==='print'){const on=!!cfg.im;$(id+'-img').hidden=!on;if(on)$(id+'-img').src='data:image/'+cfg.imt+';base64,'+cfg.im;$(id+'-rm').hidden=!on;$(id+'-pick').disabled=!anyPhoto();}
 else if(f.type==='chips')$(id).querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===cfg[k])));
 else if(f.type==='check')$(id).checked=!!cfg[k];
 else if(f.type==='glove'){$(id+'-on').checked=!!cfg.gv;if(cfg.gv)lastGlove=cfg.gv;$(id).value=lastGlove;$(id).disabled=!cfg.gv;}
+else if(f.type==='optcolor'){$(id+'-on').checked=!!cfg[k];if(cfg[k])lastOpt[k]=cfg[k];$(id).value=lastOpt[k];$(id).disabled=!cfg[k];}
 else if(f.type==='flags')for(const v in FLAGS)$(id+'-'+v).checked=cfg.acc.includes(v);}renderPieces();}
 // Pièces sur mesure ajoutées par Claude : on peut changer leur couleur ou les retirer
 const SHAPE_L={sphere:'Boule',goutte:'Goutte',cone:'Cône',cylindre:'Cylindre',tore:'Anneau',boite:'Bloc'},ANCH_L={tete:'tête',corps:'corps',mains:'mains',dos:'dos',jambes:'jambes'};
@@ -327,7 +341,8 @@ $('settings').addEventListener('input',e=>{const t=e.target,m=t.id.match(/^f-([a
 if(f.type==='check')cfg[k]=t.checked?1:0;
 else if(f.type==='glove'){if(t.type==='color'){lastGlove=t.value;if(cfg.gv)cfg.gv=t.value;}else cfg.gv=t.checked?lastGlove:'';}
 else if(f.type==='flags')cfg.acc=Object.keys(FLAGS).filter(v=>$('f-acc-'+v).checked).join('');
-else cfg[k]=t.value;
+else if(f.type==='optcolor'){if(t.type==='color'){lastOpt[k]=t.value;if(cfg[k])cfg[k]=t.value;}else cfg[k]=t.checked?lastOpt[k]:'';}
+else{cfg[k]=t.value;if(k==='hs')PL.HAIRK.forEach(h=>{delete cfg[h];});}
 cfg=PL.clean(cfg);syncForm();changed();});
 
 // Onglets et étapes ; la pipette et l'imprimé ouvrent l'onglet Photos puis ramènent à l'onglet d'avant
@@ -377,7 +392,7 @@ if(printPick){const p=[x/cn.width,y/cn.height];if(!printA){printA=[slot,p];say('
 const[s0,a]=printA;printPick=false;printA=null;pickUI(false);if(s0!==slot){say('ai-status','Clique les deux coins sur la même photo.');return;}
 say('ai-status',cropPrint(cn,[Math.min(a[0],p[0]),Math.min(a[1],p[1]),Math.abs(p[0]-a[0]),Math.abs(p[1]-a[1])])?'Imprimé ajouté sur la peluche.':'Zone trop petite : recommence.');goBack();return;}
 if(!pick)return;const d=cn.getContext('2d').getImageData(Math.max(0,Math.round(x)-2),Math.max(0,Math.round(y)-2),5,5).data;let R=0,G=0,B=0,n=0;for(let i=0;i<d.length;i+=4){R+=d[i];G+=d[i+1];B+=d[i+2];n++;}
-const h='#'+[R,G,B].map(v=>Math.round(v/n).toString(16).padStart(2,'0')).join('');if(pick==='gv'){lastGlove=h;cfg.gv=h;}else cfg[pick]=h;
+const h='#'+[R,G,B].map(v=>Math.round(v/n).toString(16).padStart(2,'0')).join('');if(pick==='gv'){lastGlove=h;cfg.gv=h;}else{cfg[pick]=h;if(pick in lastOpt)lastOpt[pick]=h;}
 setPick(null);cfg=PL.clean(cfg);syncForm();changed();say('ai-status','Couleur prise sur la photo.');goBack();}
 // Imprimé : découpé dans la photo, bords adoucis, réduit pour que le lien reste court
 function cropPrint(cn,box){if(!box||!(box[2]>0.02)||!(box[3]>0.02))return false;const sx=box[0]*cn.width,sy=box[1]*cn.height,sw=box[2]*cn.width,sh=box[3]*cn.height,k=Math.min(1,96/Math.max(sw,sh)),w=Math.max(8,Math.round(sw*k)),h=Math.max(8,Math.round(sh*k));
@@ -397,7 +412,16 @@ function keysText(){return "Regarde d'abord ce qui rend la personne reconnaissab
 +'- "n" : nom court pour la peluche (métier ou surnom visible), 24 caractères maximum\n'
 +'- "sk" : couleur de peau, "#rrggbb"\n'
 +'- "hc" : couleur des cheveux (ou des sourcils si la personne est chauve), "#rrggbb"\n'
-+'- "hs" : coiffure, parmi "court" (courts et nets), "banane" (plaqués en arrière ou banane : volume sur le dessus, côtés courts ou dégradés), "meches" (mi-longs en mèches ou frange sur le front), "herisse" (courts en petits pics), "iroquoise" (crête au milieu, côtés rasés), "carre" (carré au menton avec frange), "long" (aux épaules ou plus), "tresse" (une grosse tresse qui tombe devant l\'épaule), "couettes", "queue" (queue de cheval), "chignon", "boucle" (bouclés courts), "afro", "dreads" (dreadlocks ou tresses), "rase", "chauve"\n'
++'- "h2" : couleur des mèches, reflets ou pointes d\'une autre couleur, "#rrggbb", ou "" si les cheveux sont d\'une seule couleur\n'
++'- "hs" : coiffure de départ, parmi "court" (courts et nets), "banane" (plaqués en arrière ou banane : volume sur le dessus, côtés courts ou dégradés), "meches" (mi-longs en mèches ou frange sur le front), "herisse" (courts en petits pics), "iroquoise" (crête au milieu, côtés rasés), "carre" (carré au menton avec frange), "long" (aux épaules ou plus), "tresse" (une grosse tresse qui tombe devant l\'épaule), "couettes", "queue" (queue de cheval), "chignon", "boucle" (bouclés courts), "afro", "dreads" (dreadlocks ou tresses), "rase", "chauve"\n'
++'La coiffure est ce qui rend la personne reconnaissable : décris-la précisément avec les clés suivantes, qui remplacent les réglages du style de départ :\n'
++'- "hl" : longueur, nombre de 0.3 à 5 : 0.5 presque ras, 1 courts, 1.5 courts avec du volume, 2 jusqu\'aux oreilles, 2.5 mi-longs, 3 au menton ou à la mâchoire, 4 aux épaules, 5 dans le dos. Pour des cheveux attachés, la longueur qu\'ils auraient détachés\n'
++'- "hv" : volume, de 0 (plaqués) à 1 (très gonflés, en bataille)\n'
++'- "hx" : texture, parmi "lisse", "ondule", "boucle" (boucles bien dessinées), "crepu" (afro, frisé serré), "pique" (courts en pics ou au gel), "dreads"\n'
++'- "hp" : raie, parmi "aucune", "gauche" (à gauche de l\'image), "milieu", "droite" (à droite de l\'image)\n'
++'- "hf" : frange ou devant, parmi "aucune" (pas de frange, cheveux coiffés vers l\'arrière ou sur les côtés), "courte" (mèches courtes sur le haut du front), "droite" (frange droite au ras des sourcils), "balayee" (mèches balayées en biais sur le front, du côté opposé à la raie), "rideau" (frange ouverte au milieu qui encadre le visage), "longue" (frange qui descend jusqu\'aux yeux), "arriere" (relevés en arrière, banane, houppe)\n'
++'- "ht" : attache, parmi "aucune" (détachés), "queue" (queue de cheval basse), "haute" (queue de cheval haute), "couettes", "chignon", "tresse" (une tresse devant l\'épaule), "demi" (le dessus attaché derrière, le reste détaché)\n'
++'- "hd" : côtés et nuque, parmi "normaux", "courts" (dégradé), "rases" (undercut, côtés rasés)\n'
 +'- "ec" : couleur des yeux, "#rrggbb" ("#5a3b22" si on ne les voit pas)\n'
 +'- "ex" : expression, parmi "sourire" (grand sourire), "content" (petit sourire), "neutre", "serieux"\n'
 +'- "bd" : pilosité du visage, parmi "aucune", "barbe3j" (barbe de quelques jours), "barbe", "longue" (barbe longue), "moustache", "bouc"\n'
@@ -418,7 +442,7 @@ function keysText(){return "Regarde d'abord ce qui rend la personne reconnaissab
 +'- "tt" : texte imprimé sur le haut (par exemple LSPD, EMS, LSFD), 8 caractères maximum, sinon ""\n'
 +'- "rf" : 1 s\'il y a des bandes réfléchissantes, sinon 0\n'
 +'- "ac" : couleur d\'accent pour les rayures, la cravate, le pompon, le bandana, l\'écharpe, le sac à dos ou les bandes du jogging, "#rrggbb"\n'
-+'- "bt" : bas, parmi "pantalon", "jogging", "short"\n'
++'- "bt" : bas, parmi "pantalon", "jogging", "short", "salopette" (salopette à bretelles et plastron, le haut se voit dessous)\n'
 +'- "pc" : couleur du bas, "#rrggbb"\n'
 +'- "sh" : chaussures, parmi "bottes", "baskets", "chaussures" (de ville)\n'
 +'- "sc" : couleur des chaussures, "#rrggbb"\n'
@@ -438,10 +462,10 @@ function keysText(){return "Regarde d'abord ce qui rend la personne reconnaissab
 +"N'utilise jamais les pièces sur mesure pour une mascotte, une coiffure, des lunettes ou un vêtement : il y a des clés pour ça. Une pièce isolée qui ne ressemble à rien est pire que pas de pièce : en cas de doute, mets [].\n"
 +"Une combinaison ou un pyjama d'animal se fait avec tp sweat et hw capuche de la même couleur, le même motif sur mt et hm, puis les oreilles, cornes ou queue en pièces sur mesure.\n"
 +"Exemple de forme (sans pièce sur mesure) : "+JSON.stringify(Object.assign({},PL.PRESETS.police,{hm:'uni',pz:[],cl:0,ms:'aucune',mc:'#8ec5f0',mp:'droite',mz:1,lc:'#3a2a1e',imp:null}));}
-function readyMsg(){if(!(sample&&imagesOK))return "La création automatique n'est pas disponible ici. Règle la peluche à la main : le bouton Pipette prend une couleur sur la photo.";return anyPhoto()?'Peluche prête. Tu peux relancer la création ou corriger les réglages.':'Ajoute une photo de face : la peluche se crée toute seule.';}
+function readyMsg(){if(!(sample&&imagesOK))return $('key-box')&&!$('key-box').hidden?"Pour la création automatique, enregistre une clé API Claude ci-dessous. Sinon règle la peluche à la main : le bouton Pipette prend une couleur sur la photo.":"La création automatique n'est pas disponible ici. Règle la peluche à la main : le bouton Pipette prend une couleur sur la photo.";return anyPhoto()?'Peluche prête. Tu peux relancer la création ou corriger les réglages.':'Ajoute une photo de face : la peluche se crée toute seule.';}
 function reviewPrompt(w,slots,nr){const cur=Object.assign({},cfg);delete cur.im;delete cur.imt;delete cur.ia;
 return intro(w,slots)+"Les "+nr+" dernières images ne sont pas des photos : c'est le rendu actuel de la peluche ("+(nr>1?'de face, puis de dos':'de face')+"), fabriquée avec ce réglage :\n"+JSON.stringify(cur)+"\n"
-+"Compare la peluche aux photos comme un client exigeant : coiffure et frange, couleurs des cheveux, de la peau et des yeux, barbe, lunettes, couvre-chef, haut et motif, couleurs des vêtements, accessoires, mascotte, objets. "
++"Compare la peluche aux photos comme un client exigeant, en commençant par la coiffure (longueur, volume, raie, frange, texture, attache, côtés), puis couleurs des cheveux, de la peau et des yeux, barbe, lunettes, couvre-chef, haut et motif, couleurs des vêtements, accessoires, mascotte, objets. "
 +"Corrige tout ce qui ne ressemble pas et garde ce qui est juste. Renvoie le réglage complet corrigé.\n"+keysText();}
 function updateAnalyse(){const b=$('analyse');b.hidden=!(sample&&imagesOK&&anyPhoto());b.disabled=false;b.textContent=ctl?'Arrêter':'Relancer la création';}
 // Rendu de la peluche sur fond gris neutre, pour que Claude la compare aux photos
@@ -462,18 +486,31 @@ else say('ai-status','Peluche créée depuis '+(use.length>1?'les photos':'la ph
 catch(e){if(ctl!==my)return;const code=e&&e.code;
 if(['not_granted','sampling_disabled','not_declared','capability_disabled','capability_removed','images_unavailable'].includes(code)){sample=null;say('ai-status',"La création automatique n'est pas autorisée ici. Règle la peluche à la main : le bouton Pipette prend une couleur sur la photo.");}
 else say('ai-status',({cancelled:'Création arrêtée.',rate_limited:'Trop de demandes pour le moment. Réessaie dans un moment.',image_rejected:"Une des images n'est pas acceptée. Essaie des captures en PNG ou JPEG.",
-refused:"Claude n'a pas pu décrire cette photo. Essaie une autre image.",invalid_json:'La réponse était incomplète. Clique sur « Relancer la création ».',session_expired:'Reconnecte-toi à Claude, puis relance la création.'})[code]||'La création a échoué. Clique sur « Relancer la création ».');}
+refused:"Claude n'a pas pu décrire cette photo. Essaie une autre image.",bad_key:'La clé API est refusée. Vérifie-la dans la case « Clé API Claude ».',network:'Pas de connexion avec Claude. Réessaie dans un moment.',invalid_json:'La réponse était incomplète. Clique sur « Relancer la création ».',session_expired:'Reconnecte-toi à Claude, puis relance la création.'})[code]||'La création a échoué. Clique sur « Relancer la création ».');}
 finally{if(ctl===my){ctl=null;updateAnalyse();}}}
 const getSample=window.claude&&window.claude.use?window.claude.use('sample'):Promise.resolve(null);
-getSample.then(async s=>{sample=s;if(s){try{const lim=await s.limits();imagesOK=!!(lim&&lim.images);if(imagesOK)maxImages=lim.images.maxCount||1;}catch(e){imagesOK=false;}}updateAnalyse();if(!pick)say('ai-status',readyMsg());if(anyPhoto())runAnalysis();},()=>{updateAnalyse();say('ai-status',readyMsg());});
+// Hors de claude.ai (page GitHub) : création automatique avec une clé API Claude enregistrée dans ce navigateur
+function keySample(){const key=store('peluches-cle');if(!key)return null;
+const b64=blob=>new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result).split(',')[1]);fr.onerror=rej;fr.readAsDataURL(blob);});
+const fail=code=>Object.assign(new Error(code),{code});
+return{limits:async()=>({images:{maxCount:5}}),json:async(text,o)=>{const content=[];for(const im of(o.images||[]))content.push({type:'image',source:{type:'base64',media_type:im.type||'image/jpeg',data:await b64(im)}});content.push({type:'text',text});
+let r;try{r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',signal:o.signal,headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2026-10-21','anthropic-beta':'server-side-fallback-2026-07-01','anthropic-dangerous-direct-browser-access':'true'},
+body:JSON.stringify({model:'claude-opus-5-5',max_tokens:16000,output_config:{effort:'medium'},fallbacks:'default',system:'Tu réponds uniquement avec un objet JSON valide, sans texte autour.',messages:[{role:'user',content}]})});}
+catch(e){throw fail(e&&e.name==='AbortError'?'cancelled':'network');}
+if(r.status===401||r.status===403)throw fail('bad_key');if(r.status===429)throw fail('rate_limited');if(!r.ok)throw fail('failed');
+const d=await r.json();if(d.stop_reason==='refusal')throw fail('refused');const t=(d.content||[]).filter(x=>x.type==='text').map(x=>x.text).join('');
+const a=t.indexOf('{'),z=t.lastIndexOf('}');try{return JSON.parse(t.slice(a,z+1));}catch(e){throw fail('invalid_json');}}};}
+$('key-save').addEventListener('click',()=>{const v=$('api-key').value.trim();store('peluches-cle',v);$('api-key').value='';sample=keySample();imagesOK=!!sample;maxImages=5;updateAnalyse();
+say('ai-status',sample?'Clé enregistrée. '+readyMsg():'Clé retirée. Règle la peluche à la main.');if(sample&&anyPhoto())runAnalysis();});
+getSample.then(async s=>{if(!s){$('key-box').hidden=false;s=keySample();if(store('peluches-cle'))$('api-key').placeholder='Clé enregistrée (laisse vide puis Enregistrer pour la retirer)';}sample=s;if(s){try{const lim=await s.limits();imagesOK=!!(lim&&lim.images);if(imagesOK)maxImages=lim.images.maxCount||1;}catch(e){imagesOK=false;}}updateAnalyse();if(!pick)say('ai-status',readyMsg());if(anyPhoto())runAnalysis();},()=>{updateAnalyse();say('ai-status',readyMsg());});
 $('analyse').addEventListener('click',()=>{if(ctl){const c0=ctl;ctl=null;c0.abort();updateAnalyse();say('ai-status','Création arrêtée.');return;}runAnalysis();});
 $('who').addEventListener('change',()=>{if(anyPhoto())runAnalysis();});
 
 // Lien
-const baseIn=$('base');baseIn.value=store('peluches-base')||'';
+const baseIn=$('base');baseIn.value=store('peluches-base')||(/github\.io$/.test(location.hostname)?location.origin+location.pathname.replace(/[^/]*$/,''):'https://misternutss.github.io/peluches/');
 baseIn.addEventListener('input',()=>{store('peluches-base',baseIn.value.trim());updateLink();});
 function baseUrl(){const v=baseIn.value.trim();if(!/^https?:\/\//i.test(v))return '';try{const u=new URL(v);if(!/\.[a-z0-9]+$/i.test(u.pathname)&&!u.pathname.endsWith('/'))u.pathname+='/';u.search='';u.hash='';return u.toString();}catch(e){return '';}}
-function updateLink(){const b=baseUrl(),url=(b||'https://ton-pseudo.github.io/peluches/')+'?p='+PL.encode(cfg);$('out').value=url;$('out2').value=url;$('out').classList.toggle('example',!b);
+function updateLink(){const b=baseUrl(),url=(b||'https://misternutss.github.io/peluches/')+'?p='+PL.encode(cfg);$('out').value=url;$('out2').value=url;$('out').classList.toggle('example',!b);
 $('open').hidden=!b;$('open').href=url;say('link-help',b?'Colle ce lien dans URLS, avec le type Site Web.':"Lien d'exemple : renseigne d'abord l'adresse de ta page 3D (étapes en bas de page).");}
 $('copy2').addEventListener('click',()=>{const t=$('out2').value,done=()=>{$('copy2').textContent='Lien copié';setTimeout(()=>{$('copy2').textContent='Copier le lien';},1500);},sel=()=>{$('out2').focus();$('out2').select();};
 try{navigator.clipboard.writeText(t).then(done,sel);}catch(e){sel();}});
@@ -482,7 +519,8 @@ try{navigator.clipboard.writeText(t).then(done,sel);}catch(e){sel();}});
 
 // Téléchargements : icône PNG et page 3D
 const VIEWER_HEAD=__VIEWER_HEAD__,VIEWER_TAIL=__VIEWER_TAIL__;
-let dl=null;const getDl=window.claude&&window.claude.use?window.claude.use('downloads'):Promise.resolve(null);
+let dl=null;const plainDl={save:async({filename,data})=>{const u=URL.createObjectURL(data instanceof Blob?data:new Blob([data],{type:'text/html'})),a=document.createElement('a');a.href=u;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);}};
+const getDl=(window.claude&&window.claude.use?window.claude.use('downloads'):Promise.resolve(null)).then(d=>d||plainDl,()=>plainDl);
 getDl.then(d=>{dl=d;$('icon').disabled=$('get-viewer').disabled=!d;if(!d){say('dl-status',"Le téléchargement n'est pas disponible ici.");say('setup-status',"Le téléchargement n'est pas disponible ici.");}},()=>{});
 async function save(name,data,out){try{await dl.save({filename:name,data});say(out,'Fichier enregistré : '+name+'.');}
 catch(e){const c=e&&e.code;say(out,({declined:'Téléchargement annulé.',rate_limited:'Une fenêtre de téléchargement est déjà ouverte.',extension_not_enabled:'Ce type de fichier ne peut pas être téléchargé ici.'})[c]||"Le téléchargement n'est pas disponible ici.");}}
@@ -506,4 +544,7 @@ viewer = VIEWER_HEAD + model.strip() + "\n" + VIEWER_TAIL
 os.makedirs(os.path.dirname(viewer_out) or ".", exist_ok=True)
 open(atelier_out, "w", encoding="utf-8").write(atelier)
 open(viewer_out, "w", encoding="utf-8").write(viewer)
+if site_out:
+    # Même atelier, en page complète pour GitHub Pages
+    open(site_out, "w", encoding="utf-8").write('<!doctype html>\n<html lang="fr">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n' + atelier + '\n</html>\n')
 print("ok", len(atelier), len(viewer))

@@ -2,17 +2,15 @@
 
 Peluches 3D sans fond pour des items « Site Web » FiveM.
 
-- `index.html` : la page 3D transparente. Chaque peluche est décrite dans son lien (`?p=...`). C'est cette page que GitHub Pages publie.
-- `atelier-peluches.html` : l'atelier (photos, réglages, lien), publié comme page claude.ai.
+- `index.html` : la page 3D transparente. Chaque peluche est décrite dans son lien (`?p=...`), donc chaque peluche a son propre lien. C'est cette page que GitHub Pages publie : https://misternutss.github.io/peluches/
+- `atelier.html` : l'atelier sur GitHub Pages (https://misternutss.github.io/peluches/atelier.html). Réglages à la main, pipette, imprimé ; la création automatique depuis les photos y demande une clé API Claude (enregistrée dans le navigateur).
+- `atelier-peluches.html` : le même atelier, publié comme page claude.ai : la création automatique depuis les photos y utilise le compte Claude de la personne connectée.
 - `sources/` : le code d'origine.
-  - `plush_model.js` : le modèle 3D de la peluche, partagé par l'atelier et la page 3D.
-  - `gen_atelier.py` : construit `atelier-peluches.html` et `index.html` à partir du modèle.
-  - `prompt_fn.js` : les consignes données à Claude pour analyser les photos.
-  - `photo_ai.js` : les photos, la pipette, l'imprimé et l'analyse.
-  - `atelier_head.html` : la mise en page et les styles de l'atelier.
+  - `plush_model.js` : le modèle 3D de la peluche, partagé par l'atelier et la page 3D. Les cheveux sont faits de vraies mèches, réglées par longueur, volume, raie, frange, texture, attache et côtés.
+  - `gen_atelier.py` : construit les trois pages à partir du modèle (mise en page, réglages, consignes données à Claude pour analyser les photos).
 
-Régénérer les deux pages après une modification :
+Régénérer les pages après une modification :
 
 ```bash
-python sources/gen_atelier.py atelier-peluches.html index.html
+python sources/gen_atelier.py atelier-peluches.html index.html atelier.html
 ```

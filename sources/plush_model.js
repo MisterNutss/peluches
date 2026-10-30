@@ -6,8 +6,9 @@ const V=(x,y,z)=>new THREE.Vector3(x,y,z),FWD=V(0,0,-1),BACK=V(0,0,1),X=V(1,0,0)
 const ENUM={st:['classique','ours','lapin','chat','monstre','avatar'],po:['assis','debout','coucou','bravo','calin','coeur','pensif','tailleur','dab'],ey:['kawaii','realiste'],hs:['court','banane','meches','herisse','iroquoise','carre','long','tresse','couettes','queue','chignon','boucle','afro','dreads','rase','chauve'],
 bd:['aucune','barbe3j','barbe','longue','moustache','bouc'],gl:['aucune','lunettes','soleil','aviateur','tete','masque'],
 hw:['aucun','capuche','casquette','inverse','bonnet','chapeau','bandeau','pompier','police'],tp:['tshirt','chemise','sweat','veste','costume','gilet'],
-mt:['uni','rayures','camo','carreaux','taches'],hm:['uni','rayures','camo','carreaux','taches'],bt:['pantalon','jogging','short'],sh:['bottes','baskets','chaussures'],ex:['sourire','content','neutre','serieux'],
-it:['aucun','lance','coeur','telephone','cafe','donut','trousse'],ms:['aucune','monstre','lapin','ours','chat','chien','oiseau'],mp:['droite','gauche','tete','mains']};
+mt:['uni','rayures','camo','carreaux','taches'],hm:['uni','rayures','camo','carreaux','taches'],bt:['pantalon','jogging','short','salopette'],sh:['bottes','baskets','chaussures'],ex:['sourire','content','neutre','serieux'],
+it:['aucun','lance','coeur','telephone','cafe','donut','trousse'],
+hp:['aucune','gauche','milieu','droite'],hf:['aucune','courte','droite','balayee','rideau','longue','arriere'],hx:['lisse','ondule','boucle','crepu','pique','dreads'],ht:['aucune','queue','haute','couettes','chignon','tresse','demi'],hd:['normaux','courts','rases'],ms:['aucune','monstre','lapin','ours','chat','chien','oiseau'],mp:['droite','gauche','tete','mains']};
 const ACC='rbmscowkehan';
 // Proportions par style : h = taille de la tête, b = corps [largeur, hauteur, profondeur], a = bras [épaisseur, longueur], l = jambes [largeur, hauteur, longueur]
 // Ourson : ventre rond, membres épais. Lapin : corps allongé, longues pattes. Chaton : tête un peu plus grosse.
@@ -22,12 +23,23 @@ pompier:{n:'Pompier 23',sk:'#f6d0b4',hc:'#e2ad6c',hs:'court',ec:'#245c9e',bd:'au
 police:{n:'Agent LSPD',sk:'#e2ac86',hc:'#3b2a20',hs:'rase',ec:'#5a3b22',bd:'barbe3j',fr:0,cl:0,ex:'content',gl:'soleil',glc:'#1c1c1e',hw:'police',hwc:'#1b2440',hwt:'',tp:'chemise',mt:'uni',tc:'#2b3d6b',t2:'#2b3d6b',tt:'LSPD',rf:0,ac:'#c9a227',bt:'pantalon',pc:'#1b2238',sh:'chaussures',sc:'#111113',gv:'',acc:'rbw',it:'donut'},
 ems:{n:'Ambulancière',sk:'#c98a64',hc:'#1d1512',hs:'queue',ec:'#3d2a1c',bd:'aucune',fr:0,ex:'sourire',gl:'aucune',glc:'#2b2b2b',hw:'aucun',hwc:'#2e6b3a',hwt:'',tp:'veste',mt:'uni',tc:'#2e6b3a',t2:'#e9eef2',tt:'EMS',rf:1,ac:'#d23a3a',bt:'pantalon',pc:'#1f2b25',sh:'baskets',sc:'#151515',gv:'#7fb2e8',acc:'rmo',it:'trousse'},
 civil:{n:'Civil',sk:'#f1c6a6',hc:'#7a4a26',hs:'boucle',ec:'#4b6b2a',bd:'aucune',fr:1,ex:'content',gl:'lunettes',glc:'#2b2b2b',hw:'bonnet',hwc:'#c2402f',hwt:'',tp:'sweat',mt:'uni',tc:'#5b6f8f',t2:'#e9e9e9',tt:'',rf:0,ac:'#f2c418',bt:'jogging',pc:'#3c4a63',sh:'baskets',sc:'#e8e8e8',gv:'',acc:'h',it:'cafe'}};
+// Coiffure : "hs" donne un point de départ, les réglages fins (longueur, volume, raie, frange, texture, attache, côtés) le remplacent un par un
+// hl : 0 ras, 1 courts, 2 aux oreilles, 3 au menton, 4 aux épaules, 5 dans le dos ; hv : volume de 0 à 1
+const HAIRK=['hl','hv','hp','hf','hx','ht','hd'];
+const HSDEF={court:{hl:1,hv:0.3,hf:'courte'},banane:{hl:1.4,hv:0.85,hf:'arriere',hd:'courts'},meches:{hl:2.6,hv:0.6,hp:'gauche',hf:'balayee'},herisse:{hl:1.1,hv:0.5,hf:'aucune',hx:'pique'},
+iroquoise:{hl:1.5,hd:'rases'},carre:{hl:3,hv:0.4,hf:'droite'},long:{hl:4.4,hv:0.4,hp:'milieu',hf:'aucune'},tresse:{hl:4,hp:'milieu',hf:'aucune',ht:'tresse'},couettes:{hl:3.6,hp:'milieu',hf:'courte',ht:'couettes'},
+queue:{hl:4,hv:0.3,hf:'aucune',ht:'queue'},chignon:{hl:3,hv:0.3,hf:'aucune',ht:'chignon'},boucle:{hl:1.6,hv:0.7,hf:'courte',hx:'boucle'},afro:{hl:2.2,hv:1,hf:'aucune',hx:'crepu'},
+dreads:{hl:3.6,hv:0.4,hf:'aucune',hx:'dreads'},rase:{hl:0.3,hv:0},chauve:{hl:0,hv:0}};
+const HDEF={hl:1,hv:0.4,hp:'aucune',hf:'courte',hx:'lisse',ht:'aucune',hd:'normaux'};
+function hair(c){const b=Object.assign({},HDEF,HSDEF[c.hs]||{});for(const k of HAIRK)if(c[k]!==undefined&&c[k]!==null)b[k]=c[k];b.h2=c.h2||'';return b;}
 const NEUTRAL=Object.assign({},PRESETS.civil,{n:'',hs:'court',fr:0,cl:0,ms:'aucune',mc:'#8ec5f0',mp:'droite',mz:1,ex:'content',gl:'aucune',hw:'aucun',hwt:'',tp:'tshirt',mt:'uni',tt:'',bt:'pantalon',sh:'baskets',gv:'',acc:'',it:'aucun'});
 
 function clean(o,base){const d=Object.assign({},base||PRESETS.pompier);if(!o||typeof o!=='object')return d;
 for(const k in ENUM)if(ENUM[k].includes(o[k]))d[k]=o[k];
 for(const k of COLS)if(typeof o[k]==='string'&&/^#[0-9a-f]{6}$/i.test(o[k]))d[k]=o[k].toLowerCase();
 if('gv' in o&&!o.gv)d.gv='';
+if(typeof o.h2==='string'&&/^#[0-9a-f]{6}$/i.test(o.h2))d.h2=o.h2.toLowerCase();else if('h2' in o&&!o.h2)delete d.h2;
+for(const[k,lo,hi]of[['hl',0,5],['hv',0,1]])if(k in o&&o[k]!==null&&o[k]!==''){const v=Number(o[k]);if(Number.isFinite(v))d[k]=Math.round(Math.min(hi,Math.max(lo,v))*100)/100;}
 if(typeof o.fc==='string'&&/^#[0-9a-f]{6}$/i.test(o.fc))d.fc=o.fc.toLowerCase();else if('fc' in o&&!o.fc)d.fc='';
 for(const[k,m]of[['hwt',6],['tt',8],['n',24]])if(typeof o[k]==='string')d[k]=o[k].replace(/[^\p{L}\p{N} .'\-]/gu,'').trim().slice(0,m);
 for(const k of['fr','rf','cl'])if(k in o)d[k]=o[k]&&o[k]!=='0'?1:0;
@@ -168,7 +180,16 @@ if(c.tp==='veste'||c.tp==='costume'){const gap=c.tp==='costume'?0.9:0.55;outer=a
 if(c.tp==='veste')for(const s of[-1,1])for(const y of[15.0,12.6,10.2,7.8])stick(mk(blob(0.34,0.34,0.18,{lump:0}),mSilver),[outer],s*3.3,y,-0.05);}
 const collar=c.tp==='gilet'?shade(c.t2,0.9):layered?col(c.t2):shade(c.tc,0.85),mCol=FZ({color:collar,map:FAB,roughness:0.9});
 const colT=tor(4.9,0.95,mCol,17.1,0.88),colB=add(mk(blob(4.6,1.8,4.1,{lump:0}),mCol),[0,16.4,0.2]),torso=[...new Set([outer,shirt,colT,colB])];
-const belt=tor(8.45,0.55,FZ({color:shade(c.pc,0.45),map:FAB,roughness:0.75}),5.85,0.875);stick(mk(blob(1.0,0.7,0.3,{lump:0}),mSilver),[belt],0,5.85,-0.1);
+const ovr=c.bt==='salopette';
+if(!ovr){const belt=tor(8.45,0.55,FZ({color:shade(c.pc,0.45),map:FAB,roughness:0.75}),5.85,0.875);stick(mk(blob(1.0,0.7,0.3,{lump:0}),mSilver),[belt],0,5.85,-0.1);}
+else{// Salopette : ceinture du même tissu, plastron avec poche, bretelles qui passent sur les épaules et se croisent dans le dos, boutons métal
+const mOv=FZ({color:c.pc,map:FAB,bumpMap:BMP,bumpScale:0.2,roughness:0.95,side:THREE.DoubleSide}),mOvS=FZ({color:shade(c.pc,0.82),map:FAB,roughness:0.9,side:THREE.DoubleSide}),stc=mix(c.pc,'#e8b04a',0.55);
+tor(8.5,0.75,mOv,6.1,0.88);
+const bib=add(mk(conform([shirt],V(0,10.4,0),X,Y,8.2,7.2,18,FWD,0.16),mOv));
+add(mk(conform([shirt],V(0,10.9,0),X,Y,3.6,2.6,10,FWD,0.3),mOvS));
+seam(onSurf([bib],[[V(-1.8,12.2,40),FWD],[V(1.8,12.2,40),FWD]],0.06),stc);seam(onSurf([bib],[[V(-1.8,9.6,40),FWD],[V(-1.8,12.2,40),FWD]],0.06),stc);seam(onSurf([bib],[[V(1.8,9.6,40),FWD],[V(1.8,12.2,40),FWD]],0.06),stc);
+for(const s of[-1,1]){const pts=[];for(let b=1.0;b>=-1.5;b-=0.1){const d=V(0,Math.cos(b),Math.sin(b)),x=s*(3.3-Math.max(0,-b-0.2)*2.6);pts.push([V(x,9.0,0).addScaledVector(d,30),d.clone().negate()]);}
+tube(onSurf(torso,pts,0.32),0.48,mOvS);stick(mk(new THREE.CylinderGeometry(0.5,0.5,0.25,18).rotateX(Math.PI/2),mSilver),torso,s*3.3,13.5,-0.45);}}
 if(c.tp==='gilet'){const mPk=FZ({color:shade(c.tc,0.88),map:FAB,bumpMap:BMP,bumpScale:0.15,roughness:0.9});
 for(const s of[-1,1]){const pk=new THREE.Group();pk.add(mk(blob(2.6,1.6,0.8,{lump:0.01}),mPk));const fl=mk(blob(2.7,0.55,0.85,{lump:0}),mPk);fl.position.set(0,1.3,0.1);pk.add(fl);stick(pk,[outer],s*3.4,8.5,0.4);
 add(mk(conform([outer],V(s*3,13.9,0),X,Y,1.0,5.6,12,FWD,0.15),mDark));stick(mk(blob(0.75,0.95,0.25,{lump:0}),mSilver),[outer],s*3,13.6,-0.15);}
@@ -238,7 +259,7 @@ PART=null;add(mk(new THREE.BoxGeometry(0.08,2.2,1.5),SM({map:own(tagTex()),rough
 // Tête et cheveux
 const head=add(mk(blob(9.6,8.8,9.0,{lump:0.012,pear:0.05}),animal?mFur:mSkin),[0,24.6,0.6]);
 // Petit monstre : la fourrure remplace les cheveux (calotte et côtés), le visage reste dégagé
-let hairS=null,hairCap=null;const hs=st==='monstre'?'monstre':(c.hs==='afro'&&hats)?'boucle':c.hs;
+let hairS=null,hairCap=null;const hs=st==='monstre'?'monstre':c.hs,HH=hair(c),strandy=!['monstre','rase','chauve','iroquoise'].includes(hs)&&HH.hl>0.15;
 if(hs==='monstre'){// Tête de petit monstre : capuche de fourrure épaisse, visage ovale dégagé, couronne de touffes irrégulières sur deux rangs
 const g=blob(10.6,9.9,10.2,{lump:0.05,pear:0.05}),gp=g.attributes.position;
 for(let i=0;i<gp.count;i++){const x=gp.getX(i)/10.6,y=gp.getY(i)/9.9,z=gp.getZ(i)/10.2;if(z>0.15&&(x/0.63)**2+((y+0.1)/0.56)**2<1)gp.setXYZ(i,gp.getX(i)*0.85,gp.getY(i)*0.85,gp.getZ(i)*0.85);}
@@ -247,39 +268,105 @@ const furB=FZ({color:mix(fur,'#ffffff',0.14),map:HAIR,bumpMap:BMP,bumpScale:0.6,
 for(let ring=0;ring<2;ring++){const n=ring?18:30,sc=ring?1.3:1;for(let i=0;i<n;i++){const a=(i+R()*0.7)/n*Math.PI*2,rr=1+ring*0.12+(R()-0.5)*0.05,fx=Math.cos(a)*0.63*rr,fy=Math.sin(a)*0.56*rr-0.1,fz=Math.sqrt(Math.max(0.03,1-fx*fx-fy*fy)),sz=(0.8+R()*0.7)*sc;
 const t=mk(blob(1.0*sz,1.4*sz,0.75*sz,{lump:0.09,tip:0.4}),R()<0.55?mFur:furB);t.position.set(fx*10.4,24.6+fy*9.7,0.6+fz*(9.9-ring*0.7));
 t.quaternion.setFromUnitVectors(Y,V(Math.cos(a)+(R()-0.5)*0.5,Math.sin(a)+(R()-0.5)*0.5,0.45+R()*0.3).normalize());t.rotateY((R()-0.5)*1.4);G.add(t);}}}
-if(hs!=='chauve'&&hs!=='monstre'){const th=hs==='rase'||hs==='iroquoise'||hs==='banane',cu=hs==='boucle'||hs==='carre'||hs==='monstre',hr=[th?9.72:cu?10.35:10.0,th?8.92:cu?9.55:9.2,th?9.12:cu?9.75:9.4],lp=th?0.004:hs==='boucle'||hs==='monstre'?0.05:hs==='meches'?0.035:0.02;
-// Côtés et arrière (le visage reste dégagé), plus une calotte sur le dessus du crâne
-hairS=add(mk(blob(hr[0],hr[1],hr[2],{lump:lp,t0:0.78,t1:({long:2.2,meches:2.05,carre:2.25})[hs]||1.95,p0:2.52,pl:4.38}),mHair),[0,24.6,0.6]);
-hairCap=add(mk(blob(hr[0]+0.04,hr[1]+0.04,hr[2]+0.04,{lump:lp,t0:0,t1:0.86}),mHair),[0,24.6,0.6]);}
-const tuft=(x,y,h,rz)=>{const st=stick(mk(blob(1.05,h,0.45,{lump:0.03,tip:0.8}),mHair),[head],x,y,0.15);if(rz)st.rotateZ(rz);return st;};
-// Frange : mèches pointues posées sur le front, sous la calotte
-// Mèches arrondies qui se chevauchent, légèrement balayées sur le côté (pas de dents en zigzag)
-const fringe=(n,span,y,h,w,vary,sweep)=>{for(let i=0;i<n;i++){const t=i/(n-1)-0.5,hh=h+R()*vary,st=stick(mk(blob(w,hh,0.55,{lump:0.03,tip:0.45}),mHair),[head],t*span+(R()-0.5)*0.5,y-Math.abs(t)*1.0+(hh-h)*0.35,0.25);st.rotateZ(-t*0.45+(sweep||0)+(R()-0.5)*0.3);}};
-if(['court','meches','herisse','carre','long','tresse','couettes','queue','chignon','dreads'].includes(hs))for(const s of[-1,1]){tuft(s*7.5,26.1,2.0,s*0.25);tuft(s*8.5,24.4,hs==='long'||hs==='carre'?3.4:1.7,s*0.15);}
-// Frange courte ; sous une capuche, toute coiffure garde une frange pour ne pas laisser le front nu
-if(['court','herisse','couettes','tresse'].includes(hs)||(hood&&['long','carre','queue','chignon','boucle','afro','dreads'].includes(hs)))fringe(5,9,30.0,1.25,1.4,0.3,-0.12);
-if(hs==='tresse'){// Tresse qui tombe devant l'épaule gauche de l'image (elle suit la tête)
-PART='head';for(let i=0;i<9;i++){const k=i%2?1:-1;add(mk(blob(1.3-i*0.04,1.0,1.05,{lump:0.02}),mHair),[-6.3+i*0.17+k*0.35,21.2-i*1.25,6.0+i*0.1],[0,0,k*0.5]);}
-add(mk(blob(0.8,0.6,0.8,{lump:0}),mAcc),[-4.9,9.9,7.0]);add(mk(blob(0.9,1.5,0.8,{lump:0.03,tip:0.8}),mHair),[-4.8,8.4,7.1]);PART=null;}
-if(hs==='meches'){fringe(6,10.5,30.1,1.5,1.75,0.3,-0.18);fringe(7,12,29.0,2.0,1.8,0.8,-0.25);if(!hood){for(const s of[-1,1])add(mk(blob(2.0,4.2,2.4,{lump:0.03,tip:0.5}),mHair),[s*8.9,22.4,1.0],[0,0,s*0.1]);add(mk(blob(8.6,4.6,3.6,{lump:0.03}),mHair),[0,21.6,-6.0],[-0.2,0,0]);}}
-if(hs==='herisse'&&!hats)for(let i=0;i<22;i++)spike(24.6,0.6,10.0,9.2,9.4,0.18+R()*0.8,R()*Math.PI*2,0.95,2.0+R()*0.9,mHair);
-// Banane : volume plaqué en arrière sur le dessus, côtés courts
-if(hs==='banane'&&!hats){add(mk(blob(5.6,3.4,7.6,{lump:0.03}),mHair),[0,32.0,0.2],[-0.18,0,0]);add(mk(blob(4.6,2.8,3.0,{lump:0.03}),mHair),[0,32.9,5.4],[0.5,0,0]);}
+// Crâne rasé ou iroquoise : fine calotte collée au crâne
+if(hs==='rase'||hs==='iroquoise'||(hs!=='chauve'&&hs!=='monstre'&&!strandy)){hairS=add(mk(blob(9.72,8.92,9.12,{lump:0.004,t0:0.78,t1:1.95,p0:2.52,pl:4.38}),mHair),[0,24.6,0.6]);hairCap=add(mk(blob(9.76,8.96,9.16,{lump:0.004,t0:0,t1:0.86}),mHair),[0,24.6,0.6]);}
+if(strandy)hairStrands(HH);
 if(hs==='iroquoise'&&!hats)for(let a=0.85;a>=-1.9;a-=0.3){const s=Math.sin(a),p=V(0,Math.cos(a)*8.92,s*9.12),n=V(0,p.y/79.6,p.z/83.2).normalize(),len=4.4-Math.abs(a-0.2)*0.8;
 const m=mk(new THREE.ConeGeometry(1.35,len,10),mHair);m.position.set(0,24.6+p.y,0.6+p.z).addScaledVector(n,len*0.35);m.quaternion.setFromUnitVectors(Y,n);G.add(m);}
-if(hs==='carre'&&!hood){for(const s of[-1,1])add(mk(blob(2.4,5.0,3.2,{lump:0.02}),mHair),[s*9.0,21.4,1.6]);if(!hats)add(mk(blob(10.4,9.6,9.8,{lump:0.02,t0:0.35,t1:0.98,p0:0.55,pl:2.05}),mHair),[0,24.6,0.6]);}
-if(hs==='long'){if(!hood){add(mk(blob(9.4,9.0,4.2,{lump:0.02}),mHair),[0,19.2,-5.2],[-0.15,0,0]);for(const s of[-1,1])add(mk(blob(2.1,5.6,2.6,{lump:0.02,tip:0.3}),mHair),[s*8.7,19.6,0.8],[0,0,s*0.12]);}
-if(!hats)add(mk(blob(10.05,9.25,9.45,{lump:0.02,t0:0.35,t1:0.95,p0:0.55,pl:2.05}),mHair),[0,24.6,0.6]);}
-if(hs==='couettes'&&!hood)for(const s of[-1,1]){add(mk(blob(1.0,1.0,1.0,{lump:0}),mAcc),[s*9.7,26.6,-1.8]);add(mk(blob(2.0,4.6,2.0,{lump:0.03,tip:0.6}),mHair),[s*11.7,23.6,-2.2],[0,0,s*0.6]);}
-if(hs==='queue'&&!hood){add(mk(blob(1.4,1.4,1.4,{lump:0}),mAcc),[0,26.5,-9.4]);add(mk(blob(2.3,5.2,2.3,{lump:0.03,tip:0.6}),mHair),[0,21.8,-11.0],[-0.35,0,0]);}
-if(hs==='chignon'&&!hats)add(mk(blob(3.7,3.3,3.7,{lump:0.03}),mHair),[0,33.0,-3.6]);
-if(hs==='boucle'&&!hood){for(let i=0;i<34;i++){const t=0.15+R()*1.55,p=2.6+R()*4.25,x=-Math.cos(p)*Math.sin(t)*10.2,y=Math.cos(t)*9.4,z=Math.sin(p)*Math.sin(t)*9.6;if(hats&&y>2.2)continue;add(mk(blob(2.1,2.0,2.1,{lump:0.04}),mHair),[x,24.6+y,0.6+z]);}
-if(!hats)for(let i=-3;i<=3;i++)stick(mk(blob(1.5,1.4,1.2,{lump:0.04}),mHair),[head],i*1.9,30.4-Math.abs(i)*0.55,0.5);}
-if(hs==='afro'&&!hood){add(mk(blob(12.6,11.4,12.2,{lump:0.07,t0:0,t1:0.9}),mHair),[0,26.0,0.2]);add(mk(blob(12.5,11.3,12.1,{lump:0.07,t0:0.85,t1:2.0,p0:2.45,pl:4.52}),mHair),[0,26.0,0.2]);
-for(let i=0;i<70;i++){const t=R()*1.95,p=t>0.86?2.5+R()*4.4:R()*Math.PI*2;add(mk(blob(2.4,2.3,2.4,{lump:0.05}),mHair),[-Math.cos(p)*Math.sin(t)*12.3,26.0+Math.cos(t)*11.1,0.2+Math.sin(p)*Math.sin(t)*11.9]);}}
-if(hs==='dreads'&&!hood)for(let i=0;i<18;i++){const p=2.7+i*(4.0/17),t=1.3,o=V(-Math.cos(p),0,Math.sin(p)),root=V(-Math.cos(p)*Math.sin(t)*10.0,24.6+Math.cos(t)*9.2,0.6+Math.sin(p)*Math.sin(t)*9.4);
-const d=add(mk(blob(0.65,4.0+R()*1.2,0.65,{lump:0.03,tip:0.15}),mHair),[root.x+o.x*0.8,root.y-3.6,root.z+o.z*0.8],[-o.z*0.25,0,o.x*0.25]);}
 if(['rase','chauve','iroquoise'].includes(hs)&&!furry)for(const s of[-1,1])add(mk(blob(1.0,2.0,1.4,{lump:0}),mSkin),[s*9.55,23.6,0.6]);
+
+// Cheveux en vraies mèches : chaque mèche part du cuir chevelu, suit le crâne (raie, épi, frange), puis tombe avec la gravité.
+// Les mèches se chevauchent : celles qui partent plus haut passent par-dessus. Une sous-couche plus sombre donne de la profondeur entre les mèches.
+function hairStrands(H){
+const HC=V(0,24.6,0.6),HA=V(9.6,8.8,9.0),q=p=>V((p.x-HC.x)/HA.x,(p.y-HC.y)/HA.y,(p.z-HC.z)/HA.z),fromQ=v=>V(HC.x+v.x*HA.x,HC.y+v.y*HA.y,HC.z+v.z*HA.z);
+const enorm=v=>V(v.x/HA.x,v.y/HA.y,v.z/HA.z).normalize(),sm=(a,b,x)=>{const t=Math.min(1,Math.max(0,(x-a)/(b-a)));return t*t*(3-2*t);};
+const lerpT=(tab,x)=>{for(let i=1;i<tab.length;i++)if(x<=tab[i][0]){const[a,va]=tab[i-1],[b,vb]=tab[i];return va+(vb-va)*(x-a)/(b-a);}return tab[tab.length-1][1];};
+const hl=H.hl,hx=H.hx,soft=hl<1.5||hx==='boucle',hood2=hood,cutY=hood?null:hats?({chapeau:30.0,police:27.6}[c.hw]||27.2):null;
+const vol=(hats?0.02:0.03+H.hv*0.17)+(hx==='boucle'?0.08:0);
+// Sous-couche : calotte et pourtour, un peu plus sombres ; côtés rasés : mélange avec la peau
+const mUnder=FZ({color:shade(c.hc,0.82),map:HAIR,bumpMap:BMP,bumpScale:0.45,roughness:1,side:THREE.DoubleSide}),mSides=H.hd==='rases'?FZ({color:mix(c.hc,c.sk,0.55),map:HAIR,bumpMap:BMP,bumpScale:0.3,roughness:1}):mUnder;
+hairCap=add(mk(blob(HA.x*1.02,HA.y*1.02,HA.z*1.02,{lump:0.004,t0:0,t1:0.86}),mUnder),[0,24.6,0.6]);
+const under=add(mk(blob(HA.x*1.015,HA.y*1.015,HA.z*1.015,{lump:0.004,t0:0.78,t1:1.95,p0:2.52,pl:4.38}),mSides),[0,24.6,0.6]);
+add(mk(blob(HA.x*1.012,HA.y*1.012,HA.z*1.012,{lump:0.004,t0:1.9,t1:2.15,p0:3.8,pl:1.82}),mSides),[0,24.6,0.6]);
+// Zone où poussent les cheveux (la même que la sous-couche)
+const scalp=u=>{const th=Math.acos(Math.max(-1,Math.min(1,u.y)));let ph=Math.atan2(u.z,-u.x);if(ph<0)ph+=Math.PI*2;return th<0.84||(th<1.93&&(ph>=2.56||ph<=0.58))||(th<2.12&&ph>3.85&&ph<5.57);};
+const pos=[],uvs=[],cols=[],idx=[],cBase=col(c.hc).convertSRGBToLinear(),cHi=H.h2?col(H.h2).convertSRGBToLinear():null;
+// Mèche : section en amande qui s'enroule vers le crâne, large au départ, pointue au bout (bout net pour une frange droite)
+function ribbon(P,w,th,tint,blunt,round){const n=P.length;if(n<3)return;const base=pos.length/3,RS=8,acc=[0];for(let i=1;i<n;i++)acc.push(acc[i-1]+P[i].distanceTo(P[i-1]));const len=acc[n-1]||1;let prevN=V(0,0,1);
+for(let i=0;i<n;i++){const T=P[Math.min(i+1,n-1)].clone().sub(P[Math.max(i-1,0)]).normalize(),N0=enorm(q(P[i]));let N=N0.clone().addScaledVector(T,-N0.dot(T));if(N.lengthSq()<1e-4)N=prevN.clone();N.normalize();prevN=N;
+const B=V(0,0,0).crossVectors(T,N).normalize(),s=acc[i]/len,root=0.75+0.25*Math.min(1,acc[i]/1.4),prof=root*(blunt?1-Math.pow(s,10)*0.5:soft?Math.max(0.35,1-Math.pow(s,2)*0.62):Math.max(0.12,1-Math.pow(s,3.2)*0.9)),wi=w*prof,ti=th*Math.max(0.45,prof);
+for(let k=0;k<RS;k++){const a=k/RS*Math.PI*2,ca=Math.cos(a),sa=Math.sin(a),p=P[i].clone().addScaledVector(B,ca*wi).addScaledVector(N,sa*ti-(round?0:ca*ca*wi*(soft?0.12:0.28)));pos.push(p.x,p.y,p.z);uvs.push(k/RS,acc[i]/3);
+const sh=(0.7+0.3*Math.min(1,acc[i]/2.5))*(sa<0?0.86:1);cols.push(tint[0]*sh,tint[1]*sh,tint[2]*sh);}}
+const tipI=pos.length/3,T1=P[n-1].clone().sub(P[n-2]).normalize(),tp=P[n-1].clone().addScaledVector(T1,blunt?0.05:0.15),T0=P[1].clone().sub(P[0]).normalize(),rp=P[0].clone().addScaledVector(T0,-0.2);
+pos.push(tp.x,tp.y,tp.z,rp.x,rp.y,rp.z);uvs.push(0.5,len/3,0.5,0);cols.push(tint[0],tint[1],tint[2],tint[0]*0.7,tint[1]*0.7,tint[2]*0.7);
+for(let i=0;i<n-1;i++)for(let k=0;k<RS;k++){const a=base+i*RS+k,b=base+i*RS+(k+1)%RS;idx.push(a,b,a+RS,b,b+RS,a+RS);}
+for(let k=0;k<RS;k++){idx.push(base+(n-1)*RS+k,tipI,base+(n-1)*RS+(k+1)%RS);idx.push(base+(k+1)%RS,tipI+1,base+k);}}
+// Couleur d'une mèche : légères variations, et quelques mèches d'une autre couleur si demandé
+const tintOf=()=>{const k=0.9+R()*0.18,cc=(cHi&&R()<0.3)?cHi:cBase;return[cc.r*k,cc.g*k,cc.b*k];};
+// Pousse d'une mèche : avance pas à pas, épouse le crâne (avec du volume sur le dessus), tombe sous l'effet de la gravité,
+// contourne le corps, s'arrête au bord du visage, à la longueur voulue ou en arrivant à l'attache
+function grow(p0,t0,o){const P=[p0.clone()];let p=p0.clone(),t=t0.clone(),s=0;const ds=0.42;
+while(s<o.L){const hugNow=o.hug>1||(o.hug&&q(p).y>-0.12);t.y-=o.grav*(hugNow||!o.grav?1:4)*ds;if(o.tie){const d=o.tie.clone().sub(p),dl=d.length();if(dl<1.1)break;t.addScaledVector(d.normalize(),0.45);}if(o.out){t.addScaledVector(enorm(q(p)),o.out);}t.normalize();
+const np=p.clone().addScaledVector(t,ds),v=q(np),r=v.length(),top=sm(-0.3,0.8,v.y),K=1.045+o.layer+vol*(o.tie?0.25:1)*top*Math.min(1,s/2.2)+(o.lift||0)*Math.max(0,1-s/5);
+if(r<K)np.copy(fromQ(v.multiplyScalar(K/r)));else if(o.hug&&(o.hug>1||v.y>-0.12))np.copy(fromQ(v.multiplyScalar((K+(r-K)*0.25)/r)));
+const b=V(np.x/9.9,(np.y-9.2)/10.6,np.z/8.9),rb=b.length();if(rb<1)np.set(b.x/rb*9.9,9.2+b.y/rb*10.6,b.z/rb*8.9);
+const f=q(np);if(f.z>0.12&&Math.abs(f.x)<o.faceHalf&&f.y<(o.faceTop+(o.faceSlope||0)*f.x))break;if(np.y<o.yEnd)break;
+if(hood2&&q(np).length()>1.095)break;
+t=np.clone().sub(p).normalize();p=np;P.push(p.clone());s+=ds;}
+// Lissage, puis ondulation ou boucles autour de la trajectoire
+for(let k=0;k<2;k++)for(let i=1;i<P.length-1;i++)P[i]=P[i-1].clone().add(P[i+1]).multiplyScalar(0.25).addScaledVector(P[i],0.5);
+if((hx==='ondule'||hx==='boucle')&&P.length>4){const Q=P.map(x=>x.clone()),ph=R()*6.28;let a=0;for(let i=1;i<P.length;i++){a+=Q[i].distanceTo(Q[i-1]);const T=Q[Math.min(i+1,Q.length-1)].clone().sub(Q[i-1]).normalize(),N=enorm(q(Q[i])),B=V(0,0,0).crossVectors(T,N).normalize(),gr=Math.min(1,a/2.5);
+if(hx==='ondule')P[i].addScaledVector(B,Math.sin(a/5.2*6.28+ph)*0.65*gr);else{const w=a/2.1*6.28+ph;P[i].addScaledVector(B,Math.cos(w)*0.75*gr).addScaledVector(N,(Math.sin(w)+1)*0.6*gr);}}}
+if(cutY!==null){const k=P.findIndex(x=>x.y<cutY);return k<0?[]:P.slice(k);}
+return P;}
+// Longueur des mèches et hauteur où s'arrêtent les pointes
+const Lh=lerpT([[0,1.6],[1,5.2],[2,9],[3,14],[4,21],[5,32]],hl)*(hx==='boucle'?0.8:1),yEnd=hl<1.6?-99:lerpT([[1.6,24],[2,21.5],[3,17.4],[4,12.8],[5,5.5]],hl);
+const blunt=H.hf==='droite'||hs==='carre',sw=H.hp==='droite'?-1:1,px={gauche:-0.3,milieu:0,droite:0.3,aucune:0}[H.hp];
+const TIES={queue:[V(0,25.2,-9.7)],haute:[V(0,31.6,-7.4)],couettes:[V(-9.2,26.2,-2.6),V(9.2,26.2,-2.6)],chignon:[V(0,31.2,-6.6)],tresse:[V(-8.6,22.6,1.2)],demi:[V(0,28.6,-9.3)]}[H.ht]||null;
+const fringeZone=u=>u.z>0.42&&u.y>0.38&&Math.abs(u.x)<0.62;
+const N=hx==='dreads'?150:hx==='pique'?190:hx==='boucle'?420:hl<1.5?400:260,wid=hx==='dreads'?0.62:hx==='boucle'?0.8:hx==='pique'?1.45:hl<1.5?1.2:1.85,thk=hx==='dreads'||hx==='boucle'?wid:0.42;
+if(hx==='crepu'){// Afro ou cheveux crépus : volume rond fait de petites bouclettes serrées, sans cacher le visage
+const E=(hats?0.25:1)*(0.6+hl*0.55)*(0.55+H.hv*0.6),cy=25.4,R0=V(10.0+E,9.2+E*0.9,9.6+E);
+const mCurl=FZ({color:c.hc,map:HAIR,bumpMap:BMP,bumpScale:0.6,roughness:1}),mCurl2=FZ({color:shade(c.hc,0.85),map:HAIR,bumpMap:BMP,bumpScale:0.6,roughness:1});
+hairS=add(mk(blob(R0.x-0.9,R0.y-0.9,R0.z-0.9,{lump:0.06,t0:0,t1:2.0,p0:2.45,pl:4.52}),mCurl2),[0,cy,0.2]);add(mk(blob(R0.x-0.9,R0.y-0.9,R0.z-0.9,{lump:0.06,t0:0,t1:0.9}),mCurl2),[0,cy,0.2]);
+for(let i=0;i<340;i++){const t=R()*1.98,p2=t>0.9?2.5+R()*4.4:R()*Math.PI*2,pt=V(-Math.cos(p2)*Math.sin(t)*R0.x,cy+Math.cos(t)*R0.y,0.2+Math.sin(p2)*Math.sin(t)*R0.z);if(cutY!==null&&pt.y>cutY-0.5)continue;
+const sz=0.8+R()*0.45;add(mk(blob(sz,sz,sz,{lump:0.05}),R()<0.6?mCurl:mCurl2),[pt.x,pt.y,pt.z]);}return;}
+// Racines réparties régulièrement sur le cuir chevelu, avec un peu de hasard
+const roots=[];for(let i=0;i<N;i++){const y=1-(i+0.5)/N*2,rr=Math.sqrt(1-y*y),a=i*2.39996+(R()-0.5)*0.35,u=V(Math.cos(a)*rr,y,Math.sin(a)*rr);if(scalp(u))roots.push(u);}
+const isTied=u=>TIES&&(H.ht!=='demi'||u.y>0.3);
+PART='head';
+for(const u of roots){const P0=fromQ(u.clone().multiplyScalar(1.02)),n=enorm(u),layer=0.012+0.05*(u.y+1)/2+R()*0.012,side=u.y<0.25&&Math.abs(u.z)<0.75;
+if(H.hd==='rases'&&u.y<0.28&&!fringeZone(u))continue;
+const o={L:Lh*(0.88+R()*0.22),grav:0.07,hug:hl<1.8?2:1,layer,faceHalf:0.68,faceTop:0.46,yEnd:yEnd+(blunt?0.2:1.2)*(R()-0.5)};let d,bl=false;
+if(hx==='pique'){const up=sm(0.0,0.6,u.y);d=n.clone().multiplyScalar(0.6).add(V(0,0.9*up,-0.5));Object.assign(o,{L:(1.2+hl*1.6)*(0.5+0.5*up)+R()*0.6,grav:0,hug:up>0.3?0:2,out:0.08*up});if(up<0.3)o.L=Math.max(o.L,2.8);}
+else if(hx==='dreads'){d=V(u.x*0.4,-1,u.z*0.4);Object.assign(o,{grav:0.2,faceHalf:0.76,faceTop:0.55});}
+else if(isTied(u)){const tie=TIES.length>1?TIES[u.x<0?0:1]:TIES[0];d=tie.clone().sub(P0);Object.assign(o,{tie,L:40,grav:0.0,hug:2});}
+else if(fringeZone(u)&&H.hf!=='aucune'){const f=H.hf;o.L=Math.min(o.L,f==='courte'?4.6:f==='arriere'?7:11);bl=f==='droite';
+d={courte:V(sw*0.15,-1,0.45),droite:V(0,-1,0.55),balayee:V(sw*1.15,-0.8,0.35),rideau:V((u.x>=0?1:-1)*1.1,-0.9,0.3),longue:V(sw*0.1,-1,0.45),arriere:V(0,0.4,-1)}[f];
+o.faceTop={courte:0.42,droite:0.2,balayee:0.3,rideau:0.62,longue:0.04,arriere:0.6}[f];if(f==='balayee')o.faceSlope=-0.28*sw;if(f==='rideau')o.faceHalf=0.58;if(f==='arriere'){o.lift=0.12+H.hv*0.15;o.grav=0.01;}if(f==='courte'||f==='droite')o.L=Math.max(o.L,f==='droite'?9:4.6);}
+else if(H.hp!=='aucune'){// La raie va du front au sommet du crâne ; derrière, les cheveux retombent depuis l'épi
+const topW=sm(0.05,0.7,u.y)*sm(-0.5,0.05,u.z),sd=Math.sign(u.x-px)||1;d=V(sd*topW*1.2,-0.3-(1-topW)*1.2,(fringeZone(u)?-0.6:-0.1)*topW-(1-topW)*0.5*Math.max(0,-u.z));}
+else if(H.hf==='aucune'||H.hf==='arriere')d=u.clone().sub(V(0,0.55,0.85)).add(V(0,-0.25,0));
+else d=u.clone().sub(V(0,0.8,-0.6)).add(V(0,-0.25,0));
+if(side&&!TIES&&hx!=='pique')o.grav=0.12;
+if(hl<1.6&&u.z>-0.2&&!TIES)o.yEnd=Math.max(o.yEnd,22.2);
+if(H.hd==='courts'&&u.y<0.28&&!fringeZone(u)){o.L=Math.min(o.L,2.4);o.hug=2;}
+if(hood2&&!fringeZone(u))continue;if(hood2)o.layer=0.004;
+const t0=d.clone().addScaledVector(n,-d.dot(n));if(t0.lengthSq()<1e-6)t0.set(0,-1,0);t0.normalize();
+const P=grow(P0,t0,o);ribbon(P,wid*(0.85+R()*0.3)*(fringeZone(u)?1.2:1)*(u.y>0.6?1.15:1),thk,tintOf(),bl||blunt&&!fringeZone(u),hx==='dreads'||hx==='boucle');}
+// Attaches : élastique, puis queue, couettes, chignon ou tresse
+if(TIES&&!hood2)for(const tie of TIES){const n=enorm(q(tie)),ring=mk(new THREE.TorusGeometry(1.15,0.45,10,24),mAcc);ring.position.copy(tie).addScaledVector(n,0.3);ring.lookAt(tie.clone().addScaledVector(n,3));add(ring);
+if(H.ht==='chignon'){for(let j=0;j<7;j++){const P=[],rad=2.9-j*0.32,ax=n.clone(),u1=V(0,0,0).crossVectors(ax,V(1,0,0)).normalize(),u2=V(0,0,0).crossVectors(ax,u1),c0=tie.clone().addScaledVector(ax,1.2+j*0.42),a0=R()*6.28;
+for(let a=0;a<Math.PI*2.3;a+=0.3)P.push(c0.clone().addScaledVector(u1,Math.cos(a+a0)*rad).addScaledVector(u2,Math.sin(a+a0)*rad));ribbon(P,1.25,0.6,tintOf(),true,false);}continue;}
+if(H.ht==='tresse'){const L=Math.max(5,(hl-1.2)*4.2),steps=Math.round(L/1.25);for(let i=0;i<steps;i++){const k=i%2?1:-1,sz=1.35-i*0.03;add(mk(blob(sz,1.0,1.05,{lump:0.02}),mHair),[-7.0+i*0.15+k*0.35,21.4-i*1.25,4.8+i*0.12],[0,0,k*0.5]);}
+const yb=21.4-steps*1.25;add(mk(blob(0.8,0.6,0.8,{lump:0}),mAcc),[-7.0+steps*0.15,yb+0.6,4.8+steps*0.12]);add(mk(blob(0.9,1.5,0.8,{lump:0.03,tip:0.8}),mHair),[-7.0+steps*0.15,yb-0.9,4.9+steps*0.12]);continue;}
+const L=Math.max(4,(hl-(H.ht==='demi'?0.5:1))*5.2)*(H.ht==='couettes'?0.85:1);
+for(let j=0;j<18;j++){const a=j/18*6.28+R()*0.3,off=V(Math.cos(a),Math.sin(a),0).multiplyScalar(0.5+R()*0.5),p0=tie.clone().addScaledVector(n,0.8).add(off),t0=n.clone().multiplyScalar(H.ht==='couettes'?0.5:0.8).add(V(0,H.ht==='couettes'?-0.9:-0.4,0)).add(off).normalize();
+const P=grow(p0,t0,{L:L*(0.85+R()*0.25),grav:H.ht==='couettes'?0.3:0.12,hug:0,layer:0.3,faceHalf:0,faceTop:-9,yEnd:-99});ribbon(P,1.5,0.55,tintOf(),false,false);}}
+const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));geo.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));geo.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));geo.setIndex(idx);geo.computeVertexNormals();
+const mStr=FZ({color:0xffffff,vertexColors:true,map:HAIR,bumpMap:BMP,bumpScale:0.4,roughness:1,side:THREE.DoubleSide});
+hairS=add(mk(geo,mStr));PART=null;
+if(!hairS.geometry.index.count)hairS=under;}
 
 // Couture du dessus de la tête, visible quand la tête est en fourrure ou sans cheveux
 if((animal||['rase','chauve'].includes(hs))&&!hats){const pts=[];for(let a=0.55;a>=-1.9;a-=0.12)pts.push([V(0,24.6+Math.cos(a)*40,0.6+Math.sin(a)*40),V(0,-Math.cos(a),-Math.sin(a))]);seam(onSurf([hairCap,head].filter(Boolean),pts,0.05),shade(animal?fur:skinC,0.55));}
@@ -534,5 +621,5 @@ const camFill=new THREE.DirectionalLight(0xfff6ee,0.22);scene.add(camFill);retur
 function aim(cam,fit,el,zoom,light){const vh=cam.fov*Math.PI/360,hh=Math.atan(Math.tan(vh)*cam.aspect),d=fit.r/Math.sin(Math.min(vh,hh))*zoom,AZ=0.34;
 cam.position.set(fit.c.x+d*Math.sin(AZ)*Math.cos(el),fit.c.y+d*Math.sin(el),fit.c.z+d*Math.cos(AZ)*Math.cos(el));cam.lookAt(fit.c);if(light)light.position.copy(cam.position);}
 
-return{build,clean,encode,decode,lights,setup,aim,PRESETS,NEUTRAL,ENUM,ACC,SHAPES,ANCHORS,HOOKS};
+return{build,clean,encode,decode,lights,setup,aim,hair,HAIRK,HSDEF,PRESETS,NEUTRAL,ENUM,ACC,SHAPES,ANCHORS,HOOKS};
 })();
