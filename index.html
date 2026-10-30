@@ -672,7 +672,10 @@ const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(22,1,0.1,500);
 const r=new THREE.WebGLRenderer({antialias:true,alpha:true});r.setClearColor(0x000000,0);r.setPixelRatio(Math.min(2,window.devicePixelRatio||1));r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;document.body.appendChild(r.domElement);
 PL.setup(r);const camFill=PL.lights(scene);let P=null;
 const nom=q.get('nom')||decodeURIComponent((location.pathname.match(/\/p\/([^/?#]+)\/?$/)||[])[1]||'');
-(nom?fetch('/api/peluches?nom='+encodeURIComponent(nom)).then(x=>x.ok?x.json():null).then(d=>d?PL.unpack(d.p):null).catch(()=>null):PL.unpack(q.get('p'))).then(c=>{const cfg=c||PL.clean(PL.PRESETS.pompier);if(cfg.n)document.title=cfg.n;P=PL.build(cfg);scene.add(P.group);});
+(nom?fetch('/api/peluches?nom='+encodeURIComponent(nom)).then(x=>x.ok?x.json():null).then(d=>d?PL.unpack(d.p):null).catch(()=>null):PL.unpack(q.get('p'))).then(c=>{
+// Peluche de la bibliothèque introuvable : on le dit au lieu d'afficher une autre peluche
+if(nom&&!c){const m=document.createElement('p');m.textContent='Peluche « '+nom+' » introuvable.';m.style.cssText='position:fixed;inset:auto 0 45% 0;text-align:center;font:600 18px system-ui,sans-serif;color:#888;margin:0';document.body.append(m);return;}
+const cfg=c||PL.clean(PL.PRESETS.pompier);if(cfg.n)document.title=cfg.n;P=PL.build(cfg);scene.add(P.group);});
 const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches,autoSpin=q.get('tourne')!=='non'&&!reduce;
 const START={ry:-0.25,el:0.24,zoom:1.05};let ry=START.ry,el=START.el,zoom=START.zoom,idle=0;
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
