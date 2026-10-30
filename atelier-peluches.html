@@ -1,0 +1,985 @@
+<title>Atelier peluches</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a toy-maker's studio — the plush on a big turntable stage pinned on the left, a tabbed workbench on the right (photos, réglages, lien); on phones the stage sits on top of the tabs. */
+:root{
+  --bg:#f2eff6; --surface:#ffffff; --surface-2:#f7f4fa; --fg:#251b30; --muted:#6c6279; --line:rgba(37,27,48,.11);
+  --accent:#d63a74; --accent-soft:#fbe3ec; --mint:#178a84; --on-accent:#ffffff; --stage-a:#ffffff; --stage-b:#ece7f3;
+  --shadow:0 1px 2px rgba(37,27,48,.05),0 10px 28px rgba(37,27,48,.08);
+  --display:"Fredoka","Trebuchet MS",system-ui,sans-serif; --body:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"DM Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#15111b; --surface:#1f1927; --surface-2:#1a1521; --fg:#f3eef8; --muted:#a79cb4; --line:rgba(243,238,248,.11);
+  --accent:#ff6c9f; --accent-soft:#3a1d2a; --mint:#4fc7bf; --on-accent:#1a0c12; --stage-a:#2a2234; --stage-b:#231c2c;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.35); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#15111b; --surface:#1f1927; --surface-2:#1a1521; --fg:#f3eef8; --muted:#a79cb4; --line:rgba(243,238,248,.11);
+  --accent:#ff6c9f; --accent-soft:#3a1d2a; --mint:#4fc7bf; --on-accent:#1a0c12; --stage-a:#2a2234; --stage-b:#231c2c;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px rgba(0,0,0,.35); color-scheme:dark}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5}
+.app{max-width:1360px;margin:0 auto;padding-block:20px 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:18px}
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.logo{width:46px;height:46px;flex:none}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(26px,3.4vw,34px);line-height:1;margin:0;letter-spacing:-.01em}
+.brand p{margin:4px 0 0;color:var(--muted);font-size:14px;max-width:46ch}
+.steps{list-style:none;margin:0;padding:4px;display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;box-shadow:var(--shadow)}
+.steps button{font:700 14px/1 var(--body);border:0;background:none;color:var(--muted);padding:8px 14px 8px 8px;border-radius:999px;cursor:pointer;display:flex;gap:8px;align-items:center}
+.steps .n{font-family:var(--mono);font-size:12px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--surface-2);color:var(--muted)}
+.steps li.on button{background:var(--accent);color:var(--on-accent)}
+.steps li.on .n{background:rgba(255,255,255,.28);color:var(--on-accent)}
+.studio{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:18px;align-items:start}
+.viewer{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);display:grid;gap:10px;min-width:0}
+@media (max-width:920px){.studio{grid-template-columns:minmax(0,1fr)}.viewer{position:static}}
+.stage{position:relative;width:100%;aspect-ratio:1;max-height:calc(100vh - 160px);min-height:320px;border-radius:24px;overflow:hidden;cursor:grab;touch-action:pan-y;border:1px solid var(--line);box-shadow:var(--shadow);
+  background:repeating-conic-gradient(var(--stage-a) 0 25%,var(--stage-b) 0 50%) 0 0/28px 28px}
+.stage.drag{cursor:grabbing}
+.stage canvas{display:block;width:100%;height:100%}
+.stage-bar{position:absolute;top:12px;left:12px;right:12px;display:flex;flex-wrap:wrap;gap:6px;justify-content:space-between;pointer-events:none}
+.grp{display:flex;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px;pointer-events:auto;box-shadow:var(--shadow)}
+.grp button{font:700 13px/1 var(--body);border:0;background:none;color:var(--fg);padding:8px 12px;border-radius:999px;cursor:pointer}
+.grp button:hover{background:var(--surface-2)}
+.grp button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.stage-status{position:absolute;left:12px;right:12px;bottom:12px;margin:0;font-size:13px;font-weight:600;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:9px 12px;box-shadow:var(--shadow);pointer-events:none}
+.stage-status:empty{display:none}
+.quick{display:flex;gap:8px;align-items:center;min-width:0}
+.quick input{flex:1}
+.panel{display:grid;gap:14px;min-width:0}
+.tabs{display:flex;gap:4px;overflow-x:auto;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+.tabs button{font:700 14px/1 var(--body);border:0;background:none;color:var(--muted);padding:10px 14px;border-radius:12px;cursor:pointer;white-space:nowrap}
+.tabs button:hover{color:var(--fg);background:var(--surface-2)}
+.tabs button[aria-selected="true"]{background:var(--accent-soft);color:var(--accent)}
+.tabpanel,#settings{display:grid;gap:14px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px 20px;display:grid;gap:12px;min-width:0;box-shadow:var(--shadow)}
+h2{font-family:var(--display);font-weight:600;font-size:19px;line-height:1.2;margin:0;color:var(--fg)}
+label{font-size:14px;color:var(--muted);font-weight:700}
+input[type=text],input[type=url],select{font:16px var(--body);padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);color:var(--fg);width:100%;min-width:0;box-sizing:border-box}
+input[readonly]{font-family:var(--mono);font-size:13px}
+input.example{color:var(--muted)}
+input[type=color]{width:52px;height:40px;padding:3px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);cursor:pointer;flex:none}
+input[type=range]{width:100%;accent-color:var(--accent)}
+input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 16px}
+@media (max-width:560px){.fields{grid-template-columns:minmax(0,1fr)}}
+.field{display:grid;gap:6px;align-content:start;min-width:0}
+.field.wide{grid-column:1/-1}
+.colorrow,.row{display:flex;gap:8px;align-items:center;min-width:0;flex-wrap:wrap}
+.rangehead{justify-content:space-between;flex-wrap:nowrap}
+.check{display:flex;gap:8px;align-items:center;color:var(--fg);font-size:15px;font-weight:600;cursor:pointer}
+.check input{width:18px;height:18px;accent-color:var(--accent)}
+.flags{display:flex;flex-wrap:wrap;gap:8px 18px}
+.btn,.pip{font:700 14px/1 var(--body);padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;white-space:nowrap;text-decoration:none}
+.pip{font-size:13px;padding:8px 10px}
+.btn:hover,.pip:hover{border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.no-photo .pip{display:none}
+.pip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.cta{font:600 18px/1 var(--display);padding:14px 20px;border-radius:14px;border:0;background:var(--accent);color:var(--on-accent);cursor:pointer}
+.cta:disabled{opacity:.45;cursor:not-allowed}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg .btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.shots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.shot{border:2px dashed var(--line);border-radius:16px;padding:10px;display:grid;justify-items:center;align-content:start;gap:8px;text-align:center;min-height:130px;min-width:0;background:var(--surface-2)}
+.shot.over{border-color:var(--accent)}
+.shot.has{border-style:solid}
+.shot canvas{max-width:100%;height:auto;border-radius:10px;display:block}
+.shot.picking canvas{cursor:crosshair;outline:3px solid var(--accent);outline-offset:2px}
+.shot-l{font:600 14px/1 var(--display);color:var(--muted)}
+.printimg{width:64px;height:64px;object-fit:contain;border-radius:10px;background:var(--surface-2);border:1px solid var(--line)}
+.status{font-size:14px;margin:0;min-height:1.4em}
+.help{font-size:14px;color:var(--muted);margin:0}
+.pzlist{display:grid;gap:8px}
+.pzrow{display:flex;gap:10px;align-items:center;min-width:0}
+.pzrow label{flex:1;color:var(--fg);font-size:15px;min-width:0}
+.setup ol{margin:0;padding-left:1.3em;display:grid;gap:8px;max-width:70ch}
+code{font-family:var(--mono);font-size:13px;overflow-wrap:anywhere}
+.err{color:var(--accent);font-size:14px;margin:0}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 48 48" aria-hidden="true"><circle cx="13" cy="12" r="7" fill="var(--accent)"/><circle cx="35" cy="12" r="7" fill="var(--accent)"/><circle cx="24" cy="26" r="17" fill="var(--accent)"/><circle cx="24" cy="31" r="7.5" fill="var(--accent-soft)"/><circle cx="17.5" cy="23" r="2.4" fill="var(--fg)"/><circle cx="30.5" cy="23" r="2.4" fill="var(--fg)"/><ellipse cx="24" cy="29" rx="2.6" ry="1.9" fill="var(--fg)"/><path d="M14 38 l4 2 M30 40 l4 -2" stroke="var(--on-accent)" stroke-width="1.6" stroke-dasharray="1.6 1.6" fill="none"/></svg>
+      <div><h1>Atelier peluches</h1><p>Des peluches 3D sans fond, faites d'après une photo, pour tes items FiveM.</p></div>
+    </div>
+    <ol class="steps">
+      <li data-step="photos"><button type="button"><span class="n">1</span>Photos</button></li>
+      <li data-step="reglages"><button type="button"><span class="n">2</span>Réglages</button></li>
+      <li data-step="lien"><button type="button"><span class="n">3</span>Lien</button></li>
+    </ol>
+  </header>
+  <main class="studio">
+    <section class="viewer" aria-label="Aperçu de la peluche">
+      <div class="stage" id="stage" role="img" aria-label="Aperçu 3D de la peluche sur fond transparent">
+        <div class="stage-bar">
+          <div class="grp"><button type="button" id="v-front">Face</button><button type="button" id="v-side">Profil</button><button type="button" id="v-back">Dos</button></div>
+          <div class="grp"><button type="button" id="v-spin" aria-pressed="false">Tourner</button></div>
+        </div>
+        <p class="stage-status" id="stage-status" aria-live="polite"></p>
+      </div>
+      <div class="quick"><input id="out2" type="text" readonly aria-label="Lien de cette peluche"><button class="btn" id="copy2" type="button">Copier le lien</button></div>
+    </section>
+    <section class="panel no-photo" id="right">
+      <nav class="tabs" role="tablist" aria-label="Réglages de la peluche">
+        <button type="button" role="tab" data-tab="photos">Photos</button>
+        <button type="button" role="tab" data-tab="style">Style et pose</button>
+        <button type="button" role="tab" data-tab="visage">Visage</button>
+        <button type="button" role="tab" data-tab="tete">Tête</button>
+        <button type="button" role="tab" data-tab="tenue">Tenue</button>
+        <button type="button" role="tab" data-tab="accessoires">Accessoires</button>
+        <button type="button" role="tab" data-tab="lien">Lien</button>
+      </nav>
+      <div id="settings">
+        <div class="tabpanel" data-tab="photos" id="tab-photos">
+          <section class="card">
+            <h2>Photos de la personne</h2>
+            <p class="help">Une photo de face suffit. Ajoute le côté et le dos pour une peluche plus fidèle : arrière de la coiffure, capuche, dos du vêtement.</p>
+            <div class="shots" id="shots">
+              <div class="shot" data-slot="face"><span class="shot-l">Face</span><canvas hidden></canvas><button class="btn" type="button">Choisir</button><input type="file" accept="image/*" hidden></div>
+              <div class="shot" data-slot="cote"><span class="shot-l">Côté</span><canvas hidden></canvas><button class="btn" type="button">Choisir</button><input type="file" accept="image/*" hidden></div>
+              <div class="shot" data-slot="dos"><span class="shot-l">Dos</span><canvas hidden></canvas><button class="btn" type="button">Choisir</button><input type="file" accept="image/*" hidden></div>
+            </div>
+            <p class="help">Glisse une photo sur une case ou colle-la avec Ctrl+V.</p>
+            <div class="field"><label for="who">Sur les photos</label><select id="who"><option value="seule">Une seule personne</option><option value="gauche">La personne à gauche</option><option value="milieu">La personne au milieu</option><option value="droite">La personne à droite</option></select></div>
+            <label class="check"><input type="checkbox" id="review" checked> Vérifier la ressemblance et corriger tout seul (plus lent, plus fidèle)</label>
+            <button class="cta" id="analyse" type="button" disabled hidden>Créer la peluche avec la photo</button>
+            <p class="status" id="ai-status" aria-live="polite">Ajoute une photo de face : la peluche se crée toute seule.</p>
+          </section>
+        </div>
+        <div class="tabpanel" data-tab="style" id="tab-style" hidden>
+          <section class="card"><h2>Modèles de départ</h2><div class="seg" id="presets"></div></section>
+        </div>
+        <div class="tabpanel" data-tab="visage" id="tab-visage" hidden></div>
+        <div class="tabpanel" data-tab="tete" id="tab-tete" hidden></div>
+        <div class="tabpanel" data-tab="tenue" id="tab-tenue" hidden></div>
+        <div class="tabpanel" data-tab="accessoires" id="tab-accessoires" hidden></div>
+        <div class="tabpanel" data-tab="lien" id="tab-lien" hidden>
+          <section class="card">
+            <h2>Lien pour ton item</h2>
+            <div class="field"><label for="base">Adresse de ta page 3D</label><input id="base" type="url" placeholder="https://ton-pseudo.github.io/peluches/" autocomplete="off" spellcheck="false"></div>
+            <div class="field"><label for="out">Lien de cette peluche</label><div class="row"><input id="out" type="text" readonly><button class="btn" id="copy" type="button">Copier</button></div></div>
+            <p class="help" id="link-help"></p>
+            <div class="row"><a class="btn" id="open" target="_blank" rel="noopener" hidden>Ouvrir la page</a><button class="btn" id="icon" type="button" disabled>Télécharger l'icône PNG</button></div>
+            <p class="status" id="dl-status" aria-live="polite"></p>
+          </section>
+          <section class="card setup">
+            <h2>Mettre la page 3D en ligne (une seule fois)</h2>
+            <ol>
+              <li>Télécharge la page 3D : <button class="btn" id="get-viewer" type="button" disabled>Télécharger index.html</button></li>
+              <li>Sur github.com, crée un dépôt public nommé <code>peluches</code>, puis <b>Add file → Upload files</b> et dépose <code>index.html</code>.</li>
+              <li>Dans <b>Settings → Pages</b>, choisis la branche <code>main</code> et clique <b>Save</b>. Une ou deux minutes après, ton adresse est <code>https://ton-pseudo.github.io/peluches/</code>.</li>
+              <li>Colle cette adresse dans « Adresse de ta page 3D ». Elle reste enregistrée dans ce navigateur. Chaque peluche est entièrement décrite dans son lien : rien d'autre à mettre en ligne.</li>
+            </ol>
+            <h2>Dans « Créer une image item »</h2>
+            <ol>
+              <li>Type d'item : <b>Site Web</b>, puis colle le lien de la peluche dans <b>URLS</b>.</li>
+              <li>Pour l'icône d'inventaire : télécharge l'icône PNG, mets-la sur imgg.fr et colle son lien dans <b>Icône URL personnalisé</b>.</li>
+            </ol>
+            <p class="status" id="setup-status" aria-live="polite"></p>
+          </section>
+        </div>
+      </div>
+    </section>
+  </main>
+  <p class="err" id="err" hidden></p>
+</div>
+
+<script>window.addEventListener('error',e=>{const el=document.getElementById('err');if(el){el.hidden=false;el.textContent="L'atelier n'a pas pu se charger : "+e.message;}});</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script id="pl-src">
+// ===== Peluche paramétrable : le même code construit la peluche dans l'atelier et dans la page 3D =====
+const PL=(()=>{
+const V=(x,y,z)=>new THREE.Vector3(x,y,z),FWD=V(0,0,-1),BACK=V(0,0,1),X=V(1,0,0),NX=V(-1,0,0),Y=V(0,1,0);
+
+// Réglages possibles (clés courtes pour que le lien reste court)
+const ENUM={st:['classique','ours','lapin','chat','monstre','avatar'],po:['assis','debout','coucou','bravo','calin','coeur','pensif','tailleur','dab'],ey:['kawaii','realiste'],hs:['court','banane','meches','herisse','iroquoise','carre','long','tresse','couettes','queue','chignon','boucle','afro','dreads','rase','chauve'],
+bd:['aucune','barbe3j','barbe','longue','moustache','bouc'],gl:['aucune','lunettes','soleil','aviateur','tete','masque'],
+hw:['aucun','capuche','casquette','inverse','bonnet','chapeau','bandeau','pompier','police'],tp:['tshirt','chemise','sweat','veste','costume','gilet'],
+mt:['uni','rayures','camo','carreaux','taches'],hm:['uni','rayures','camo','carreaux','taches'],bt:['pantalon','jogging','short'],sh:['bottes','baskets','chaussures'],ex:['sourire','content','neutre','serieux'],
+it:['aucun','lance','coeur','telephone','cafe','donut','trousse'],ms:['aucune','monstre','lapin','ours','chat','chien','oiseau'],mp:['droite','gauche','tete','mains']};
+const ACC='rbmscowkehan';
+// Proportions par style : h = taille de la tête, b = corps [largeur, hauteur, profondeur], a = bras [épaisseur, longueur], l = jambes [largeur, hauteur, longueur]
+// Ourson : ventre rond, membres épais. Lapin : corps allongé, longues pattes. Chaton : tête un peu plus grosse.
+// Petit monstre : tête surdimensionnée, corps trapu et dodu, petits bras et petites jambes. Avatar : grosse tête ronde, corps étroit, membres fins.
+const PROPS={classique:{h:1,b:[1,1,1],a:[1,1],l:[1,1,1]},ours:{h:1.0,b:[1.16,1.0,1.16],a:[1.25,1.05],l:[1.2,1.1,1.05]},
+lapin:{h:0.94,b:[0.9,1.14,0.9],a:[0.85,1.18],l:[0.88,0.9,1.35]},chat:{h:1.1,b:[0.92,0.92,0.92],a:[0.9,0.92],l:[0.9,0.9,0.95]},
+monstre:{h:1.24,b:[1.0,0.8,1.0],a:[1.0,0.72],l:[1.0,0.85,0.75]},avatar:{h:1.2,b:[0.74,0.95,0.78],a:[0.6,1.0],l:[0.62,0.85,0.95]}};
+const COLS=['sk','hc','ec','glc','lc','hwc','tc','t2','ac','pc','sc','gv','mc'];
+const HOOKS={onTex:null};
+const PRESETS={
+pompier:{n:'Pompier 23',sk:'#f6d0b4',hc:'#e2ad6c',hs:'court',ec:'#245c9e',bd:'aucune',fr:1,ex:'sourire',gl:'masque',glc:'#9fdc2e',hw:'pompier',hwc:'#e8571f',hwt:'23',hm:'uni',pz:[],st:'classique',po:'assis',ey:'kawaii',fc:'',mz:1,mx:0,my:0,mf:0,mr:0,cl:1,lc:'#3a2a1e',im:'',imt:'webp',ia:1,ms:'aucune',mc:'#8ec5f0',mp:'droite',tp:'gilet',mt:'uni',tc:'#f26a1b',t2:'#f5ce14',tt:'LSFD',rf:1,ac:'#c8261f',bt:'pantalon',pc:'#24304e',sh:'bottes',sc:'#161618',gv:'#86ace6',acc:'rms',it:'lance'},
+police:{n:'Agent LSPD',sk:'#e2ac86',hc:'#3b2a20',hs:'rase',ec:'#5a3b22',bd:'barbe3j',fr:0,cl:0,ex:'content',gl:'soleil',glc:'#1c1c1e',hw:'police',hwc:'#1b2440',hwt:'',tp:'chemise',mt:'uni',tc:'#2b3d6b',t2:'#2b3d6b',tt:'LSPD',rf:0,ac:'#c9a227',bt:'pantalon',pc:'#1b2238',sh:'chaussures',sc:'#111113',gv:'',acc:'rbw',it:'donut'},
+ems:{n:'Ambulancière',sk:'#c98a64',hc:'#1d1512',hs:'queue',ec:'#3d2a1c',bd:'aucune',fr:0,ex:'sourire',gl:'aucune',glc:'#2b2b2b',hw:'aucun',hwc:'#2e6b3a',hwt:'',tp:'veste',mt:'uni',tc:'#2e6b3a',t2:'#e9eef2',tt:'EMS',rf:1,ac:'#d23a3a',bt:'pantalon',pc:'#1f2b25',sh:'baskets',sc:'#151515',gv:'#7fb2e8',acc:'rmo',it:'trousse'},
+civil:{n:'Civil',sk:'#f1c6a6',hc:'#7a4a26',hs:'boucle',ec:'#4b6b2a',bd:'aucune',fr:1,ex:'content',gl:'lunettes',glc:'#2b2b2b',hw:'bonnet',hwc:'#c2402f',hwt:'',tp:'sweat',mt:'uni',tc:'#5b6f8f',t2:'#e9e9e9',tt:'',rf:0,ac:'#f2c418',bt:'jogging',pc:'#3c4a63',sh:'baskets',sc:'#e8e8e8',gv:'',acc:'h',it:'cafe'}};
+const NEUTRAL=Object.assign({},PRESETS.civil,{n:'',hs:'court',fr:0,cl:0,ms:'aucune',mc:'#8ec5f0',mp:'droite',mz:1,ex:'content',gl:'aucune',hw:'aucun',hwt:'',tp:'tshirt',mt:'uni',tt:'',bt:'pantalon',sh:'baskets',gv:'',acc:'',it:'aucun'});
+
+function clean(o,base){const d=Object.assign({},base||PRESETS.pompier);if(!o||typeof o!=='object')return d;
+for(const k in ENUM)if(ENUM[k].includes(o[k]))d[k]=o[k];
+for(const k of COLS)if(typeof o[k]==='string'&&/^#[0-9a-f]{6}$/i.test(o[k]))d[k]=o[k].toLowerCase();
+if('gv' in o&&!o.gv)d.gv='';
+if(typeof o.fc==='string'&&/^#[0-9a-f]{6}$/i.test(o.fc))d.fc=o.fc.toLowerCase();else if('fc' in o&&!o.fc)d.fc='';
+for(const[k,m]of[['hwt',6],['tt',8],['n',24]])if(typeof o[k]==='string')d[k]=o[k].replace(/[^\p{L}\p{N} .'\-]/gu,'').trim().slice(0,m);
+for(const k of['fr','rf','cl'])if(k in o)d[k]=o[k]&&o[k]!=='0'?1:0;
+if('mz' in o){const v=Number(o.mz);if(Number.isFinite(v))d.mz=Math.round(Math.min(2,Math.max(0.5,v))*100)/100;}
+for(const[k,lo,hi]of[['mx',-1,1],['my',-1,1],['mf',-1,1],['mr',-180,180]])if(k in o){const v=Number(o[k]);if(Number.isFinite(v))d[k]=Math.round(Math.min(hi,Math.max(lo,v))*100)/100;}
+// Imprimé découpé dans la photo : petite image en base64 (webp, png ou jpeg) et son rapport largeur/hauteur
+if('im' in o)d.im=typeof o.im==='string'&&/^[A-Za-z0-9+/=]{40,16000}$/.test(o.im)?o.im:'';
+if(['webp','png','jpeg'].includes(o.imt))d.imt=o.imt;
+if('ia' in o){const v=Number(o.ia);if(Number.isFinite(v))d.ia=Math.round(Math.min(3,Math.max(0.33,v))*100)/100;}
+if(typeof o.acc==='string')d.acc=[...ACC].filter(ch=>o.acc.includes(ch)).join('');
+d.pz=cleanPieces('pz' in o?o.pz:d.pz);
+return d;}
+// Pièces sur mesure : [forme, ancre, x,y,z, tx,ty,tz, rx,ry,rz, couleur, collée]. Positions et tailles en rayons d'ancre, rotations en degrés.
+const SHAPES=['sphere','goutte','cone','cylindre','tore','boite'],ANCHORS=['tete','corps','mains','dos','jambes'];
+function cleanPieces(a){if(!Array.isArray(a))return[];const out=[],num=(x,lo,hi,def)=>{x=Number(x);return Number.isFinite(x)?Math.round(Math.min(hi,Math.max(lo,x))*100)/100:def;};
+for(let v of a.slice(0,24)){if(v&&!Array.isArray(v)&&typeof v==='object'){const P=v.pos||[],T=v.taille||[],Q=v.rot||[];v=[v.forme,v.ancre,P[0],P[1],P[2],T[0],T[1],T[2],Q[0],Q[1],Q[2],v.couleur,v.colle];}
+if(!Array.isArray(v)||!SHAPES.includes(v[0])||!ANCHORS.includes(v[1])||!/^#[0-9a-f]{6}$/i.test(v[11]))continue;
+out.push([v[0],v[1],num(v[2],-3,3,0),num(v[3],-3,3,0),num(v[4],-3,3,0),num(v[5],0.02,2,0.2),num(v[6],0.02,2,0.2),num(v[7],0.02,2,0.2),num(v[8],-360,360,0),num(v[9],-360,360,0),num(v[10],-360,360,0),v[11].toLowerCase(),v[12]&&v[12]!=='0'?1:0]);}
+return out;}
+function encode(c){const b=new TextEncoder().encode(JSON.stringify(clean(c)));let s='';b.forEach(x=>{s+=String.fromCharCode(x);});return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
+function decode(str){try{const s=atob(String(str).replace(/-/g,'+').replace(/_/g,'/'));return clean(JSON.parse(new TextDecoder().decode(Uint8Array.from(s,ch=>ch.charCodeAt(0)))));}catch(e){return null;}}
+
+// Hasard reproductible : une même peluche a toujours les mêmes petites bosses
+let R=Math.random;
+function rng(seed){let a=seed>>>0;return()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};}
+function hashStr(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+
+// Couleurs
+const col=c=>new THREE.Color(c),shade=(c,k)=>col(c).multiplyScalar(k),mix=(a,b,t)=>col(a).lerp(col(b),t),hex=c=>'#'+col(c).getHexString();
+const lum=c=>{const k=col(c);return 0.2126*k.r+0.7152*k.g+0.0722*k.b;};
+const ink=c=>lum(c)>0.55?'#1a1a1a':'#f6f6f2';
+
+// Textures
+function cv(w,h){h=h||w;const c=document.createElement('canvas');c.width=w;c.height=h;return[c,c.getContext('2d')];}
+function fabTex(base,lo,n,rep){const[c,g]=cv(512);g.fillStyle=base;g.fillRect(0,0,512,512);
+for(let i=0;i<n;i++){const x=Math.random()*512,y=Math.random()*512,a=Math.random()*6.28,l=2+Math.random()*6;g.strokeStyle=Math.random()<0.5?lo:'#ffffff';g.globalAlpha=0.15+Math.random()*0.3;g.lineWidth=0.6+Math.random()*0.9;g.beginPath();g.moveTo(x,y);g.quadraticCurveTo(x+Math.cos(a)*l*0.5+1,y+Math.sin(a)*l*0.5,x+Math.cos(a)*l,y+Math.sin(a)*l);g.stroke();}
+const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rep,rep);t.anisotropy=8;return t;}
+function bumpTex(){const[c,g]=cv(256);g.fillStyle='#808080';g.fillRect(0,0,256,256);g.globalAlpha=0.6;for(let i=0;i<12000;i++){const v=Math.floor(60+Math.random()*140);g.fillStyle='rgb('+v+','+v+','+v+')';g.fillRect(Math.random()*256,Math.random()*256,1.2,2.5);}
+const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(6,6);return t;}
+function knitTex(){const[c,g]=cv(256);g.fillStyle='#ededed';g.fillRect(0,0,256,256);for(let x=0;x<256;x+=16){g.fillStyle='rgba(0,0,0,0.16)';g.fillRect(x,0,5,256);g.fillStyle='rgba(255,255,255,0.4)';g.fillRect(x+8,0,4,256);}
+for(let y=0;y<256;y+=8){g.fillStyle='rgba(0,0,0,0.05)';g.fillRect(0,y,256,2);}const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(10,2);return t;}
+let FAB,HAIR,BMP,KNIT;
+function shared(){if(FAB)return;FAB=fabTex('#f2f2f2','#c9c9c9',20000,3);HAIR=fabTex('#eeeeee','#a0a0a0',26000,4);BMP=bumpTex();KNIT=knitTex();}
+function noise(g,w,h,n){for(let i=0;i<n;i++){g.fillStyle=R()<0.5?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.08)';g.fillRect(R()*w,R()*h,2,2);}}
+function rr(g,x,y,w,h,rad){g.beginPath();if(g.roundRect)g.roundRect(x,y,w,h,rad);else g.rect(x,y,w,h);}
+function dash(g,c,segs){g.save();g.setLineDash([10,7]);g.strokeStyle=c;g.lineWidth=2.2;g.beginPath();segs.forEach(s=>{g.moveTo(s[0],s[1]);g.lineTo(s[2],s[3]);});g.stroke();g.restore();}
+function clothTex(c,rf,kind,mt,ac){const[cn,g]=cv(512,256),[e,ge]=cv(512,256),base=col(c);g.fillStyle=hex(base);g.fillRect(0,0,512,256);
+if(mt==='rayures'){g.fillStyle=hex(ac||shade(base,0.6));for(let y=14;y<256;y+=42)g.fillRect(0,y,512,15);}
+if(mt==='camo'){const tones=[shade(base,0.6),mix(base,'#4b5320',0.5),shade(base,1.35)];for(let i=0;i<80;i++){g.fillStyle=hex(tones[i%3]);g.beginPath();g.ellipse(R()*512,R()*256,8+R()*18,12+R()*22,R()*3,0,7);g.fill();}}
+if(mt==='carreaux'){g.globalAlpha=0.38;g.fillStyle=hex(ac||'#111111');for(let x=0;x<512;x+=48)g.fillRect(x,0,16,256);for(let y=0;y<256;y+=72)g.fillRect(0,y,512,24);
+g.globalAlpha=0.5;g.fillStyle=hex(shade(base,0.45));for(let x=24;x<512;x+=48)g.fillRect(x,0,3,256);for(let y=36;y<256;y+=72)g.fillRect(0,y,512,4);g.globalAlpha=1;}
+if(mt==='taches'){g.fillStyle=hex(ac||'#222222');for(let i=0;i<14;i++){const x=R()*512,y=R()*256,r=18+R()*22,pts=[];for(let k=0;k<12;k++){const a=k/12*Math.PI*2,q=r*(0.75+R()*0.35);pts.push([x+Math.cos(a)*q*0.7,y+Math.sin(a)*q]);}
+g.beginPath();pts.forEach((p,k)=>{const n=pts[(k+1)%12],mx=(p[0]+n[0])/2,my=(p[1]+n[1])/2;if(k===0)g.moveTo(mx,my);else g.quadraticCurveTo(p[0],p[1],mx,my);});g.quadraticCurveTo(pts[0][0],pts[0][1],(pts[0][0]+pts[1][0])/2,(pts[0][1]+pts[1][1])/2);g.closePath();g.fill();}}
+noise(g,512,256,9000);ge.fillStyle='#000';ge.fillRect(0,0,512,256);
+if(rf)for(const y of(kind==='manche'?[100,170]:[150,200])){g.fillStyle='#d4ee3a';g.fillRect(0,y,512,30);g.fillStyle='#e6eaee';g.fillRect(0,y+9,512,12);ge.fillStyle='#4a5410';ge.fillRect(0,y,512,30);ge.fillStyle='#ffffff';ge.fillRect(0,y+9,512,12);}
+dash(g,'rgba(255,255,255,0.28)',[[0,10,512,10],[0,246,512,246]]);const t=new THREE.CanvasTexture(cn);t.anisotropy=8;return[t,rf?new THREE.CanvasTexture(e):null];}
+function textTex(txt,c){const[cn,g]=cv(512,160);g.font='bold 104px "Arial Black",Arial,sans-serif';const w=g.measureText(txt).width||1,k=Math.min(1,470/w);
+g.save();g.translate(256,84);g.scale(k,1);g.textAlign='center';g.textBaseline='middle';g.lineJoin='round';g.lineWidth=12;g.strokeStyle=c==='#1a1a1a'?'rgba(255,255,255,0.55)':'rgba(0,0,0,0.45)';g.strokeText(txt,0,0);g.fillStyle=c;g.fillText(txt,0,0);g.restore();
+const t=new THREE.CanvasTexture(cn);t.anisotropy=8;return t;}
+function shieldTex(num){const[c,g]=cv(256);rr(g,40,28,176,200,26);g.fillStyle='#7d1612';g.fill();g.lineWidth=5;g.strokeStyle='#3d0a08';g.stroke();
+g.textAlign='center';g.textBaseline='middle';rr(g,52,40,152,34,14);g.fillStyle='#f4f1ea';g.fill();g.fillStyle='#7d1612';g.font='bold 21px sans-serif';g.fillText('FIREFIGHTER',128,58);
+rr(g,62,84,132,96,10);g.fillStyle='#c8261f';g.fill();if(num){g.fillStyle='#ffffff';g.font='bold '+(num.length>2?(num.length>4?34:50):76)+'px sans-serif';g.fillText(num,128,135);}
+rr(g,70,190,116,30,8);g.fillStyle='#4a0d0a';g.fill();const t=new THREE.CanvasTexture(c);t.anisotropy=8;return t;}
+function discTex(num){const[c,g]=cv(128);g.fillStyle='#151515';g.beginPath();g.arc(64,64,60,0,7);g.fill();g.fillStyle='#ffffff';g.font='bold '+(num.length>2?30:52)+'px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(num,64,68);const t=new THREE.CanvasTexture(c);t.anisotropy=8;return t;}
+function tagTex(){const[c,g]=cv(128);g.fillStyle='#fbf8f2';g.fillRect(0,0,128,128);g.fillStyle='#c8261f';g.beginPath();g.arc(56,40,10,0,7);g.arc(72,40,10,0,7);g.fill();g.beginPath();g.moveTo(47,45);g.lineTo(64,64);g.lineTo(81,45);g.fill();g.fillStyle='#b8b2a8';for(let i=0;i<3;i++)g.fillRect(30,80+i*12,68-i*14,4);return new THREE.CanvasTexture(c);}
+function irisTex(c1,c2){const[c,g]=cv(256);const gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#0a0a10');gr.addColorStop(0.2,'#0a0a10');gr.addColorStop(0.23,c1);gr.addColorStop(0.45,c2);gr.addColorStop(0.62,c1);gr.addColorStop(0.68,'#140d0b');gr.addColorStop(1,'#140d0b');g.fillStyle=gr;g.fillRect(0,0,256,256);
+g.globalAlpha=0.22;for(let x=0;x<256;x+=3){g.fillStyle=R()<0.5?'#ffffff':'#000000';g.fillRect(x,58,1.5,25+R()*95);}g.globalAlpha=1;return new THREE.CanvasTexture(c);}
+function fuzz(m){m.onBeforeCompile=sh=>{sh.fragmentShader=sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance += diffuseColor.rgb * pow(1.0 - saturate(dot(normal, normalize(vViewPosition))), 2.2) * 0.32;');};m.customProgramCacheKey=()=>'fuzz';return m;}
+
+// Formes
+function blob(rx,ry,rz,o){o=o||{};const big=Math.max(rx,ry,rz)>=2.5,part=o.t1||o.pl;
+const g=part?new THREE.SphereGeometry(1,big?64:32,big?40:20,o.p0||0,o.pl||Math.PI*2,o.t0||0,(o.t1||Math.PI)-(o.t0||0)):new THREE.SphereGeometry(1,big?64:32,big?48:24);
+const p=g.attributes.position;const s=R()*10;const L=o.lump===undefined?0.025:o.lump,P=o.pear||0,T=o.tip||0,Q=o.sq||0;
+for(let i=0;i<p.count;i++){let x=p.getX(i),y=p.getY(i),z=p.getZ(i);if(Q){x=Math.sign(x)*Math.pow(Math.abs(x),Q);y=Math.sign(y)*Math.pow(Math.abs(y),Q);z=Math.sign(z)*Math.pow(Math.abs(z),Q);}
+const f=(1+P*(-y))*(y<0?1+y*T:1);const n=1+L*(Math.sin(x*4+s)*Math.cos(y*3.3+s)+0.6*Math.sin(z*4.6+s*1.7));p.setXYZ(i,x*rx*f*n,y*ry*n,z*rz*f*n);}g.computeVertexNormals();return g;}
+function visor(w,len,back,droop){const g=new THREE.CylinderGeometry(1,1,1,40,1,false,-Math.PI/2,Math.PI),p=g.attributes.position;
+for(let i=0;i<p.count;i++){const x=p.getX(i)*w,z=p.getZ(i)*len+back;p.setXYZ(i,x,p.getY(i)*0.5-Math.max(0,z-back-len*0.45)*droop,z);}g.computeVertexNormals();return g;}
+
+function build(cfg){shared();const c=clean(cfg);R=rng(hashStr(JSON.stringify(c)));
+const G=new THREE.Group(),owned=[],own=t=>{owned.push(t);return t;};
+// Couleurs données en sRGB, converties en linéaire pour un rendu avec tons doux (ACES) ; les images couleur sont marquées sRGB
+const LIN=o=>{if(o.color!==undefined)o.color=new THREE.Color(o.color).convertSRGBToLinear();if(o.emissive!==undefined)o.emissive=new THREE.Color(o.emissive).convertSRGBToLinear();if(o.map)o.map.encoding=THREE.sRGBEncoding;if(o.emissiveMap)o.emissiveMap.encoding=THREE.sRGBEncoding;return o;};
+const SM=o=>new THREE.MeshStandardMaterial(LIN(o)),FZ=o=>fuzz(SM(o));
+const decal=t=>SM({map:own(t),transparent:true,alphaTest:0.4,roughness:0.85,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2});
+function clothMat(k,rf,kind,mt){const[t,e]=clothTex(k,rf,kind,mt,c.ac);own(t);if(e)own(e);return FZ({map:t,emissive:e?0xffffff:0x000000,emissiveMap:e,emissiveIntensity:e?0.08:0,roughness:0.85,bumpMap:BMP,bumpScale:0.15,side:THREE.DoubleSide});}
+function mk(geo,mat){const m=new THREE.Mesh(geo,mat);m.castShadow=m.receiveShadow=true;return m;}
+// PART étiquette les éléments dont la zone (tête, corps, objet) ne se devine pas à leur position
+let PART=null;
+function add(m,pos,rot,par){if(pos)m.position.set(pos[0],pos[1],pos[2]);if(rot)m.rotation.set(rot[0],rot[1],rot[2]);(par||G).add(m);if(PART&&!par)m.userData.part=PART;m.updateMatrixWorld(true);return m;}
+const ray=new THREE.Raycaster(),NM=new THREE.Matrix3();
+function hitAt(t,o,d){ray.set(o,d);const h=ray.intersectObjects(t,false)[0];if(!h)return null;NM.getNormalMatrix(h.object.matrixWorld);return{p:h.point.clone(),n:h.face.normal.clone().applyMatrix3(NM).normalize()};}
+function stick(obj,t,x,y,emb,par){(par||G).add(obj);if(PART&&!par)obj.userData.part=PART;const h=hitAt(t,V(x,y,60),FWD);if(!h){obj.position.set(x,y,0);return obj;}obj.position.copy(h.p).addScaledVector(h.n,-emb);obj.lookAt(h.p.clone().addScaledVector(h.n,5));obj.updateMatrixWorld(true);return obj;}
+function conform(t,ctr,u,v,w,h,seg,d,off){const geo=new THREE.PlaneGeometry(w,h,seg,seg);const p=geo.attributes.position;for(let i=0;i<p.count;i++){const q=ctr.clone().addScaledVector(u,p.getX(i)).addScaledVector(v,p.getY(i));const hh=hitAt(t,q.clone().addScaledVector(d,-60),d);const pt=hh?hh.p.addScaledVector(d,-off):q;p.setXYZ(i,pt.x,pt.y,pt.z);}geo.computeVertexNormals();return geo;}
+const tor=(R0,t,mat,y,zs,z)=>{const m=add(mk(new THREE.TorusGeometry(R0,t,12,96),mat),[0,y,z||0],[Math.PI/2,0,0]);m.scale.set(1,zs,1);m.updateMatrixWorld(true);return m;};
+const tube=(pts,r,mat,closed)=>add(mk(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts,!!closed),Math.max(40,pts.length*16),r,8,!!closed),mat));
+// Points posés sur une surface, vus depuis l'extérieur (sangles, chaîne…)
+function onSurf(t,pts,off){return pts.map(([o,d])=>{const h=hitAt(t,o,d);return h?h.p.addScaledVector(h.n,off):o.clone().addScaledVector(d,40);});}
+// Pique orientée vers l'extérieur d'un ellipsoïde (cheveux hérissés, crête)
+function spike(cy,cz,rx,ry,rz,th,ph,rad,len,mat){const s=Math.sin(th),p=V(-Math.cos(ph)*s*rx,Math.cos(th)*ry,Math.sin(ph)*s*rz),n=V(p.x/(rx*rx),p.y/(ry*ry),p.z/(rz*rz)).normalize();
+const m=mk(new THREE.ConeGeometry(rad,len,10),mat);m.position.set(p.x,cy+p.y,cz+p.z).addScaledVector(n,len*0.35);m.quaternion.setFromUnitVectors(Y,n);G.add(m);m.updateMatrixWorld(true);return m;}
+
+// Coutures : tube fin texturé en pointillés, comme des points de couture
+const[stc,stg]=cv(64,8);stg.clearRect(0,0,64,8);stg.fillStyle='#ffffff';stg.fillRect(10,1,30,6);
+function seam(pts,col,closed,par){if(pts.length<2)return null;const curve=new THREE.CatmullRomCurve3(pts,!!closed),len=curve.getLength(),t=own(new THREE.CanvasTexture(stc));t.wrapS=THREE.RepeatWrapping;t.repeat.set(Math.max(1,Math.round(len/0.8)),1);
+const m=new THREE.Mesh(new THREE.TubeGeometry(curve,Math.max(24,Math.round(len*4)),0.08,5,!!closed),SM({color:col,map:t,transparent:true,alphaTest:0.5,roughness:0.9}));m.userData.seam=true;(par||G).add(m);return m;}
+const ring=(r1,r2,axis,at,n)=>{const pts=[];for(let i=0;i<(n||36);i++){const a=i/(n||36)*Math.PI*2,u=Math.cos(a),v=Math.sin(a);pts.push(axis==='y'?V(u*r1,at,v*r2):V(u*r1,v*r2,at));}return pts;};
+
+// Matières (le style change la peau : fourrure pour les animaux, peau lisse pour l'avatar)
+// Petit monstre : la fourrure prend la couleur de la capuche s'il en porte une (la capuche devient la fourrure), le visage est plus clair
+const st=c.st,animal=['ours','lapin','chat'].includes(st),furry=animal||st==='monstre',fur=c.fc||(st==='monstre'&&c.hw==='capuche'?c.hwc:c.hc),skinC=st==='monstre'?hex(mix(c.sk,'#f7e7da',0.6)):c.sk;
+const mFur=FZ({color:fur,map:HAIR,bumpMap:BMP,bumpScale:0.5,roughness:1,side:THREE.DoubleSide}),mFurL=FZ({color:mix(fur,'#ffffff',0.55),map:FAB,roughness:1});
+const mSkin=st==='avatar'?SM({color:skinC,roughness:0.55}):FZ({color:skinC,map:FAB,bumpMap:BMP,bumpScale:0.08,roughness:1}),mBodySkin=furry?mFur:mSkin;
+const mHair=st==='monstre'?mFur:FZ({color:c.hc,map:HAIR,bumpMap:BMP,bumpScale:0.45,roughness:1,side:THREE.DoubleSide});
+const mBrow=FZ({color:shade(c.hc,0.72),map:HAIR,roughness:1});
+const mBlush=FZ({color:mix(c.sk,'#f07f90',0.5),map:FAB,roughness:1}),mFreckle=SM({color:shade(c.sk,0.7),roughness:1});
+// Yeux foncés : on éclaircit l'iris pour qu'il reste lisible au lieu de faire un rond noir
+const eyeBase=lum(c.ec)<0.1?mix(c.ec,'#8a6440',0.6):col(c.ec);
+const mIris=SM({map:own(irisTex(hex(eyeBase),hex(mix(eyeBase,'#ffffff',0.5)))),roughness:0.06,metalness:0.1}),mLash=SM({color:0x2a1d18,roughness:0.6}),mShine=new THREE.MeshBasicMaterial({color:0xffffff});
+const mMouth=SM({color:0x5a1e22,roughness:0.7,side:THREE.DoubleSide}),mTongue=SM({color:0xe8848f,roughness:0.6}),mNose=FZ({color:shade(c.sk,0.92),map:FAB,roughness:1});
+const mP=FZ({color:c.pc,map:FAB,bumpMap:BMP,bumpScale:0.2,roughness:0.95}),mDark=FZ({color:0x1c1c1e,roughness:0.75,map:FAB,side:THREE.DoubleSide});
+const mSilver=SM({color:0xcfd5dc,metalness:0.6,roughness:0.28}),mGold=SM({color:0xd9a833,metalness:0.7,roughness:0.3}),mGray=SM({color:0xd9dce0,roughness:0.5,metalness:0.2});
+const mAcc=FZ({color:c.ac,map:FAB,bumpMap:BMP,bumpScale:0.1,roughness:0.7}),mWhite=SM({color:0xf2f2f2,roughness:0.6});
+const mLime=SM({color:0x9fd63a,roughness:0.5}),mScreen=SM({color:0x1d2a1a,roughness:0.15,metalness:0.2});
+const has=k=>c.acc.includes(k),hats=!['aucun','bandeau'].includes(c.hw),hood=c.hw==='capuche'&&st!=='monstre';
+// Poses : direction de chaque bras depuis l'épaule, vers la main. 'hold' = bras vers l'avant (tient l'objet), 'down' = le long du corps
+const POSE={assis:{l:'sit',a:['hold','hold']},debout:{l:'stand',a:['hold','hold']},coucou:{l:'stand',a:['down','wave']},bravo:{l:'stand',a:['up','up']},calin:{l:'stand',a:['open','open']},
+coeur:{l:'sit',a:['heart','heart']},pensif:{l:'sit',a:['chin','lap']},tailleur:{l:'cross',a:['hold','hold']},dab:{l:'stand',a:['dabB','dabA']}}[c.po]||{l:'sit',a:['hold','hold']};
+const holding=POSE.a[0]==='hold',showIt=holding?c.it:(c.po==='coeur'?'coeur':'aucun'),mpE=(c.mp==='mains'&&!holding)?'droite':c.mp;
+const ARM={wave:[0.5,0.82,0.28],up:[0.42,0.88,0.2],open:[0.85,0.05,0.52],heart:[-0.45,0.05,0.89],chin:[-0.55,0.45,0.72],lap:[-0.3,-0.6,0.74],dabA:[0.75,0.62,0.2],dabB:[-0.8,0.45,0.4]};
+
+// Corps et haut
+add(mk(blob(8.6,9.2,7.6,{pear:0.1}),st==='monstre'?mFur:mP),[0,9.2,0]);
+const layered=['gilet','veste','costume'].includes(c.tp);
+const shirt=add(mk(blob(9.0,9.65,7.98,{pear:0.1,lump:0,t0:0,t1:1.86}),clothMat(layered?c.t2:c.tc,!layered&&c.rf,'torse',layered?'uni':c.mt)),[0,9.2,0]);
+let outer=shirt;
+if(c.tp==='gilet'){outer=add(mk(blob(9.15,9.78,8.1,{pear:0.1,lump:0,t0:0.62,t1:1.86}),clothMat(c.tc,c.rf,'torse',c.mt)),[0,9.2,0]);tor(9.05,0.35,FZ({color:shade(c.tc,0.85),map:FAB,roughness:0.9}),6.4,0.883);}
+if(c.tp==='veste'||c.tp==='costume'){const gap=c.tp==='costume'?0.9:0.55;outer=add(mk(blob(9.18,9.8,8.12,{pear:0.1,lump:0,t0:0.12,t1:1.86,p0:Math.PI/2+gap/2,pl:Math.PI*2-gap}),clothMat(c.tc,c.rf,'torse',c.mt)),[0,9.2,0]);
+if(c.tp==='veste')for(const s of[-1,1])for(const y of[15.0,12.6,10.2,7.8])stick(mk(blob(0.34,0.34,0.18,{lump:0}),mSilver),[outer],s*3.3,y,-0.05);}
+const collar=c.tp==='gilet'?shade(c.t2,0.9):layered?col(c.t2):shade(c.tc,0.85),mCol=FZ({color:collar,map:FAB,roughness:0.9});
+const colT=tor(4.9,0.95,mCol,17.1,0.88),colB=add(mk(blob(4.6,1.8,4.1,{lump:0}),mCol),[0,16.4,0.2]),torso=[...new Set([outer,shirt,colT,colB])];
+const belt=tor(8.45,0.55,FZ({color:shade(c.pc,0.45),map:FAB,roughness:0.75}),5.85,0.875);stick(mk(blob(1.0,0.7,0.3,{lump:0}),mSilver),[belt],0,5.85,-0.1);
+if(c.tp==='gilet'){const mPk=FZ({color:shade(c.tc,0.88),map:FAB,bumpMap:BMP,bumpScale:0.15,roughness:0.9});
+for(const s of[-1,1]){const pk=new THREE.Group();pk.add(mk(blob(2.6,1.6,0.8,{lump:0.01}),mPk));const fl=mk(blob(2.7,0.55,0.85,{lump:0}),mPk);fl.position.set(0,1.3,0.1);pk.add(fl);stick(pk,[outer],s*3.4,8.5,0.4);
+add(mk(conform([outer],V(s*3,13.9,0),X,Y,1.0,5.6,12,FWD,0.15),mDark));stick(mk(blob(0.75,0.95,0.25,{lump:0}),mSilver),[outer],s*3,13.6,-0.15);}
+add(mk(conform([outer],V(-0.3,12.8,0),V(0.5,-0.867,0),V(0.867,0.5,0),1.1,13.6,24,FWD,0.28),mDark));}
+if(c.tp==='sweat'){if(!hood)add(mk(blob(6.4,3.6,3.2,{lump:0.01}),clothMat(c.tc,false,'torse',c.mt)),[0,18.2,-6.6],[0.55,0,0]);
+stick(mk(blob(4.6,2.3,0.7,{lump:0.01}),FZ({color:shade(c.tc,0.92),map:FAB,roughness:0.9})),[shirt],0,8.4,0.35);
+for(const s of[-1,1])stick(mk(blob(0.22,1.6,0.22,{lump:0}),SM({color:c.t2,roughness:0.7})),[shirt],s*1.3,14.9,-0.05);}
+if(c.tp==='chemise'){const mB=SM({color:shade(c.tc,0.55),roughness:0.5});for(const y of[15.4,13.2,11.0,8.8])stick(mk(blob(0.32,0.32,0.15,{lump:0}),mB),[shirt],0,y,-0.05);
+for(const s of[-1,1]){const k=stick(mk(blob(1.6,0.9,0.3,{lump:0}),mCol),[shirt],s*1.7,16.9,-0.05);k.rotateZ(s*0.55);}}
+if(c.tp==='costume'){const mT=FZ({color:c.ac,map:FAB,roughness:0.6});stick(mk(blob(0.85,3.1,0.35,{lump:0,tip:0.45}),mT),[shirt],0,12.9,0.05);stick(mk(blob(0.75,0.6,0.4,{lump:0}),mT),[shirt],0,15.9,0.05);}
+if(c.tt){const tc=ink(c.tc);
+if((c.tp==='tshirt'||c.tp==='sweat')&&!c.im)add(mk(conform([shirt],V(0,12.8,0),X,Y,7,2.4,14,FWD,0.12),decal(textTex(c.tt,tc))));
+if(c.tp==='chemise')add(mk(conform([shirt],V(4.4,12.4,0),X,Y,4.4,1.5,10,FWD,0.12),decal(textTex(c.tt,tc))));
+if(c.tp!=='costume'&&!has('k'))add(mk(conform([outer],V(0,12.4,0),NX,Y,11,3.8,16,BACK,0.14),decal(textTex(c.tt,tc))));}
+
+// Coutures du haut : côtés et milieu du dos
+{const topCol=shade(layered?c.tc:c.tc,0.55);for(const sx of[-1,1]){const pts=[];for(let y=7.4;y<=16.2;y+=0.6)pts.push([V(sx*30,y,0.4),V(-sx,0,0)]);seam(onSurf(torso,pts,0.06),topCol);}
+const bk=[];for(let y=7.4;y<=16.6;y+=0.6)bk.push([V(0,y,-30),V(0,0,1)]);if(!has('k'))seam(onSurf(torso,bk,0.06),topCol);}
+
+// Imprimé du haut découpé dans la photo, collé sur la poitrine (sur le gilet s'il y en a un)
+if(c.im&&c.tp!=='costume'){const img=new Image(),tx=own(new THREE.Texture(img));tx.anisotropy=4;img.onload=()=>{tx.needsUpdate=true;if(HOOKS.onTex)HOOKS.onTex();};img.src='data:image/'+c.imt+';base64,'+c.im;
+const S0=7.4,W=c.ia>=1?S0:S0*c.ia,H=Math.min(8.5,c.ia>=1?S0/c.ia:S0);add(mk(conform([c.tp==='gilet'?outer:shirt],V(0,11.6,0),X,Y,W,H,16,FWD,0.13),SM({map:tx,transparent:true,roughness:0.85,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3})));}
+
+// Bras, mains, montre
+const longS=c.tp!=='tshirt',mSl=longS?clothMat(c.tp==='gilet'?c.t2:c.tc,c.rf,'manche',c.tp==='gilet'?'uni':c.mt):null,mCap=longS?null:clothMat(c.tc,c.rf,'manche',c.mt);
+const mHand=c.gv?SM({color:c.gv,roughness:0.45}):mBodySkin;
+// Bras selon la pose ; debout sans rien à tenir, les bras tombent le long du corps
+const empty=showIt==='aucun'&&mpE!=='mains';
+for(const s of[-1,1]){let kind=POSE.a[s<0?0:1];if(kind==='hold'&&POSE.l==='stand'&&empty)kind='down';const a=mk(blob(2.8,5.1,2.8),longS?mSl:mBodySkin);
+if(kind==='hold')add(a,[s*6.6,11.3,3.8],[-0.85,0,-s*0.45]);else if(kind==='down')add(a,[s*10.0,10.2,0.6],[0.1,0,s*0.2]);
+else{const d=V(s*ARM[kind][0],ARM[kind][1],ARM[kind][2]).normalize();a.position.copy(V(s*7.0,15.0,1.2)).addScaledVector(d,4.4);a.quaternion.setFromUnitVectors(V(0,-1,0),d);add(a);}
+a.userData.part='arm';
+if(!longS){const cp=mk(blob(3.1,2.7,3.1,{lump:0.01}),mCap);cp.position.set(0,2.7,0);a.add(cp);}
+if(longS)seam(ring(2.2,2.2,'y',-3.3),shade(c.tp==='gilet'?c.t2:c.tc,0.55),true,a);
+const gl=mk(blob(1.75,1.65,1.75),mHand);gl.position.set(0,-4.8,0);a.add(gl);const th=mk(blob(0.6,0.95,0.6,{lump:0}),mHand);th.position.set(-s*1.3,-4.1,0.9);th.rotation.z=s*0.5;a.add(th);
+if(c.gv){const cf=mk(new THREE.TorusGeometry(1.75,0.35,10,32),mHand);cf.position.set(0,-4.0,0);cf.rotation.x=Math.PI/2;a.add(cf);}
+if(has('w')&&s<0){const wb=mk(new THREE.TorusGeometry(1.98,0.36,10,32),mDark);wb.position.set(0,-3.2,0);wb.rotation.x=Math.PI/2;a.add(wb);const fc=mk(new THREE.CylinderGeometry(0.75,0.75,0.35,20),mGold);fc.rotation.x=Math.PI/2;fc.position.set(0,-3.2,2.15);a.add(fc);}}
+
+// Jambes et chaussures
+const shoeMat=c.sh==='chaussures'?SM({color:c.sc,roughness:0.18,metalness:0.15}):SM({color:c.sc,roughness:0.55});
+const soleMat=SM({color:lum(c.sc)<0.15?0x3a3b3f:shade(c.sc,0.75),roughness:0.9});
+// Assise : jambes tendues vers l'avant. Debout : jambes sous le corps, semelles au sol
+// En tailleur : jambes repliées qui se croisent devant
+PART='leg';const paw=st==='monstre',legMat=paw?mFur:(c.bt==='short'?mBodySkin:mP),mPad=FZ({color:mix(fur,'#f2b8c0',0.55),map:FAB,roughness:1});
+for(const s of[-1,1]){
+if(POSE.l==='stand'){// Debout : jambe fuselée sous le corps, pied pointé vers l'avant, semelle à plat au sol
+const lg=add(mk(blob(2.75,4.4,2.75,{lump:0.015}),legMat),[s*4.0,-2.6,0.9]);if(!paw)seam(ring(1.75,1.75,'y',-3.4),shade(c.pc,0.55),true,lg);
+if(!paw&&c.bt==='short'){const sh2=mk(blob(3.0,2.2,3.0,{lump:0.01}),mP);sh2.position.set(0,2.4,0);lg.add(sh2);}
+if(!paw&&c.bt==='jogging'){const pts=[];for(let y=1.4;y>=-6.2;y-=0.5){const k=Math.sqrt(Math.max(0,1-((y+2.6)/4.4)**2));pts.push(V(s*(4.0+2.78*k),y,0.9));}tube(pts,0.24,mAcc);add(mk(new THREE.TorusGeometry(1.9,0.42,10,28),mP),[s*4.0,-6.0,0.9],[Math.PI/2,0,0]);}
+if(paw){add(mk(blob(2.6,1.7,3.3,{lump:0.03}),mFur),[s*4.0,-7.5,1.6]);add(mk(blob(1.7,0.3,2.1,{lump:0}),mPad),[s*4.0,-9.15,1.9]);}
+else{if(c.sh==='bottes')add(mk(blob(2.95,2.2,2.95,{lump:0}),shoeMat),[s*4.0,-5.9,0.9]);
+add(mk(blob(2.7,1.75,3.7,{lump:0,sq:0.75}),shoeMat),[s*4.0,-7.6,1.9]);add(mk(blob(2.85,c.sh==='baskets'?0.6:0.42,3.85,{lump:0,sq:0.6}),c.sh==='baskets'?mWhite:soleMat),[s*4.0,-9.1,1.9]);
+if(c.sh==='baskets')add(mk(blob(1.15,0.4,1.5,{lump:0}),mWhite),[s*4.0,-6.0,3.4],[0.5,0,0]);}
+continue;}
+// Assise (jambes tendues) ou en tailleur (jambes repliées qui se croisent devant)
+const cr=POSE.l==='cross',rot=cr?[0,-s*1.2,0]:[0,s*0.25,0];
+const leg=add(mk(blob(3.3,2.9,4.0),legMat),cr?[s*3.4,s>0?1.9:2.5,5.4]:[s*4.6,2.9,4.6],rot);if(!paw)seam(ring(2.62,2.3,'z',2.4),shade(c.pc,0.55),true,leg);
+if(!paw&&c.bt==='short'){const sh=mk(blob(3.5,3.1,2.3,{lump:0.01}),mP);sh.position.set(0,0,-1.9);leg.add(sh);}
+if(!paw&&c.bt==='jogging'){const pts=[];for(let z=-3.4;z<=3.2;z+=0.4){const k=Math.sqrt(Math.max(0,1-(z/4.0)**2));pts.push(leg.localToWorld(V(s*(3.3*k+0.05),0.3,z)));}tube(pts,0.24,mAcc);
+const cu=mk(new THREE.TorusGeometry(2.2,0.45,10,28),mP);cu.position.set(0,0,3.2);leg.add(cu);}
+const b=leg.localToWorld(V(0,0,3.3));add(mk(blob(3.0,2.95,2.1),paw?mFur:shoeMat),[b.x,b.y,b.z],rot);
+const so=leg.localToWorld(V(0,0,!paw&&c.sh==='baskets'?5.4:5.3));add(mk(blob(paw?1.9:2.7,paw?1.8:2.6,!paw&&c.sh==='baskets'?0.6:0.4,{lump:0}),paw?mPad:soleMat),[so.x,so.y,so.z],rot);
+if(!paw&&c.sh==='baskets'){const lc=leg.localToWorld(V(0,1.9,3.6));add(mk(blob(1.2,0.5,1.0,{lump:0}),mWhite),[lc.x,lc.y,lc.z],rot);
+const rim=leg.localToWorld(V(0,0,5.1));add(mk(new THREE.TorusGeometry(2.6,0.42,8,36),mWhite),[rim.x,rim.y,rim.z],rot);}}
+PART=null;add(mk(new THREE.BoxGeometry(0.08,2.2,1.5),SM({map:own(tagTex()),roughness:0.9})),[-7.0,2.4,-2.5],[0,0,-0.35]);
+
+// Tête et cheveux
+const head=add(mk(blob(9.6,8.8,9.0,{lump:0.012,pear:0.05}),animal?mFur:mSkin),[0,24.6,0.6]);
+// Petit monstre : la fourrure remplace les cheveux (calotte et côtés), le visage reste dégagé
+let hairS=null,hairCap=null;const hs=st==='monstre'?'monstre':(c.hs==='afro'&&hats)?'boucle':c.hs;
+if(hs==='monstre'){// Tête de petit monstre : capuche de fourrure épaisse, visage ovale dégagé, couronne de touffes irrégulières sur deux rangs
+const g=blob(10.6,9.9,10.2,{lump:0.05,pear:0.05}),gp=g.attributes.position;
+for(let i=0;i<gp.count;i++){const x=gp.getX(i)/10.6,y=gp.getY(i)/9.9,z=gp.getZ(i)/10.2;if(z>0.15&&(x/0.63)**2+((y+0.1)/0.56)**2<1)gp.setXYZ(i,gp.getX(i)*0.85,gp.getY(i)*0.85,gp.getZ(i)*0.85);}
+g.computeVertexNormals();hairCap=hairS=add(mk(g,FZ({color:fur,map:HAIR,bumpMap:BMP,bumpScale:0.6,roughness:1,side:THREE.DoubleSide})),[0,24.6,0.6]);
+const furB=FZ({color:mix(fur,'#ffffff',0.14),map:HAIR,bumpMap:BMP,bumpScale:0.6,roughness:1});
+for(let ring=0;ring<2;ring++){const n=ring?18:30,sc=ring?1.3:1;for(let i=0;i<n;i++){const a=(i+R()*0.7)/n*Math.PI*2,rr=1+ring*0.12+(R()-0.5)*0.05,fx=Math.cos(a)*0.63*rr,fy=Math.sin(a)*0.56*rr-0.1,fz=Math.sqrt(Math.max(0.03,1-fx*fx-fy*fy)),sz=(0.8+R()*0.7)*sc;
+const t=mk(blob(1.0*sz,1.4*sz,0.75*sz,{lump:0.09,tip:0.4}),R()<0.55?mFur:furB);t.position.set(fx*10.4,24.6+fy*9.7,0.6+fz*(9.9-ring*0.7));
+t.quaternion.setFromUnitVectors(Y,V(Math.cos(a)+(R()-0.5)*0.5,Math.sin(a)+(R()-0.5)*0.5,0.45+R()*0.3).normalize());t.rotateY((R()-0.5)*1.4);G.add(t);}}}
+if(hs!=='chauve'&&hs!=='monstre'){const th=hs==='rase'||hs==='iroquoise'||hs==='banane',cu=hs==='boucle'||hs==='carre'||hs==='monstre',hr=[th?9.72:cu?10.35:10.0,th?8.92:cu?9.55:9.2,th?9.12:cu?9.75:9.4],lp=th?0.004:hs==='boucle'||hs==='monstre'?0.05:hs==='meches'?0.035:0.02;
+// Côtés et arrière (le visage reste dégagé), plus une calotte sur le dessus du crâne
+hairS=add(mk(blob(hr[0],hr[1],hr[2],{lump:lp,t0:0.78,t1:({long:2.2,meches:2.05,carre:2.25})[hs]||1.95,p0:2.52,pl:4.38}),mHair),[0,24.6,0.6]);
+hairCap=add(mk(blob(hr[0]+0.04,hr[1]+0.04,hr[2]+0.04,{lump:lp,t0:0,t1:0.86}),mHair),[0,24.6,0.6]);}
+const tuft=(x,y,h,rz)=>{const st=stick(mk(blob(1.05,h,0.45,{lump:0.03,tip:0.8}),mHair),[head],x,y,0.15);if(rz)st.rotateZ(rz);return st;};
+// Frange : mèches pointues posées sur le front, sous la calotte
+// Mèches arrondies qui se chevauchent, légèrement balayées sur le côté (pas de dents en zigzag)
+const fringe=(n,span,y,h,w,vary,sweep)=>{for(let i=0;i<n;i++){const t=i/(n-1)-0.5,hh=h+R()*vary,st=stick(mk(blob(w,hh,0.55,{lump:0.03,tip:0.45}),mHair),[head],t*span+(R()-0.5)*0.5,y-Math.abs(t)*1.0+(hh-h)*0.35,0.25);st.rotateZ(-t*0.45+(sweep||0)+(R()-0.5)*0.3);}};
+if(['court','meches','herisse','carre','long','tresse','couettes','queue','chignon','dreads'].includes(hs))for(const s of[-1,1]){tuft(s*7.5,26.1,2.0,s*0.25);tuft(s*8.5,24.4,hs==='long'||hs==='carre'?3.4:1.7,s*0.15);}
+// Frange courte ; sous une capuche, toute coiffure garde une frange pour ne pas laisser le front nu
+if(['court','herisse','couettes','tresse'].includes(hs)||(hood&&['long','carre','queue','chignon','boucle','afro','dreads'].includes(hs)))fringe(5,9,30.0,1.25,1.4,0.3,-0.12);
+if(hs==='tresse'){// Tresse qui tombe devant l'épaule gauche de l'image (elle suit la tête)
+PART='head';for(let i=0;i<9;i++){const k=i%2?1:-1;add(mk(blob(1.3-i*0.04,1.0,1.05,{lump:0.02}),mHair),[-6.3+i*0.17+k*0.35,21.2-i*1.25,6.0+i*0.1],[0,0,k*0.5]);}
+add(mk(blob(0.8,0.6,0.8,{lump:0}),mAcc),[-4.9,9.9,7.0]);add(mk(blob(0.9,1.5,0.8,{lump:0.03,tip:0.8}),mHair),[-4.8,8.4,7.1]);PART=null;}
+if(hs==='meches'){fringe(6,10.5,30.1,1.5,1.75,0.3,-0.18);fringe(7,12,29.0,2.0,1.8,0.8,-0.25);if(!hood){for(const s of[-1,1])add(mk(blob(2.0,4.2,2.4,{lump:0.03,tip:0.5}),mHair),[s*8.9,22.4,1.0],[0,0,s*0.1]);add(mk(blob(8.6,4.6,3.6,{lump:0.03}),mHair),[0,21.6,-6.0],[-0.2,0,0]);}}
+if(hs==='herisse'&&!hats)for(let i=0;i<22;i++)spike(24.6,0.6,10.0,9.2,9.4,0.18+R()*0.8,R()*Math.PI*2,0.95,2.0+R()*0.9,mHair);
+// Banane : volume plaqué en arrière sur le dessus, côtés courts
+if(hs==='banane'&&!hats){add(mk(blob(5.6,3.4,7.6,{lump:0.03}),mHair),[0,32.0,0.2],[-0.18,0,0]);add(mk(blob(4.6,2.8,3.0,{lump:0.03}),mHair),[0,32.9,5.4],[0.5,0,0]);}
+if(hs==='iroquoise'&&!hats)for(let a=0.85;a>=-1.9;a-=0.3){const s=Math.sin(a),p=V(0,Math.cos(a)*8.92,s*9.12),n=V(0,p.y/79.6,p.z/83.2).normalize(),len=4.4-Math.abs(a-0.2)*0.8;
+const m=mk(new THREE.ConeGeometry(1.35,len,10),mHair);m.position.set(0,24.6+p.y,0.6+p.z).addScaledVector(n,len*0.35);m.quaternion.setFromUnitVectors(Y,n);G.add(m);}
+if(hs==='carre'&&!hood){for(const s of[-1,1])add(mk(blob(2.4,5.0,3.2,{lump:0.02}),mHair),[s*9.0,21.4,1.6]);if(!hats)add(mk(blob(10.4,9.6,9.8,{lump:0.02,t0:0.35,t1:0.98,p0:0.55,pl:2.05}),mHair),[0,24.6,0.6]);}
+if(hs==='long'){if(!hood){add(mk(blob(9.4,9.0,4.2,{lump:0.02}),mHair),[0,19.2,-5.2],[-0.15,0,0]);for(const s of[-1,1])add(mk(blob(2.1,5.6,2.6,{lump:0.02,tip:0.3}),mHair),[s*8.7,19.6,0.8],[0,0,s*0.12]);}
+if(!hats)add(mk(blob(10.05,9.25,9.45,{lump:0.02,t0:0.35,t1:0.95,p0:0.55,pl:2.05}),mHair),[0,24.6,0.6]);}
+if(hs==='couettes'&&!hood)for(const s of[-1,1]){add(mk(blob(1.0,1.0,1.0,{lump:0}),mAcc),[s*9.7,26.6,-1.8]);add(mk(blob(2.0,4.6,2.0,{lump:0.03,tip:0.6}),mHair),[s*11.7,23.6,-2.2],[0,0,s*0.6]);}
+if(hs==='queue'&&!hood){add(mk(blob(1.4,1.4,1.4,{lump:0}),mAcc),[0,26.5,-9.4]);add(mk(blob(2.3,5.2,2.3,{lump:0.03,tip:0.6}),mHair),[0,21.8,-11.0],[-0.35,0,0]);}
+if(hs==='chignon'&&!hats)add(mk(blob(3.7,3.3,3.7,{lump:0.03}),mHair),[0,33.0,-3.6]);
+if(hs==='boucle'&&!hood){for(let i=0;i<34;i++){const t=0.15+R()*1.55,p=2.6+R()*4.25,x=-Math.cos(p)*Math.sin(t)*10.2,y=Math.cos(t)*9.4,z=Math.sin(p)*Math.sin(t)*9.6;if(hats&&y>2.2)continue;add(mk(blob(2.1,2.0,2.1,{lump:0.04}),mHair),[x,24.6+y,0.6+z]);}
+if(!hats)for(let i=-3;i<=3;i++)stick(mk(blob(1.5,1.4,1.2,{lump:0.04}),mHair),[head],i*1.9,30.4-Math.abs(i)*0.55,0.5);}
+if(hs==='afro'&&!hood){add(mk(blob(12.6,11.4,12.2,{lump:0.07,t0:0,t1:0.9}),mHair),[0,26.0,0.2]);add(mk(blob(12.5,11.3,12.1,{lump:0.07,t0:0.85,t1:2.0,p0:2.45,pl:4.52}),mHair),[0,26.0,0.2]);
+for(let i=0;i<70;i++){const t=R()*1.95,p=t>0.86?2.5+R()*4.4:R()*Math.PI*2;add(mk(blob(2.4,2.3,2.4,{lump:0.05}),mHair),[-Math.cos(p)*Math.sin(t)*12.3,26.0+Math.cos(t)*11.1,0.2+Math.sin(p)*Math.sin(t)*11.9]);}}
+if(hs==='dreads'&&!hood)for(let i=0;i<18;i++){const p=2.7+i*(4.0/17),t=1.3,o=V(-Math.cos(p),0,Math.sin(p)),root=V(-Math.cos(p)*Math.sin(t)*10.0,24.6+Math.cos(t)*9.2,0.6+Math.sin(p)*Math.sin(t)*9.4);
+const d=add(mk(blob(0.65,4.0+R()*1.2,0.65,{lump:0.03,tip:0.15}),mHair),[root.x+o.x*0.8,root.y-3.6,root.z+o.z*0.8],[-o.z*0.25,0,o.x*0.25]);}
+if(['rase','chauve','iroquoise'].includes(hs)&&!furry)for(const s of[-1,1])add(mk(blob(1.0,2.0,1.4,{lump:0}),mSkin),[s*9.55,23.6,0.6]);
+
+// Couture du dessus de la tête, visible quand la tête est en fourrure ou sans cheveux
+if((animal||['rase','chauve'].includes(hs))&&!hats){const pts=[];for(let a=0.55;a>=-1.9;a-=0.12)pts.push([V(0,24.6+Math.cos(a)*40,0.6+Math.sin(a)*40),V(0,-Math.cos(a),-Math.sin(a))]);seam(onSurf([hairCap,head].filter(Boolean),pts,0.05),shade(animal?fur:skinC,0.55));}
+
+// Visage et expression
+const blushes=[],browTilt={sourire:-0.1,content:-0.1,neutre:0,serieux:0.32}[c.ex],kawaii=(c.ey!=='realiste'||st==='monstre')&&st!=='avatar';
+const[bc2,bg4]=cv(128),bgr=bg4.createRadialGradient(64,64,4,64,64,62),bcol=hex(mix(skinC,'#f0607a',0.62));bgr.addColorStop(0,bcol+'d0');bgr.addColorStop(1,bcol+'00');bg4.fillStyle=bgr;bg4.fillRect(0,0,128,128);
+const mBlushSoft=SM({map:own(new THREE.CanvasTexture(bc2)),transparent:true,depthWrite:false,roughness:1,polygonOffset:true,polygonOffsetFactor:-2});
+const mKw=SM({color:mix('#0c0a10',eyeBase,0.22),roughness:0.07,metalness:0.15}),mKwC=SM({color:mix(eyeBase,'#ffffff',0.18),roughness:0.25,transparent:true,opacity:0.92,side:THREE.DoubleSide});
+for(const s of[-1,1]){
+if(kawaii){const e=new THREE.Group();e.add(mk(blob(1.5,1.75,0.55,{lump:0}),mKw));const cr=new THREE.Mesh(new THREE.RingGeometry(0.5,1.3,36,1,Math.PI*1.12,Math.PI*0.76),mKwC);cr.scale.set(1,1.12,1);cr.position.z=0.56;e.add(cr);
+const k1=new THREE.Mesh(new THREE.SphereGeometry(0.5,16,12),mShine);k1.scale.set(1,1.15,0.3);k1.position.set(-0.5,0.62,0.52);e.add(k1);const k2=new THREE.Mesh(new THREE.SphereGeometry(0.22,12,10),mShine);k2.scale.z=0.3;k2.position.set(0.55,-0.55,0.54);e.add(k2);
+if(c.cl){const fl=new THREE.Mesh(blob(0.45,0.13,0.12,{lump:0}),mLash);fl.position.set(s*1.5,1.3,0.2);fl.rotation.z=s*0.55;e.add(fl);}
+if(st==='monstre'){const lid=mk(blob(1.66,0.62,0.66,{lump:0}),mSkin);lid.position.set(0,1.42,0.06);lid.rotation.z=s*0.12;e.add(lid);}stick(e,[head],s*3.85,23.6,0.3);
+if(st!=='monstre'){const br=stick(mk(blob(0.95,0.24,0.2,{lump:0}),mBrow),[head],s*3.9,c.ex==='serieux'?26.0:26.4,0.08);br.rotateZ(s*browTilt);}
+stick(new THREE.Mesh(new THREE.CircleGeometry(2.1,32),mBlushSoft),[head],s*6.0,21.5,-0.3);continue;}
+if(st==='avatar'){// Avatar : petits yeux ovales noirs et sourcils fins
+const e=new THREE.Group();e.add(mk(blob(0.62,0.85,0.25,{lump:0}),SM({color:0x141414,roughness:0.15})));const hl=new THREE.Mesh(new THREE.SphereGeometry(0.17,10,8),mShine);hl.position.set(0.18,0.32,0.22);e.add(hl);stick(e,[head],s*3.0,24.0,0.08);
+const br=stick(mk(blob(1.0,0.16,0.12,{lump:0}),mBrow),[head],s*3.1,26.0,0.04);br.rotateZ(s*browTilt);continue;}
+const e=new THREE.Group();const ig=new THREE.SphereGeometry(1,48,24,0,Math.PI*2,0,Math.PI/2);ig.rotateX(Math.PI/2);ig.scale(1.4,1.62,0.85);e.add(mk(ig,mIris));
+const h1=new THREE.Mesh(new THREE.SphereGeometry(0.42,16,12),mShine);h1.scale.z=0.4;h1.position.set(0.5,0.62,0.66);e.add(h1);
+const h2=new THREE.Mesh(new THREE.SphereGeometry(0.2,12,10),mShine);h2.scale.z=0.4;h2.position.set(-0.45,-0.55,0.68);e.add(h2);
+const la=new THREE.Mesh(new THREE.TorusGeometry(1,0.11,8,28,Math.PI*0.9),mLash);la.scale.set(1.5,1.7,1);la.rotation.z=Math.PI*0.05;la.position.z=0.12;e.add(la);
+if(c.cl){const fl=new THREE.Mesh(blob(0.42,0.13,0.12,{lump:0}),mLash);fl.position.set(s*1.55,0.98,0.15);fl.rotation.z=s*0.55;e.add(fl);}
+stick(e,[head],s*3.7,24.1,0.35);
+const br=stick(mk(blob(1.05,0.27,0.22,{lump:0}),mBrow),[head],s*3.8,c.ex==='serieux'?26.5:26.8,0.08);br.rotateZ(s*browTilt);
+blushes.push(stick(mk(blob(1.7,1.05,0.22,{lump:0}),mBlush),[head],s*6.2,21.4,0.1));}
+if(c.fr&&st!=='avatar')for(const s of[-1,1])[[4.9,21.9],[5.7,21.4],[4.6,21.1],[5.4,20.8],[6.3,22.0],[6.6,21.2]].forEach(f=>stick(mk(blob(0.17,0.17,0.06,{lump:0}),mFreckle),blushes.concat([head]),s*f[0],f[1],-0.02));
+// Nez : museau et truffe pour les animaux, petit nez sinon
+let muzzle=null;
+if(animal){muzzle=stick(mk(blob(3.2,2.3,1.3,{lump:0}),mFurL),[head],0,21.6,0.7);stick(mk(blob(0.95,0.62,0.5,{lump:0,tip:0.5}),SM({color:0x2a1a14,roughness:0.3})),[muzzle],0,22.5,0.15);
+if(st==='chat')for(const s of[-1,1])for(const k of[-1,0,1])add(mk(new THREE.CylinderGeometry(0.06,0.06,3.4,6),mDark),[s*3.7,21.4+k*0.55,9.7],[0,0,Math.PI/2+s*k*0.15]);}
+else stick(mk(blob(st==='avatar'?0.45:0.55,st==='avatar'?0.32:0.4,0.35,{lump:0}),mNose),[head],0,22.5,0.15);
+const mouthT=muzzle?[muzzle,head]:[head];
+if(st==='monstre'){// Grand sourire plein de dents
+const mo=new THREE.Group(),cav=new THREE.Mesh(new THREE.CircleGeometry(1,32,Math.PI,Math.PI),mMouth);cav.scale.set(2.3,1.15,1);mo.add(cav);
+for(let i=0;i<9;i++){const t=mk(new THREE.ConeGeometry(0.27,0.62,8),mWhite);t.rotation.z=Math.PI;t.position.set(-1.9+i*0.475,-0.3,0.06);mo.add(t);}stick(mo,[head],0,21.3,0.02);}
+else if(c.ex==='sourire'){const mo=new THREE.Group();mo.add(new THREE.Mesh(new THREE.CircleGeometry(1.0,28,Math.PI,Math.PI),mMouth));const tg=new THREE.Mesh(blob(0.55,0.3,0.08,{lump:0}),mTongue);tg.position.set(0,-0.62,0.04);mo.add(tg);
+const lip=new THREE.Mesh(new THREE.TorusGeometry(1.0,0.07,6,28,Math.PI),mMouth);lip.rotation.z=Math.PI;mo.add(lip);stick(mo,mouthT,0,21.15-(muzzle?0.5:0),0.03);}
+const my=muzzle?-0.5:0,human=st!=='monstre';
+if(human&&c.ex==='content'){const mo=new THREE.Group(),arc=new THREE.Mesh(new THREE.TorusGeometry(0.85,0.13,8,28,Math.PI*0.8),mMouth);arc.rotation.z=Math.PI*1.1;mo.add(arc);stick(mo,mouthT,0,21.6+my,-0.02);}
+if(human&&c.ex==='neutre')stick(mk(blob(0.75,0.13,0.1,{lump:0}),mMouth),mouthT,0,21.0+my,-0.02);
+if(human&&c.ex==='serieux'){const mo=new THREE.Group(),arc=new THREE.Mesh(new THREE.TorusGeometry(0.7,0.12,8,24,Math.PI*0.7),mMouth);arc.rotation.z=Math.PI*0.15;mo.add(arc);stick(mo,mouthT,0,20.6+my,-0.02);}
+// Barbe : coque autour du bas du visage ; un masque de transparence trace un bord net qui remonte vers les oreilles et dégage la bouche
+const BT0=1.5,BT1=2.8,BP0=0.1,BPL=2.94;
+function beardMat(color,hairy){const W=256,H=128,[bc,bg3]=cv(W,H),img=bg3.createImageData(W,H);
+for(let j=0;j<H;j++){const th=BT0+(j+0.5)/H*(BT1-BT0),st=Math.sin(th),y=Math.cos(th)*8.8;for(let i=0;i<W;i++){const ph=BP0+(i+0.5)/W*BPL,x=-Math.cos(ph)*st*9.6,z=Math.sin(ph)*st*9.0,k=(j*W+i)*4;
+const on=!(y>-2.6+0.3*Math.max(0,Math.abs(x)-1.6)||(Math.abs(x)<1.3&&y>-4.35&&y<-2.75&&z>0));img.data[k]=img.data[k+1]=img.data[k+2]=on?255:0;img.data[k+3]=255;}}
+// Pas de texture de tissu ici : three.js appliquerait sa répétition au masque aussi, et le masque serait lu en mosaïque
+bg3.putImageData(img,0,0);return FZ({color,alphaMap:own(new THREE.CanvasTexture(bc)),alphaTest:0.5,roughness:1,side:THREE.DoubleSide});}
+// Même forme de poire que la tête, sinon le bas de la barbe passe à l'intérieur du visage
+const beard=(off,lp,mat)=>{const m=add(mk(blob(9.6+off,8.8+off,9.0+off,{lump:lp,pear:0.05,t0:BT0,t1:BT1,p0:BP0,pl:BPL}),mat),[0,24.6,0.6]);m.castShadow=false;return m;};
+if(c.bd==='barbe3j')beard(0.16,0,beardMat(mix(c.sk,c.hc,0.5),false));
+if(c.bd==='barbe'||c.bd==='longue')beard(0.3,0.02,beardMat(c.hc,true));
+if(c.bd==='longue'){PART='head';add(mk(blob(4.6,4.4,3.0,{lump:0.03,tip:0.55}),mHair),[0,17.0,6.4]);PART=null;}
+if(['barbe','longue','moustache'].includes(c.bd))for(const s of[-1,1]){const m=stick(mk(blob(1.25,0.42,0.35,{lump:0}),mHair),[head],s*1.05,21.75,0.05);m.rotateZ(-s*0.18);}
+if(c.bd==='bouc')stick(mk(blob(1.1,1.0,0.5,{lump:0.03,tip:0.5}),mHair),[head],0,19.5,0.1);
+if(has('a')){// Bandana : motif de petites fleurs blanches, pointe sous le menton
+const[bc,bg2]=cv(256);bg2.fillStyle=hex(c.ac);bg2.fillRect(0,0,256,256);bg2.fillStyle='rgba(255,255,255,0.85)';bg2.strokeStyle='rgba(255,255,255,0.85)';bg2.lineWidth=2;
+for(let y=12;y<256;y+=32)for(let x=(y/32)%2?28:12;x<256;x+=32){bg2.beginPath();bg2.arc(x,y,3.2,0,7);bg2.fill();for(let k=0;k<4;k++){bg2.beginPath();bg2.arc(x+Math.cos(k*1.57)*7,y+Math.sin(k*1.57)*7,2,0,7);bg2.stroke();}}
+const bt2=own(new THREE.CanvasTexture(bc));bt2.wrapS=bt2.wrapT=THREE.RepeatWrapping;bt2.repeat.set(3,1.2);const mBd=FZ({map:bt2,roughness:0.85,side:THREE.DoubleSide});
+add(mk(blob(9.8,9.0,9.25,{lump:0.01,t0:1.84,t1:2.62,p0:0.42,pl:2.3}),mBd),[0,24.6,0.6]);PART='head';add(mk(blob(2.8,2.4,0.6,{lump:0,tip:0.95}),mBd),[0,17.4,7.4],[0.45,0,0]);PART=null;}
+if(has('o'))for(const s of[-1,1])add(mk(new THREE.TorusGeometry(0.5,0.13,8,20),mGold),[s*9.9,21.4,1.2],[0,Math.PI/2,0]);
+
+// Couvre-chef
+const tops=[];
+if(hood){// Capuche relevée : dessus fermé, ouverture devant le visage, bord roulé
+const mHd=c.hm==='uni'?FZ({color:c.hwc,map:FAB,bumpMap:BMP,bumpScale:0.15,roughness:0.9,side:THREE.DoubleSide}):clothMat(c.hwc,false,'torse',c.hm),RX=10.6,RY=9.85,RZ=10.15,T0=0.84,T1=2.55,P0=Math.PI/2+0.78,PLn=2*Math.PI-1.56,CY=24.8,CZ=0.45;
+tops.push(add(mk(blob(RX,RY,RZ,{lump:0.012,t0:0,t1:T0+0.04}),mHd),[0,CY,CZ]));
+tops.push(add(mk(blob(RX-0.02,RY-0.02,RZ-0.02,{lump:0.012,t0:T0,t1:T1,p0:P0,pl:PLn}),mHd),[0,CY,CZ]));
+const sp=(t,p)=>V(-Math.cos(p)*Math.sin(t)*RX,CY+Math.cos(t)*RY,CZ+Math.sin(p)*Math.sin(t)*RZ),edge=[];
+for(let t=T1;t>T0;t-=0.12)edge.push(sp(t,P0));for(let p=P0;p>P0+PLn-2*Math.PI;p-=0.12)edge.push(sp(T0,p));for(let t=T0;t<=T1+0.001;t+=0.12)edge.push(sp(t,P0+PLn));
+tube(edge,0.4,FZ({color:shade(c.hwc,0.9),map:FAB,roughness:0.9}));
+if(c.tp!=='sweat')for(const s of[-1,1])stick(mk(blob(0.22,1.8,0.22,{lump:0}),SM({color:0xe8e8e8,roughness:0.7})),[shirt],s*2.2,14.6,-0.05);}
+if(c.hw==='pompier'){const mH=FZ({color:c.hwc,map:FAB,bumpMap:BMP,bumpScale:0.12,roughness:0.75,side:THREE.DoubleSide});
+const dome=add(mk(blob(10.6,8.0,10.0,{lump:0,t0:0,t1:1.5}),mH),[0,27,-0.4]);tops.push(dome);
+const bg=new THREE.CylinderGeometry(1,1,1,72,1);const bp=bg.attributes.position;for(let i=0;i<bp.count;i++){const x=bp.getX(i)*12.2,z=bp.getZ(i)*13.0-1.4;let y=bp.getY(i)*0.45;if(z<-3)y-=(-3-z)*0.15;bp.setXYZ(i,x,y,z);}bg.computeVertexNormals();add(mk(bg,mH),[0,27.3,0]);
+[[0,0.75,-80,15],[-4.6,0.45,-80,55],[4.6,0.45,-80,55]].forEach(rb=>{const kx=Math.sqrt(1-(rb[0]/10.6)**2);const pts=[];for(let a=rb[2];a<=rb[3];a+=5){const t=a*Math.PI/180;pts.push(V(rb[0],27+8*kx*Math.cos(t),-0.4+10*kx*Math.sin(t)));}tube(pts,rb[1],mH);});
+add(mk(conform([dome],V(0,32.2,0),X,Y,4.8,4.8,16,FWD,0.14),decal(shieldTex(c.hwt))));
+if(c.hwt){add(mk(conform([dome],V(0,30.6,-1.2),V(0,0,1),Y,2.6,2.6,10,X,0.1),decal(discTex(c.hwt))));add(mk(conform([dome],V(0,30.6,-1.2),V(0,0,-1),Y,2.6,2.6,10,NX,0.1),decal(discTex(c.hwt))));}
+const hc=V(0,24.6,0.6),Dc=V(0,-0.8,0.6).normalize(),cs=[V(-10.6,27.0,0.6)],tg2=[hairS,head].filter(Boolean);
+for(let a=-90;a<=90;a+=10){const t=a*Math.PI/180;const d=X.clone().multiplyScalar(Math.sin(t)).addScaledVector(Dc,Math.cos(t)).normalize();const h=hitAt(tg2,hc.clone().addScaledVector(d,40),d.clone().negate());if(h)cs.push(h.p.addScaledVector(d,0.25));}
+cs.push(V(10.6,27.0,0.6));tube(cs,0.18,mDark);}
+if(c.hw==='casquette'||c.hw==='inverse'){const rev=c.hw==='inverse',mC=c.hm==='uni'?FZ({color:c.hwc,map:FAB,bumpMap:BMP,bumpScale:0.12,roughness:0.85,side:THREE.DoubleSide}):clothMat(c.hwc,false,'torse',c.hm),mSeam=FZ({color:shade(c.hwc,0.8),map:FAB,roughness:0.85});
+const crown=add(mk(blob(10.4,8.0,10.0,{lump:0,t0:0,t1:1.5}),mC),[0,26.8,0.4]);tops.push(crown);
+add(mk(visor(9.2,10.5,3.0,rev?0.05:0.12),FZ({color:shade(c.hwc,0.9),map:FAB,roughness:0.8})),[0,27.4,0.4],[0,rev?Math.PI:0,0]);
+add(mk(blob(0.9,0.5,0.9,{lump:0}),mAcc),[0,34.75,0.4]);
+[-3.8,0,3.8].forEach(x=>{const kx=Math.sqrt(1-(x/10.4)**2),pts=[];for(let a=-80;a<=80;a+=8){const t=a*Math.PI/180;pts.push(V(x,26.8+8.08*kx*Math.cos(t),0.4+10.08*kx*Math.sin(t)));}tube(pts,0.16,mSeam);});
+if(rev)add(mk(blob(2.4,1.0,0.5,{lump:0}),mDark),[0,28.6,10.0]);
+else if(c.hwt)add(mk(conform([crown],V(0,30.7,0),X,Y,6.2,2.4,12,FWD,0.12),decal(textTex(c.hwt,ink(c.hwc)))));}
+if(c.hw==='bonnet'){const mB=FZ({color:c.hwc,map:KNIT,bumpMap:KNIT,bumpScale:0.35,roughness:1,side:THREE.DoubleSide});
+tops.push(add(mk(blob(10.7,9.0,10.3,{lump:0.012,t0:0,t1:1.5}),mB),[0,27.3,0.4]));
+const cuff=add(mk(new THREE.TorusGeometry(10.35,1.35,14,80),FZ({color:shade(c.hwc,0.9),map:KNIT,bumpMap:KNIT,bumpScale:0.35,roughness:1})),[0,28.3,0.4],[Math.PI/2,0,0]);cuff.scale.set(1,0.965,1);cuff.updateMatrixWorld(true);
+add(mk(blob(2.7,2.6,2.7,{lump:0.09}),FZ({color:c.ac,map:HAIR,bumpMap:BMP,bumpScale:0.5,roughness:1})),[0,37.0,0.4]);
+if(c.hwt)add(mk(conform([cuff],V(0,28.3,0),X,Y,5.2,1.7,12,FWD,0.08),decal(textTex(c.hwt,ink(c.hwc)))));}
+if(c.hw==='chapeau'){const mHt=c.hm==='uni'?FZ({color:c.hwc,map:FAB,bumpMap:BMP,bumpScale:0.1,roughness:0.8,side:THREE.DoubleSide}):clothMat(c.hwc,false,'torse',c.hm);
+tops.push(add(mk(blob(8.6,4.8,8.2,{lump:0,sq:0.7}),mHt),[0,33.4,0.3]));
+const bg=new THREE.CylinderGeometry(1,1,1,72,1),bp=bg.attributes.position;for(let i=0;i<bp.count;i++){const x=bp.getX(i)*13.5,z=bp.getZ(i)*13.0;bp.setXYZ(i,x,bp.getY(i)*0.5+(x/13.5)**2*1.6,z);}bg.computeVertexNormals();add(mk(bg,mHt),[0,30.3,0.3]);
+const bd2=add(mk(new THREE.TorusGeometry(8.35,0.75,10,64),FZ({color:c.ac,map:FAB,roughness:0.8})),[0,30.9,0.3],[Math.PI/2,0,0]);bd2.scale.set(1,0.96,1);}
+if(c.hw==='bandeau'){const hb=add(mk(new THREE.TorusGeometry(8.95,0.85,12,72),FZ({color:c.hwc,map:FAB,bumpMap:BMP,bumpScale:0.15,roughness:0.9})),[0,29.2,0.5],[Math.PI/2,0,0]);hb.scale.set(1,0.94,1);hb.updateMatrixWorld(true);tops.push(hb);}
+if(c.hw==='police'){const mTop=FZ({color:c.hwc,map:FAB,bumpMap:BMP,bumpScale:0.1,roughness:0.75});
+const band=add(mk(new THREE.CylinderGeometry(10.15,9.95,3.4,64,1,true),SM({color:0x141418,roughness:0.5,side:THREE.DoubleSide})),[0,29.3,0.5]);band.scale.z=0.97;band.updateMatrixWorld(true);
+add(mk(blob(10.25,1.6,10.0,{lump:0}),mTop),[0,31.0,0.5]);tops.push(band,add(mk(blob(11.8,2.6,11.4,{lump:0,sq:0.85}),mTop),[0,32.2,0.1]));
+add(mk(visor(8.4,7.0,3.0,0.18),SM({color:0x0d0d10,roughness:0.15,metalness:0.2})),[0,27.9,0.5]);
+stick(mk(blob(1.3,1.5,0.35,{lump:0,sq:0.6}),mGold),[band],0,29.6,0.1);}
+
+// Lunettes
+if(c.gl==='masque'){const mF=SM({color:c.glc,roughness:0.45}),mL=SM({color:0xe8f25a,emissive:0x6b7a00,emissiveIntensity:0.12,transparent:true,opacity:0.28,roughness:0.05,metalness:0.1,depthWrite:false});
+for(const s of[-1,1]){const fr=mk(new THREE.TorusGeometry(2.0,0.4,12,40),mF);stick(fr,[head],s*3.7,24.1,-0.3);fr.scale.set(1.18,0.95,1);stick(mk(blob(2.25,1.85,0.45,{lump:0}),mL),[head],s*3.7,24.1,-0.55);}
+stick(mk(blob(1.0,0.45,0.4,{lump:0}),mF),[head],0,24.4,-0.45);
+const sg=new THREE.Group();const sm=mk(new THREE.TorusGeometry(10.45,0.42,10,80,Math.PI+1.6),mDark);sm.rotation.x=-Math.PI/2;sm.scale.set(1,0.94,1);sg.add(sm);sg.position.set(0,24.1,0.6);sg.rotation.y=-0.8;G.add(sg);}
+if(c.gl==='lunettes'||c.gl==='soleil'){const mF=SM({color:c.glc,roughness:0.35,metalness:0.25}),sun=c.gl==='soleil';
+const mL=sun?SM({color:c.lc,transparent:true,opacity:0.86,roughness:0.08,metalness:0.3}):SM({color:0xe8f4ff,transparent:true,opacity:0.14,roughness:0.05,depthWrite:false});
+const k=sun?0.86:1;for(const s of[-1,1]){const fr=mk(new THREE.TorusGeometry(2.05*k,0.24,10,40),mF);stick(fr,[head],s*3.7,24.1,-0.25);fr.scale.set(1.12,sun?0.85:0.98,1);stick(mk(blob(2.2*k,(sun?1.6:1.95),0.3,{lump:0}),mL),[head],s*3.7,24.1,-0.4);}
+stick(mk(blob(0.9,0.22,0.22,{lump:0}),mF),[head],0,24.5,-0.35);}
+if(c.gl==='aviateur'){// Aviateurs : verres en goutte, fine monture métal, double pont
+const mF=SM({color:c.glc,roughness:0.25,metalness:0.7}),mL=SM({color:c.lc,transparent:true,opacity:0.84,roughness:0.06,metalness:0.35});
+for(const s of[-1,1]){const g=new THREE.Group(),rim=mk(blob(2.55,2.15,0.16,{lump:0,tip:0.32}),mF);rim.position.z=-0.06;g.add(rim);g.add(mk(blob(2.35,1.95,0.24,{lump:0,tip:0.32}),mL));stick(g,[head],s*3.75,24.0,-0.3);g.rotateZ(s*0.08);}
+for(const y of[25.35,24.75])stick(mk(new THREE.CylinderGeometry(0.09,0.09,2.4,8),mF),[head],0,y,-0.32).rotateZ(Math.PI/2);}
+if(c.gl==='tete'){// Lunettes de soleil relevées sur la tête (ou sur la capuche)
+const mF=SM({color:c.glc,roughness:0.35,metalness:0.25}),mL=SM({color:c.lc,roughness:0.08,metalness:0.4}),tg=tops.concat([hairCap,hairS,head].filter(Boolean));
+for(const s of[-1,1]){const g=new THREE.Group(),fr=mk(new THREE.TorusGeometry(1.5,0.2,10,36),mF);fr.scale.set(1.2,0.85,1);g.add(fr);g.add(mk(blob(1.65,1.2,0.24,{lump:0}),mL));stick(g,tg,s*3.0,32.0,-0.12);}
+stick(mk(blob(0.75,0.18,0.18,{lump:0}),mF),tg,0,32.2,-0.08);}
+
+// Oreilles d'animal ou de petit monstre, posées sur ce qui est le plus à l'extérieur (cheveux, capuche, chapeau)
+if(furry){const tg=tops.concat([hairCap,hairS,head].filter(Boolean)),mIn=FZ({color:st==='monstre'?mix(fur,'#f2a6b0',0.6):mix(fur,'#ffffff',0.55),map:FAB,roughness:1});
+const E={ours:[[0.62,0.78,0],[2.3,2.3,1.1],[1.35,1.35,0.5],0],lapin:[[0.3,0.95,0],[1.4,4.6,0.7],[0.8,3.6,0.3],0.12],chat:[[0.55,0.83,0],[2.0,3.4,2.0],[1.2,2.3,1.2],0],monstre:[[0.34,0.94,-0.05],[1.6,6.0,0.7],[0.95,4.7,0.3],0.16]}[st];
+const shape=sz=>{if(st==='chat'){const q=new THREE.ConeGeometry(1,2,24);q.scale(sz[0],sz[1]/2,sz[2]);return q;}return blob(sz[0],sz[1],sz[2],{lump:0.02,pear:st==='monstre'?0.35:0});};
+for(const s of[-1,1]){const d=V(s*E[0][0],E[0][1],E[0][2]).normalize(),ctr=V(0,24.6,0.6);ray.set(ctr.clone().addScaledVector(d,80),d.clone().negate());const h=ray.intersectObjects(tg,false)[0];
+let n=d.clone();const p=h?h.point.clone():ctr.clone().addScaledVector(d,9.5);if(h){NM.getNormalMatrix(h.object.matrixWorld);n=h.face.normal.clone().applyMatrix3(NM).normalize();if(n.dot(d)<0)n.negate();}
+const g=new THREE.Group();g.add(mk(shape(E[1]),mFur));const inn=mk(shape(E[2]),mIn);inn.position.set(0,-E[1][1]*0.05,E[1][2]*0.55);g.add(inn);
+g.position.copy(p).addScaledVector(n,E[1][1]*0.55);g.quaternion.setFromUnitVectors(Y,n).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0,0,-s*E[3])));G.add(g);g.updateMatrixWorld(true);}}
+
+// Queues des animaux
+if(st==='ours')add(mk(blob(1.7,1.6,1.5,{lump:0.06}),mFur),[0,6.6,-7.6]);
+if(st==='lapin')add(mk(blob(2.2,2.1,2.1,{lump:0.12}),mFurL),[0,6.6,-7.9]);
+if(st==='chat')tube([V(0,5.5,-7.2),V(1.8,4.4,-10.2),V(4.2,6.6,-11.8),V(5.0,10.5,-11.0),V(4.2,13.2,-9.8)],0.85,mFur);
+
+// Accessoires
+if(has('r')){const rad=new THREE.Group();rad.add(mk(blob(1.25,1.8,0.7,{lump:0}),mLime));const an=mk(new THREE.CylinderGeometry(0.15,0.15,1.6,8),mDark);an.position.set(0.5,2.4,0);rad.add(an);
+const kn=mk(new THREE.CylinderGeometry(0.28,0.28,0.5,12),mDark);kn.position.set(-0.5,1.95,0);rad.add(kn);const scr=mk(new THREE.BoxGeometry(1.4,0.9,0.12),mScreen);scr.position.set(0,0.5,0.68);rad.add(scr);stick(rad,[outer],-5.4,14.6,0.3);}
+if(has('b')){const b=new THREE.Group();const sh=mk(new THREE.CylinderGeometry(1.15,1.15,0.25,6),mGold);sh.rotation.x=Math.PI/2;b.add(sh);const ct=mk(new THREE.CylinderGeometry(0.5,0.5,0.3,16),SM({color:0x1b2a5a,roughness:0.5}));ct.rotation.x=Math.PI/2;ct.position.z=0.08;b.add(ct);stick(b,[outer],4.4,15.4,-0.05);}
+if(has('m')){add(mk(blob(1.3,1.9,1.7,{lump:0}),mDark),[-10.1,24.0,0.8]);tube([V(-10.4,23.2,2.0),V(-9.3,21.8,5.2),V(-6.5,20.9,8.0),V(-3.6,20.4,9.3),V(-2.0,20.5,9.5)],0.18,mDark);add(mk(blob(0.55,0.5,0.55,{lump:0.06}),mDark),[-2.0,20.5,9.5]);}
+if(has('s')){const[bt,be]=clothTex(shade(c.pc,0.9),true,'manche','uni');own(bt);own(be);add(mk(blob(1.5,2.3,2.4,{lump:0,sq:0.5}),FZ({map:bt,emissive:0xffffff,emissiveMap:be,emissiveIntensity:0.08,roughness:0.85,bumpMap:BMP,bumpScale:0.15})),[9.3,6.8,1.2]);}
+if(has('c')){const pts=[];for(let a=0;a<Math.PI*2-0.01;a+=Math.PI/24){const d=V(Math.sin(a),0,Math.cos(a)),y=17.2-2.8*Math.pow(Math.max(0,Math.cos(a)),1.5);pts.push([V(0,y,0).addScaledVector(d,30),d.clone().negate()]);}
+tube(onSurf(torso,pts,0.22),0.2,mGold,true);stick(mk(blob(0.65,0.8,0.25,{lump:0}),mGold),torso,0,13.9,-0.05);}
+if(has('e')){const mSc=FZ({color:c.ac,map:KNIT,bumpMap:KNIT,bumpScale:0.3,roughness:1});const sc=add(mk(new THREE.TorusGeometry(5.5,1.55,14,48),mSc),[0,16.9,0.4],[Math.PI/2,0,0]);sc.scale.set(1,0.9,1);
+stick(mk(blob(1.5,3.4,0.7,{lump:0.01}),mSc),torso,-2.6,13.2,0.2);}
+if(has('h')){PART='body';const mHp=SM({color:0x1c1c1e,roughness:0.4});for(const s of[-1,1]){add(mk(new THREE.CylinderGeometry(1.7,1.7,1.1,24),mHp),[s*6.0,17.2,1.6],[0,0,Math.PI/2]);add(mk(new THREE.TorusGeometry(1.45,0.25,8,24),mAcc),[s*6.6,17.2,1.6],[0,Math.PI/2,0]);}
+tube([V(-6.0,17.8,0.6),V(-5.3,18.2,-3.8),V(0,18.4,-6.9),V(5.3,18.2,-3.8),V(6.0,17.8,0.6)],0.4,mHp);PART=null;}
+if(has('n')){add(mk(conform(torso,V(0.4,12.6,0),V(0.5,0.867,0),V(-0.867,0.5,0),1.0,14.5,24,FWD,0.25),FZ({color:shade(c.ac,0.55),map:FAB,roughness:0.8,side:THREE.DoubleSide})));
+stick(mk(blob(2.7,1.5,1.1,{lump:0,sq:0.5}),mAcc),torso,3.2,8.8,-0.2);}
+if(has('k')){const mK=FZ({color:c.ac,map:FAB,bumpMap:BMP,bumpScale:0.15,roughness:0.85}),mKs=FZ({color:shade(c.ac,0.6),map:FAB,roughness:0.8});
+add(mk(blob(5.4,6.2,2.6,{lump:0.01,sq:0.6}),mK),[0,11.8,-9.2]);add(mk(blob(4.2,2.6,1.4,{lump:0.01,sq:0.6}),mK),[0,9.6,-11.4]);
+for(const s of[-1,1]){const pts=[];for(let b=-1.6;b<=1.25;b+=0.15){const d=V(0,Math.cos(b),Math.sin(b));pts.push([V(s*4.3,11.5,0).addScaledVector(d,30),d.clone().negate()]);}tube(onSurf(torso,pts,0.35),0.42,mKs);}}
+
+// Objet dans les mains (étiqueté pour suivre les mains quand la longueur des bras change)
+PART='item';const iy=c.po==='coeur'?6.6:0;
+if(showIt==='lance'){const mR=FZ({color:0xc8261f,map:FAB,bumpMap:BMP,bumpScale:0.1,roughness:0.6});
+add(mk(new THREE.CylinderGeometry(0.7,0.75,5.8,24),mR),[-0.7,7.9,9.5],[0,0,Math.PI/2]);add(mk(blob(0.55,1.25,0.6,{lump:0}),mR),[-2.7,6.7,9.5],[0,0,0.25]);
+add(mk(new THREE.TorusGeometry(1.0,0.17,8,20,Math.PI),mDark),[0.4,7.9,9.5]);add(mk(new THREE.TorusGeometry(0.9,0.3,10,24),mSilver),[2.3,7.9,9.5],[0,Math.PI/2,0]);
+add(mk(new THREE.CylinderGeometry(1.2,0.95,1.1,28),mGray),[3.1,7.9,9.5],[0,0,-Math.PI/2]);add(mk(new THREE.TorusGeometry(0.72,0.13,8,24),mDark),[3.68,7.9,9.5],[0,Math.PI/2,0]);
+tube(POSE.l==='stand'?[V(-3.6,7.9,9.5),V(-4.8,7.0,10.6),V(-6.6,2.6,10.6),V(-7.8,-3.6,9.0),V(-8.6,-8.9,7.0),V(-10.4,-9.0,4.2),V(-11.8,-9.0,1.6)]:[V(-3.6,7.9,9.5),V(-4.8,7.5,10.8),V(-7.0,5.8,12.0),V(-9.4,3.0,11.2),V(-10.6,0.6,8.6),V(-10.2,0.6,5.6),V(-11.6,0.6,3.2)],0.55,mR);}
+if(showIt==='coeur'){const mH=FZ({color:0xe0303a,map:FAB,bumpMap:BMP,bumpScale:0.12,roughness:0.8});
+for(const s of[-1,1])add(mk(blob(1.9,1.9,1.4,{lump:0.01}),mH),[s*1.2,8.9+iy,10.2]);add(mk(blob(2.5,2.6,1.35,{lump:0.01,tip:0.85}),mH),[0,7.9+iy,10.2]);}
+if(showIt==='telephone'){const ph=new THREE.Group();ph.add(mk(blob(1.15,2.0,0.28,{lump:0,sq:0.4}),SM({color:0x16161a,roughness:0.3,metalness:0.3})));
+const sc=new THREE.Mesh(new THREE.PlaneGeometry(1.8,3.3),new THREE.MeshBasicMaterial({color:0x6fb6ff}));sc.position.z=0.29;ph.add(sc);add(ph,[0,8.6,10.4],[-0.7,0,0]);}
+if(showIt==='cafe'){add(mk(new THREE.CylinderGeometry(1.25,1.0,2.8,24),mWhite),[0,8.8,10.4]);add(mk(new THREE.CylinderGeometry(1.2,1.1,1.1,24),SM({color:0x9b6b43,roughness:0.9})),[0,8.7,10.4]);
+add(mk(new THREE.CylinderGeometry(1.35,1.35,0.45,24),SM({color:0x2b1d14,roughness:0.5})),[0,10.4,10.4]);}
+if(showIt==='donut'){add(mk(new THREE.TorusGeometry(1.5,0.78,16,32),SM({color:0xd9a25e,roughness:0.8})),[0,8.6,10.3]);const gz=add(mk(new THREE.TorusGeometry(1.5,0.8,16,32),SM({color:0xf28fb8,roughness:0.35})),[0,8.6,10.6]);gz.scale.z=0.55;
+const sp=['#ffffff','#5bc0eb','#fde74c','#9bc53d'];for(let i=0;i<14;i++){const a=R()*Math.PI*2,r2=1.0+R()*1.0;add(mk(new THREE.BoxGeometry(0.4,0.12,0.12),SM({color:sp[i%4]})),[Math.cos(a)*r2,8.6+Math.sin(a)*r2,11.05],[0,0,R()*3]);}}
+if(showIt==='trousse'){add(mk(blob(2.7,1.9,1.1,{lump:0,sq:0.35}),SM({color:0xd23a3a,roughness:0.6})),[0,8.4,10.6]);const mW=SM({color:0xffffff,roughness:0.5});
+add(mk(new THREE.BoxGeometry(1.6,0.5,0.2),mW),[0,8.4,11.7]);add(mk(new THREE.BoxGeometry(0.5,1.6,0.2),mW),[0,8.4,11.7]);add(mk(new THREE.TorusGeometry(0.8,0.18,8,20,Math.PI),mDark),[0,10.2,10.6]);}
+
+PART=null;
+// Mascotte : mini-peluche assise sur une épaule ou tenue dans les mains
+if(c.ms!=='aucune'){const mM=FZ({color:c.mc,map:HAIR,bumpMap:BMP,bumpScale:0.35,roughness:1}),mMl=FZ({color:mix(c.mc,'#ffffff',0.5),map:FAB,roughness:1}),mE=SM({color:0x111111,roughness:0.15}),M=new THREE.Group();
+const part=(geo,mat,p,r)=>{const m=mk(geo,mat);m.position.set(p[0],p[1],p[2]);if(r)m.rotation.set(r[0],r[1],r[2]);M.add(m);return m;};
+const mon=c.ms==='monstre';
+if(c.ms==='oiseau'){// Oiseau / perroquet : corps en goutte, bec crochu, cercles autour des yeux, ailes et longue queue
+const mBk=SM({color:0x2a2a2a,roughness:0.4}),mRing=SM({color:0xf2c418,roughness:0.5});
+part(blob(1.35,1.9,1.3,{lump:0.02,tip:0.25}),mM,[0,0.2,0]);part(blob(1.25,1.25,1.2,{lump:0.015}),mM,[0,2.55,0.35]);
+part(new THREE.ConeGeometry(0.42,1.2,16),mBk,[0,2.2,1.55],[2.3,0,0]);part(blob(0.35,0.25,0.3,{lump:0}),mRing,[0,2.35,1.35]);
+for(const s of[-1,1]){part(new THREE.SphereGeometry(0.17,10,8),mE,[s*0.62,2.75,1.0]);part(new THREE.TorusGeometry(0.24,0.07,8,16),mRing,[s*0.62,2.75,0.97],[0,s*0.6,0]);
+part(blob(0.5,1.5,1.05,{lump:0.02,tip:0.4}),mM,[s*1.25,0.4,-0.1],[0.2,0,s*0.18]);part(blob(0.3,0.25,0.45,{lump:0}),mBk,[s*0.5,-1.75,0.5]);}
+part(blob(0.5,2.0,0.25,{lump:0.01,tip:0.6}),mM,[0,-1.9,-1.1],[0.55,0,0]);}
+else{part(blob(1.6,1.7,1.4,{pear:0.1,lump:0.02}),mM,[0,0,0]);if(!mon)part(blob(1.0,1.1,0.4,{lump:0}),mMl,[0,-0.1,1.15]);
+part(blob(1.8,1.6,1.6,{lump:0.015}),mM,[0,2.6,0.1]);
+// Petit monstre : visage clair dans la fourrure, sourire plein de dents, longues oreilles
+if(mon){part(blob(1.3,1.12,0.5,{lump:0}),SM({color:0xf3d9c4,roughness:0.8}),[0,2.5,1.3]);const mo=part(new THREE.CircleGeometry(1,24,Math.PI,Math.PI),mMouth,[0,2.05,1.78]);mo.scale.set(0.5,0.3,1);
+for(let i=0;i<5;i++){const t=part(new THREE.ConeGeometry(0.075,0.17,6),mWhite,[-0.34+i*0.17,1.98,1.8]);t.rotation.z=Math.PI;}}
+else part(blob(1.2,0.9,0.5,{lump:0}),mMl,[0,2.3,1.35]);
+for(const s of[-1,1]){const eye=part(new THREE.SphereGeometry(mon?0.24:0.2,12,10),mE,[s*(mon?0.5:0.55),mon?2.78:2.75,mon?1.72:1.62]);if(mon)part(new THREE.SphereGeometry(0.07,8,6),mShine,[s*0.5+0.08,2.88,1.94]);
+if(mon){part(blob(0.5,1.8,0.3,{lump:0.01}),mM,[s*0.72,4.8,0],[0,0,-s*0.12]);part(blob(0.3,1.35,0.12,{lump:0}),SM({color:0xf2a6b0,roughness:0.9}),[s*0.72,4.8,0.22],[0,0,-s*0.12]);}part(blob(0.45,0.8,0.45,{lump:0.02}),mM,[s*1.55,0.3,0.5],[0.5,0,s*0.5]);part(blob(0.55,0.5,0.75,{lump:0.02}),mM,[s*0.8,-1.35,0.9]);
+if(c.ms==='lapin'){part(blob(0.45,1.5,0.28,{lump:0.01}),mM,[s*0.75,4.6,0],[0,0,-s*0.15]);part(blob(0.26,1.1,0.12,{lump:0}),mMl,[s*0.75,4.6,0.2],[0,0,-s*0.15]);}
+if(c.ms==='ours')part(blob(0.6,0.55,0.35,{lump:0}),mM,[s*1.25,3.9,0]);
+if(c.ms==='chat')part(new THREE.ConeGeometry(0.6,1.2,16),mM,[s*1.0,4.0,0],[0,0,-s*0.3]);
+if(c.ms==='chien')part(blob(0.5,1.05,0.28,{lump:0.01}),mM,[s*1.65,2.5,0.1],[0,0,s*0.35]);}
+if(!mon)part(new THREE.SphereGeometry(0.18,10,8),mE,[0,2.55,1.8]);}
+// Taille réglable : la mascotte garde les pieds au même endroit et s'écarte de la tête quand elle grandit
+const ms0=mpE==='mains'?1.0:1.3,msz=ms0*c.mz,grow=msz-ms0,sd=mpE==='droite'?1:mpE==='gauche'?-1:0;
+const pos=mpE==='tete'?[0,35.6+grow*1.9,0.5]:sd?[sd*(8.5+grow*1.6),17.0+grow*1.7,2.0]:[0,9.4+grow*1.2,10.9+grow*1.4];
+M.position.set(pos[0]+c.mx*5,pos[1]+c.my*5,pos[2]+c.mf*5);M.scale.setScalar(msz);M.rotation.y=(mpE==='droite'?0.2:mpE==='gauche'?0.35:0)+c.mr*Math.PI/180;M.userData.part=mpE==='mains'?'item':'head';G.add(M);}
+
+// Pièces sur mesure (oreilles, cornes, queue…) : collées sur la surface la plus extérieure, ou placées librement autour d'une ancre
+const AN={tete:[V(0,24.6,0.6),9.2],corps:[V(0,10.5,0),9.0],mains:[V(0,8.2,10.2),3.0],dos:[V(0,11.5,-8.0),6.0],jambes:[V(0,3.0,5.0),5.0]},DEG=Math.PI/180;
+const solid=[];G.updateMatrixWorld(true);G.traverse(o=>{if(o.isMesh&&!(o.material&&o.material.transparent))solid.push(o);});
+for(const q of c.pz){const[f,an,x,y,z,sx,sy,sz,rx,ry,rz,colr,glue]=q,[ctr,ar]=AN[an],S=[sx*ar,sy*ar,sz*ar];let geo;
+if(f==='sphere')geo=blob(S[0],S[1],S[2],{lump:0.01});else if(f==='goutte')geo=blob(S[0],S[1],S[2],{lump:0,tip:0.9});else if(f==='boite')geo=blob(S[0],S[1],S[2],{lump:0,sq:0.35});
+else{geo=f==='cone'?new THREE.ConeGeometry(1,2,24):f==='cylindre'?new THREE.CylinderGeometry(1,1,2,24):new THREE.TorusGeometry(1,0.32,12,36);geo.scale(S[0],S[1],S[2]);}
+const m=mk(geo,FZ({color:colr,map:FAB,bumpMap:BMP,bumpScale:0.12,roughness:0.85,side:THREE.DoubleSide})),e=new THREE.Euler(rx*DEG,ry*DEG,rz*DEG);
+if(glue){const d=V(x,y,z);if(d.lengthSq()<1e-6)d.set(0,1,0);d.normalize();ray.set(ctr.clone().addScaledVector(d,80),d.clone().negate());const h=ray.intersectObjects(solid,false)[0];
+let n=d.clone();const p=h?h.point.clone():ctr.clone().addScaledVector(d,ar);if(h){NM.getNormalMatrix(h.object.matrixWorld);n=h.face.normal.clone().applyMatrix3(NM).normalize();if(n.dot(d)<0)n.negate();}
+m.position.copy(p).addScaledVector(n,S[1]*0.55);m.quaternion.setFromUnitVectors(Y,n).multiply(new THREE.Quaternion().setFromEuler(e));}
+else{m.position.copy(ctr).addScaledVector(V(x,y,z),ar);m.rotation.copy(e);}
+G.add(m);}
+
+// Proportions du style : chaque élément va dans la tête, le corps, les jambes ou les objets tenus, puis chaque zone est déformée
+const PR=PROPS[st]||PROPS.classique,TILT={coucou:[0,0,0.12],pensif:[0.12,0,0.16],dab:[0.3,0,-0.4],bravo:[-0.12,0,0],calin:[0,0,-0.06]}[c.po];
+if(PR!==PROPS.classique||TILT){const HG=new THREE.Group(),BG=new THREE.Group(),LG=new THREE.Group(),IG=new THREE.Group(),bb=new THREE.Box3(),cc=V(0,0,0),arms=[];
+for(const m of[...G.children]){let part=m.userData.part;if(!part){bb.setFromObject(m);bb.getCenter(cc);part=cc.y>17.6?'head':(cc.y<5.6&&cc.z>1.5?'leg':'body');}
+if(part==='arm')arms.push(m);(part==='head'?HG:part==='leg'?LG:part==='item'?IG:BG).add(m);}
+// Bras : épaisseur et longueur changées depuis l'épaule, mains gardées à leur taille ; les objets tenus suivent les mains
+const[th,ln]=PR.a,before=V(0,0,0),after=V(0,0,0);
+for(const a of arms){a.updateMatrixWorld(true);before.add(a.localToWorld(V(0,-4.8,0)));a.scale.set(th,ln,th);a.position.add(V(0,5.1*(1-ln),0).applyQuaternion(a.quaternion));
+a.children.forEach(ch=>{if(!ch.userData.seam)ch.scale.multiply(V(1/th,1/ln,1/th));});a.updateMatrixWorld(true);after.add(a.localToWorld(V(0,-4.8,0)));}
+if(arms.length)IG.position.copy(after.sub(before).multiplyScalar(1/arms.length));BG.add(IG);
+const[bx,by,bz]=PR.b,[lx,ly,lz]=PR.l;BG.scale.set(bx,by,bz);LG.scale.set(lx,ly,lz);LG.position.set(0,0,1.5*(1-lz));
+const HP=new THREE.Group();HG.scale.setScalar(PR.h);HG.position.set(0,-17*PR.h,-0.6*PR.h);HP.position.set(0,17*by,0.6*bz);if(TILT)HP.rotation.set(TILT[0],TILT[1],TILT[2]);HP.add(HG);G.add(BG,LG,HP);}
+
+G.scale.setScalar(0.75);G.updateMatrixWorld(true);
+const box=new THREE.Box3().setFromObject(G),rx=Math.max(-box.min.x,box.max.x),rz=Math.max(-box.min.z,box.max.z);
+const fit={c:V(0,(box.min.y+box.max.y)/2,0),r:Math.max(box.max.y-box.min.y,2*Math.hypot(rx,rz)*0.82)/2*1.04};
+const[sc0,sg0]=cv(128),gr0=sg0.createRadialGradient(64,64,6,64,64,62);gr0.addColorStop(0,'rgba(0,0,0,0.5)');gr0.addColorStop(1,'rgba(0,0,0,0)');sg0.fillStyle=gr0;sg0.fillRect(0,0,128,128);
+const shw=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({map:own(new THREE.CanvasTexture(sc0)),transparent:true,depthWrite:false}));shw.rotation.x=-Math.PI/2;shw.renderOrder=-1;
+shw.scale.set((box.max.x-box.min.x)*1.15/0.75,(box.max.z-box.min.z)*1.15/0.75,1);shw.position.set((box.min.x+box.max.x)/1.5,box.min.y/0.75+0.05,(box.min.z+box.max.z)/1.5);G.add(shw);
+function dispose(){G.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)[].concat(o.material).forEach(m=>m.dispose());});owned.forEach(t=>t.dispose());}
+return{group:G,fit,dispose,cfg:c};}
+
+// Lumières et caméra communes
+let RR=null;
+function setup(r){RR=r;r.outputEncoding=THREE.sRGBEncoding;r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=1.08;}
+function studioEnv(scene){if(!RR||!THREE.PMREMGenerator)return;const es=new THREE.Scene(),sg=new THREE.SphereGeometry(50,32,16),pos=sg.attributes.position,cols=[];
+for(let i=0;i<pos.count;i++){const y=pos.getY(i)/50,k=Math.max(0,y);cols.push(0.42+0.5*k,0.4+0.47*k,0.46+0.48*k);}sg.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));
+es.add(new THREE.Mesh(sg,new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.BackSide})));
+for(const[x,y,z,w,h,k]of[[22,28,34,34,22,1.6],[-34,18,-20,26,30,0.8]]){const pl=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({color:new THREE.Color(k,k,k)}));pl.position.set(x,y,z);pl.lookAt(0,0,0);es.add(pl);}
+const pm=new THREE.PMREMGenerator(RR);scene.environment=pm.fromScene(es,0.04).texture;pm.dispose();}
+function lights(scene){studioEnv(scene);scene.add(new THREE.HemisphereLight(0xfff6ee,0x8a8494,0.32));
+const key=new THREE.DirectionalLight(0xfff4ea,0.95);key.position.set(30,36,72);key.castShadow=true;key.shadow.mapSize.set(2048,2048);const sc=key.shadow.camera;sc.left=-35;sc.right=35;sc.top=35;sc.bottom=-35;sc.near=1;sc.far=200;key.shadow.bias=-0.0004;key.shadow.radius=3;scene.add(key);
+const rim=new THREE.DirectionalLight(0xffe6d0,0.85);rim.position.set(-40,30,-50);scene.add(rim);const fill=new THREE.DirectionalLight(0xe0ecff,0.22);fill.position.set(-50,10,30);scene.add(fill);
+const camFill=new THREE.DirectionalLight(0xfff6ee,0.22);scene.add(camFill);return camFill;}
+function aim(cam,fit,el,zoom,light){const vh=cam.fov*Math.PI/360,hh=Math.atan(Math.tan(vh)*cam.aspect),d=fit.r/Math.sin(Math.min(vh,hh))*zoom,AZ=0.34;
+cam.position.set(fit.c.x+d*Math.sin(AZ)*Math.cos(el),fit.c.y+d*Math.sin(el),fit.c.z+d*Math.cos(AZ)*Math.cos(el));cam.lookAt(fit.c);if(light)light.position.copy(cam.position);}
+
+return{build,clean,encode,decode,lights,setup,aim,PRESETS,NEUTRAL,ENUM,ACC,SHAPES,ANCHORS,HOOKS};
+})();
+</script>
+<script>
+const $=id=>document.getElementById(id);
+function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}catch(e){}return null;}
+const say=(id,t)=>{$(id).textContent=t;if(id==='ai-status'&&$('stage-status'))$('stage-status').textContent=t;};
+
+// Aperçu 3D
+const reduceMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;let spin=false;
+const stage=$('stage'),scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(22,1,0.1,500);
+const r=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});r.setClearColor(0x000000,0);r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;stage.prepend(r.domElement);
+PL.setup(r);const camFill=PL.lights(scene);PL.HOOKS.onTex=()=>{dirty=true;};
+let cfg=PL.clean(PL.PRESETS.pompier),cur=null,ry=-0.25,el=0.24,dirty=true,drag=false,lx=0,ly=0;
+function fitSize(){const w=stage.clientWidth||480,h=stage.clientHeight||480;r.setPixelRatio(Math.min(2,window.devicePixelRatio||1));r.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();dirty=true;}
+fitSize();if(window.ResizeObserver)new ResizeObserver(fitSize).observe(stage);window.addEventListener('resize',fitSize);
+function rebuild(){if(cur){scene.remove(cur.group);cur.dispose();}cur=PL.build(cfg);scene.add(cur.group);dirty=true;}
+let rbT=0;function changed(){updateLink();clearTimeout(rbT);rbT=setTimeout(rebuild,140);}
+stage.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;drag=true;lx=e.clientX;ly=e.clientY;stage.classList.add('drag');});
+window.addEventListener('pointermove',e=>{if(!drag)return;ry+=(e.clientX-lx)*0.01;el=Math.min(0.8,Math.max(-0.15,el+(e.clientY-ly)*0.006));lx=e.clientX;ly=e.clientY;dirty=true;});
+const up=()=>{drag=false;stage.classList.remove('drag');};window.addEventListener('pointerup',up);window.addEventListener('pointercancel',up);
+stage.addEventListener('dblclick',()=>{ry=-0.25;el=0.24;dirty=true;});
+(function loop(){if(spin&&!drag&&!reduceMotion){ry+=0.008;dirty=true;}if(dirty&&cur){cur.group.rotation.y=ry;PL.aim(cam,cur.fit,el,1.04,camFill);r.render(scene,cam);dirty=false;}requestAnimationFrame(loop);})();
+
+// Réglages
+const CHOICES={hs:{court:'Courts',banane:'Banane (plaqués en arrière)',meches:'Mi-longs en mèches',herisse:'Hérissés',iroquoise:'Iroquoise',carre:'Carré',long:'Longs',tresse:"Tresse sur l'épaule",couettes:'Couettes',queue:'Queue de cheval',chignon:'Chignon',boucle:'Bouclés',afro:'Afro',dreads:'Dreads',rase:'Rasés',chauve:'Chauve'},
+bd:{aucune:'Aucune',barbe3j:'Barbe de 3 jours',barbe:'Barbe',longue:'Barbe longue',moustache:'Moustache',bouc:'Bouc'},ex:{sourire:'Grand sourire',content:'Petit sourire',neutre:'Neutre',serieux:'Sérieux'},
+gl:{aucune:'Aucunes',lunettes:'Lunettes de vue',soleil:'Lunettes de soleil',aviateur:'Lunettes aviateur',tete:'Lunettes relevées sur la tête',masque:'Lunettes de protection'},
+hw:{aucun:'Aucun',capuche:'Capuche relevée',casquette:'Casquette',inverse:"Casquette à l'envers",bonnet:'Bonnet',chapeau:'Chapeau',bandeau:'Bandeau',pompier:'Casque de pompier',police:'Casquette de police'},
+tp:{tshirt:'T-shirt',chemise:'Chemise',sweat:'Sweat à capuche',veste:'Veste ouverte',costume:'Costume',gilet:'Gilet sur manches'},mt:{uni:'Uni',rayures:'Rayures',camo:'Camouflage',carreaux:'Carreaux',taches:'Taches'},
+bt:{pantalon:'Pantalon',jogging:'Jogging',short:'Short'},sh:{bottes:'Bottes',baskets:'Baskets',chaussures:'Chaussures de ville'},
+it:{aucun:'Rien',lance:'Lance à incendie',coeur:'Cœur',telephone:'Téléphone',cafe:'Café',donut:'Donut',trousse:'Trousse de secours'}};
+CHOICES.hm=CHOICES.mt;
+CHOICES.ms={aucune:'Aucune',monstre:'Petit monstre (oreilles et dents)',lapin:'Lapin',ours:'Ours',chat:'Chat',chien:'Chien',oiseau:'Oiseau / perroquet'};
+CHOICES.po={assis:'Assise',debout:'Debout',coucou:'Coucou',bravo:'Bras levés',calin:'Câlin',coeur:'Cœur',pensif:'Pensive',tailleur:'En tailleur',dab:'Dab'};
+CHOICES.ey={kawaii:'Mignons (peluche)',realiste:'Réalistes'};
+CHOICES.st={classique:'Classique',ours:'Ourson',lapin:'Lapin',chat:'Chaton',monstre:'Petit monstre',avatar:'Avatar'};
+CHOICES.mp={droite:"Sur l'épaule, à droite de l'image",gauche:"Sur l'épaule, à gauche de l'image",tete:'Sur la tête',mains:'Dans les mains'};
+const FLAGS={r:'Radio',b:'Badge',m:'Micro-casque',s:'Sacoche',c:'Chaîne en or',o:"Boucles d'oreilles",w:'Montre',k:'Sac à dos',e:'Écharpe',h:'Casque audio au cou',a:'Bandana sur le visage',n:'Sac en bandoulière'};
+const SECTIONS=[
+{t:'Style, pose et nom',f:[{k:'st',type:'chips',l:'Style de peluche',wide:1},{k:'po',type:'chips',l:'Position',wide:1},{k:'fc',type:'color',l:'Couleur de la fourrure',show:c=>['ours','lapin','chat','monstre'].includes(c.st)},{k:'n',type:'text',l:'Nom',max:24,wide:1}]},
+{t:'Visage',f:[{k:'ey',type:'chips',l:'Yeux',wide:1},{k:'sk',type:'color',l:'Peau'},{k:'ec',type:'color',l:'Yeux'},{k:'ex',type:'choice',l:'Expression'},{k:'bd',type:'choice',l:'Barbe'},{k:'fr',type:'check',l:'Taches de rousseur'},{k:'cl',type:'check',l:'Longs cils'}]},
+{t:'Cheveux',f:[{k:'hs',type:'choice',l:'Coiffure'},{k:'hc',type:'color',l:'Couleur des cheveux'}]},
+{t:'Tête',f:[{k:'hw',type:'choice',l:'Couvre-chef'},{k:'hwc',type:'color',l:'Couleur du couvre-chef',show:c=>c.hw!=='aucun'},{k:'hwt',type:'text',l:'Texte ou numéro',max:6,show:c=>['casquette','bonnet','pompier'].includes(c.hw)},{k:'hm',type:'choice',l:'Motif du couvre-chef',show:c=>['capuche','casquette','inverse','chapeau'].includes(c.hw)},
+{k:'gl',type:'choice',l:'Lunettes'},{k:'glc',type:'color',l:'Monture',show:c=>c.gl!=='aucune'},{k:'lc',type:'color',l:'Couleur des verres',show:c=>['soleil','aviateur','tete'].includes(c.gl)}]},
+{t:'Tenue',f:[{k:'tp',type:'choice',l:'Haut'},{k:'mt',type:'choice',l:'Motif'},{k:'tc',type:'color',l:c=>({gilet:'Gilet',veste:'Veste',costume:'Veste de costume'})[c.tp]||'Couleur du haut'},
+{k:'t2',type:'color',l:c=>({gilet:'Manches',veste:'Haut en dessous',costume:'Chemise',sweat:'Cordons'})[c.tp]||'Dessous',show:c=>['gilet','veste','costume','sweat'].includes(c.tp)},
+{k:'im',type:'print',l:'Imprimé sur le devant (découpé dans la photo)',wide:1,show:c=>c.tp!=='costume'},{k:'tt',type:'text',l:'Texte imprimé (dos)',max:8},{k:'rf',type:'check',l:'Bandes réfléchissantes'},{k:'bt',type:'choice',l:'Bas'},{k:'pc',type:'color',l:c=>c.bt==='short'?'Couleur du short':'Couleur du bas'},
+{k:'sh',type:'choice',l:'Chaussures'},{k:'sc',type:'color',l:'Couleur des chaussures'},{k:'gv',type:'glove',l:'Gants'}]},
+{t:'Accessoires',f:[{k:'acc',type:'flags',l:'Équipement',wide:1},{k:'it',type:'choice',l:'Dans les mains'},{k:'ac',type:'color',l:"Couleur d'accent"},
+{k:'ms',type:'choice',l:'Mascotte (mini-peluche)'},{k:'mc',type:'color',l:'Couleur de la mascotte',show:c=>c.ms!=='aucune'},{k:'mp',type:'choice',l:'Place de la mascotte',show:c=>c.ms!=='aucune'},{k:'mz',type:'range',l:'Taille de la mascotte',min:0.5,max:2,step:0.05,show:c=>c.ms!=='aucune'},{k:'mx',type:'range',l:'Mascotte : gauche / droite',min:-1,max:1,step:0.05,fmt:'off',show:c=>c.ms!=='aucune'},{k:'my',type:'range',l:'Mascotte : bas / haut',min:-1,max:1,step:0.05,fmt:'off',show:c=>c.ms!=='aucune'},{k:'mf',type:'range',l:'Mascotte : arrière / avant',min:-1,max:1,step:0.05,fmt:'off',show:c=>c.ms!=='aucune'},{k:'mr',type:'range',l:'Mascotte : rotation',min:-180,max:180,step:5,fmt:'deg',show:c=>c.ms!=='aucune'}]}];
+const F={};let lastGlove='#86ace6';
+function el2(tag,props,kids){const n=document.createElement(tag);Object.assign(n,props||{});(kids||[]).forEach(k=>n.append(k));return n;}
+function colorRow(k,id){return el2('div',{className:'colorrow'},[el2('input',{type:'color',id}),el2('button',{type:'button',className:'pip',textContent:'Pipette',title:'Prendre la couleur sur la photo'})]);}
+const TAB_OF={'Style, pose et nom':'style',Visage:'visage',Cheveux:'tete','Tête':'tete',Tenue:'tenue',Accessoires:'accessoires'};
+for(const sec of SECTIONS){const grid=el2('div',{className:'fields'});$('tab-'+TAB_OF[sec.t]).append(el2('section',{className:'card'},[el2('h2',{textContent:sec.t}),grid]));
+for(const f of sec.f){const id='f-'+f.k,row=el2('div',{className:'field'+(f.wide?' wide':'')});const lab=el2('label',{htmlFor:id});f.lab=lab;
+if(f.type==='color'){row.append(lab,colorRow(f.k,id));row.querySelector('.pip').dataset.pip=f.k;}
+else if(f.type==='choice'){const s=el2('select',{id});for(const[v,t]of Object.entries(CHOICES[f.k]))s.append(el2('option',{value:v,textContent:t}));row.append(lab,s);}
+else if(f.type==='text'){row.append(lab,el2('input',{type:'text',id,maxLength:f.max,autocomplete:'off'}));}
+else if(f.type==='check'){row.append(el2('label',{className:'check'},[el2('input',{type:'checkbox',id}),f.l]));f.lab=null;}
+else if(f.type==='glove'){row.append(el2('label',{className:'check'},[el2('input',{type:'checkbox',id:id+'-on'}),'Gants']),colorRow(f.k,id));row.querySelector('.pip').dataset.pip=f.k;f.lab=null;}
+else if(f.type==='range'){row.append(el2('div',{className:'row rangehead'},[lab,el2('span',{className:'help',id:id+'-v'})]),el2('input',{type:'range',id,min:f.min,max:f.max,step:f.step}));}
+else if(f.type==='print'){const im=el2('img',{id:id+'-img',alt:'Imprimé pris sur la photo',className:'printimg'});row.append(el2('span',{className:'help',textContent:f.l}),el2('div',{className:'row'},[im,el2('button',{type:'button',className:'btn',id:id+'-pick',textContent:'Choisir sur la photo'}),el2('button',{type:'button',className:'btn',id:id+'-rm',textContent:'Retirer'})]));f.lab=null;}
+else if(f.type==='chips'){const g=el2('div',{className:'seg',id});for(const[v,t]of Object.entries(CHOICES[f.k])){const b=el2('button',{type:'button',className:'btn',textContent:t});b.dataset.v=v;g.append(b);}row.append(el2('span',{className:'help',textContent:f.l}),g);f.lab=null;}
+else if(f.type==='flags'){row.append(el2('span',{className:'help',textContent:f.l}),el2('div',{className:'flags'},Object.entries(FLAGS).map(([v,t])=>el2('label',{className:'check'},[el2('input',{type:'checkbox',id:id+'-'+v,value:v}),t]))));f.lab=null;}
+f.row=row;F[f.k]=f;grid.append(row);}}
+function syncForm(){for(const k in F){const f=F[k],id='f-'+k;if(f.lab)f.lab.textContent=typeof f.l==='function'?f.l(cfg):f.l;f.row.hidden=!!(f.show&&!f.show(cfg));
+if(f.type==='color'||f.type==='choice'||f.type==='text'){if(document.activeElement!==$(id))$(id).value=k==='fc'?(cfg.fc||cfg.hc):cfg[k];}
+else if(f.type==='range'){if(document.activeElement!==$(id))$(id).value=cfg[k];const v=Number(cfg[k]);$(id+'-v').textContent=f.fmt==='deg'?Math.round(v)+'°':f.fmt==='off'?(v>0?'+':'')+v.toFixed(2).replace('.',','):'× '+v.toFixed(2).replace('.',',');}
+else if(f.type==='print'){const on=!!cfg.im;$(id+'-img').hidden=!on;if(on)$(id+'-img').src='data:image/'+cfg.imt+';base64,'+cfg.im;$(id+'-rm').hidden=!on;$(id+'-pick').disabled=!anyPhoto();}
+else if(f.type==='chips')$(id).querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===cfg[k])));
+else if(f.type==='check')$(id).checked=!!cfg[k];
+else if(f.type==='glove'){$(id+'-on').checked=!!cfg.gv;if(cfg.gv)lastGlove=cfg.gv;$(id).value=lastGlove;$(id).disabled=!cfg.gv;}
+else if(f.type==='flags')for(const v in FLAGS)$(id+'-'+v).checked=cfg.acc.includes(v);}renderPieces();}
+// Pièces sur mesure ajoutées par Claude : on peut changer leur couleur ou les retirer
+const SHAPE_L={sphere:'Boule',goutte:'Goutte',cone:'Cône',cylindre:'Cylindre',tore:'Anneau',boite:'Bloc'},ANCH_L={tete:'tête',corps:'corps',mains:'mains',dos:'dos',jambes:'jambes'};
+$('tab-accessoires').append(el2('section',{className:'card'},[el2('h2',{textContent:'Pièces sur mesure'}),el2('p',{className:'help',textContent:"Ce que Claude ajoute pour coller à la photo : oreilles, cornes, queue, nœud… Change une couleur ou retire une pièce."}),el2('div',{id:'pz-list',className:'pzlist'})]));
+function renderPieces(){const box=$('pz-list');if(!box)return;box.textContent='';if(!cfg.pz.length){box.append(el2('p',{className:'help',textContent:'Aucune pièce sur mesure pour cette peluche.'}));return;}
+cfg.pz.forEach((q,i)=>{const b=el2('button',{type:'button',className:'btn',textContent:'Retirer'});b.dataset.rm=i;box.append(el2('div',{className:'pzrow'},[el2('label',{htmlFor:'pz-'+i,textContent:(i+1)+'. '+SHAPE_L[q[0]]+' sur '+ANCH_L[q[1]]}),el2('input',{type:'color',id:'pz-'+i,value:q[11]}),b]));});}
+$('pz-list').addEventListener('input',e=>{const m=e.target.id.match(/^pz-(\d+)$/);if(m&&cfg.pz[+m[1]]){cfg.pz[+m[1]][11]=e.target.value;changed();}});
+$('pz-list').addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;cfg.pz.splice(+b.dataset.rm,1);renderPieces();changed();});
+$('settings').addEventListener('input',e=>{const t=e.target,m=t.id.match(/^f-([a-z0-9]+)/);if(!m)return;const k=m[1],f=F[k];if(!f)return;
+if(f.type==='check')cfg[k]=t.checked?1:0;
+else if(f.type==='glove'){if(t.type==='color'){lastGlove=t.value;if(cfg.gv)cfg.gv=t.value;}else cfg.gv=t.checked?lastGlove:'';}
+else if(f.type==='flags')cfg.acc=Object.keys(FLAGS).filter(v=>$('f-acc-'+v).checked).join('');
+else cfg[k]=t.value;
+cfg=PL.clean(cfg);syncForm();changed();});
+
+// Onglets et étapes ; la pipette et l'imprimé ouvrent l'onglet Photos puis ramènent à l'onglet d'avant
+const TABS=['photos','style','visage','tete','tenue','accessoires','lien'];let curTab='photos',backTab=null;
+function showTab(t){curTab=t;document.querySelectorAll('.tabpanel').forEach(pn=>{pn.hidden=pn.dataset.tab!==t;});document.querySelectorAll('.tabs button').forEach(bt=>bt.setAttribute('aria-selected',String(bt.dataset.tab===t)));
+const stp=t==='photos'?'photos':t==='lien'?'lien':'reglages';document.querySelectorAll('.steps li').forEach(li=>li.classList.toggle('on',li.dataset.step===stp));store('peluches-onglet',t);}
+function goPhotos(){if(curTab!=='photos'){backTab=curTab;showTab('photos');}}
+function goBack(){if(backTab){showTab(backTab);backTab=null;}}
+document.querySelector('.tabs').addEventListener('click',e=>{const bt=e.target.closest('button[data-tab]');if(bt)showTab(bt.dataset.tab);});
+document.querySelector('.steps').addEventListener('click',e=>{const li=e.target.closest('[data-step]');if(li)showTab(li.dataset.step==='reglages'?'style':li.dataset.step);});
+{const t0=store('peluches-onglet');showTab(TABS.includes(t0)?t0:'photos');}
+// Vues de l'aperçu : face, profil, dos, rotation continue
+const view=r0=>{spin=false;$('v-spin').setAttribute('aria-pressed','false');ry=r0;el=0.12;dirty=true;};
+$('v-front').addEventListener('click',()=>view(-0.34));$('v-side').addEventListener('click',()=>view(-0.34-Math.PI/2));$('v-back').addEventListener('click',()=>view(Math.PI-0.34));
+$('v-spin').addEventListener('click',()=>{spin=!spin;$('v-spin').setAttribute('aria-pressed',String(spin));dirty=true;});
+
+// Modèles
+const PRESET_NAMES={pompier:'Pompier',police:'Policier',ems:'Ambulancière',civil:'Civil'};
+for(const[p,t]of Object.entries(PRESET_NAMES)){const b=el2('button',{type:'button',className:'btn',textContent:t});b.addEventListener('click',()=>{cfg=PL.clean(PL.PRESETS[p]);syncForm();rebuild();updateLink();});$('presets').append(b);}
+
+// Photos (face, côté, dos), pipette et imprimé
+const SLOTS=['face','cote','dos'],SLOT_L={face:'face',cote:'côté',dos:'dos'},shots={};let pick=null,printPick=false,printA=null,anaT=0;
+const anyPhoto=()=>SLOTS.some(s=>shots[s].blob),photoList=()=>SLOTS.filter(s=>shots[s].blob);
+document.querySelectorAll('.shot').forEach(el=>{const slot=el.dataset.slot,cn=el.querySelector('canvas'),inp=el.querySelector('input'),btn=el.querySelector('button');shots[slot]={el,cn,btn,blob:null};
+btn.addEventListener('click',()=>inp.click());inp.addEventListener('change',e=>{loadPhoto(slot,e.target.files[0]);e.target.value='';});
+el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('over');});el.addEventListener('dragleave',()=>el.classList.remove('over'));
+el.addEventListener('drop',e=>{e.preventDefault();el.classList.remove('over');loadPhoto(slot,e.dataTransfer.files[0]);});
+cn.addEventListener('click',e=>photoClick(slot,e));});
+document.addEventListener('paste',e=>{const it=[...((e.clipboardData&&e.clipboardData.items)||[])].find(i=>i.type.startsWith('image/'));if(it){e.preventDefault();loadPhoto(SLOTS.find(s=>!shots[s].blob)||'face',it.getAsFile());}});
+async function loadPhoto(slot,file){if(!file||!/^image\//.test(file.type)){say('ai-status',"Ce fichier n'est pas une image.");return;}
+try{const S=shots[slot],bmp=await createImageBitmap(file),k=Math.min(1,1600/Math.max(bmp.width,bmp.height));S.cn.width=Math.round(bmp.width*k);S.cn.height=Math.round(bmp.height*k);S.cn.getContext('2d').drawImage(bmp,0,0,S.cn.width,S.cn.height);
+S.cn.hidden=false;S.el.classList.add('has');S.btn.textContent='Changer';$('right').classList.remove('no-photo');
+S.blob=await new Promise(res=>S.cn.toBlob(res,'image/jpeg',0.9));updateAnalyse();syncForm();
+// Petite attente : si plusieurs photos arrivent d'affilée, la création ne part qu'une fois
+clearTimeout(anaT);if(sample&&imagesOK){say('ai-status','Photo de '+SLOT_L[slot]+' ajoutée. La création démarre…');anaT=setTimeout(runAnalysis,1500);}else say('ai-status',readyMsg());}
+catch(e){say('ai-status',"Impossible d'ouvrir cette image. Essaie une capture en PNG ou JPEG.");}}
+function pickUI(on){document.querySelectorAll('.shot').forEach(el=>el.classList.toggle('picking',on));}
+function setPick(k){pick=k;printPick=false;document.querySelectorAll('.pip').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.pip===k)));pickUI(!!k);
+if(k){goPhotos();const f=F[k];say('ai-status','Clique sur une photo pour prendre la couleur : '+((typeof f.l==='function'?f.l(cfg):f.l)||'Gants').toLowerCase()+'.');$('shots').scrollIntoView({block:'nearest',behavior:'smooth'});}}
+function startPrintPick(){setPick(null);goPhotos();printPick=true;printA=null;pickUI(true);say('ai-status',"Clique sur un coin de l'imprimé, puis sur le coin opposé.");$('shots').scrollIntoView({block:'nearest',behavior:'smooth'});}
+$('settings').addEventListener('click',e=>{const b=e.target.closest('.pip');if(b)setPick(pick===b.dataset.pip?null:b.dataset.pip);
+const ch=e.target.closest('.seg button');if(ch&&ch.parentElement.id.startsWith('f-')){cfg[ch.parentElement.id.slice(2)]=ch.dataset.v;cfg=PL.clean(cfg);syncForm();changed();}
+if(e.target.id==='f-im-pick')startPrintPick();if(e.target.id==='f-im-rm'){cfg.im='';syncForm();changed();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&(pick||printPick)){setPick(null);pickUI(false);printPick=false;say('ai-status',readyMsg());goBack();}});
+function photoClick(slot,e){const cn=shots[slot].cn,b=cn.getBoundingClientRect(),x=(e.clientX-b.left)*cn.width/b.width,y=(e.clientY-b.top)*cn.height/b.height;
+if(printPick){const p=[x/cn.width,y/cn.height];if(!printA){printA=[slot,p];say('ai-status',"Maintenant, clique sur le coin opposé de l'imprimé.");return;}
+const[s0,a]=printA;printPick=false;printA=null;pickUI(false);if(s0!==slot){say('ai-status','Clique les deux coins sur la même photo.');return;}
+say('ai-status',cropPrint(cn,[Math.min(a[0],p[0]),Math.min(a[1],p[1]),Math.abs(p[0]-a[0]),Math.abs(p[1]-a[1])])?'Imprimé ajouté sur la peluche.':'Zone trop petite : recommence.');goBack();return;}
+if(!pick)return;const d=cn.getContext('2d').getImageData(Math.max(0,Math.round(x)-2),Math.max(0,Math.round(y)-2),5,5).data;let R=0,G=0,B=0,n=0;for(let i=0;i<d.length;i+=4){R+=d[i];G+=d[i+1];B+=d[i+2];n++;}
+const h='#'+[R,G,B].map(v=>Math.round(v/n).toString(16).padStart(2,'0')).join('');if(pick==='gv'){lastGlove=h;cfg.gv=h;}else cfg[pick]=h;
+setPick(null);cfg=PL.clean(cfg);syncForm();changed();say('ai-status','Couleur prise sur la photo.');goBack();}
+// Imprimé : découpé dans la photo, bords adoucis, réduit pour que le lien reste court
+function cropPrint(cn,box){if(!box||!(box[2]>0.02)||!(box[3]>0.02))return false;const sx=box[0]*cn.width,sy=box[1]*cn.height,sw=box[2]*cn.width,sh=box[3]*cn.height,k=Math.min(1,96/Math.max(sw,sh)),w=Math.max(8,Math.round(sw*k)),h=Math.max(8,Math.round(sh*k));
+const o=document.createElement('canvas');o.width=w;o.height=h;const g=o.getContext('2d');g.drawImage(cn,sx,sy,sw,sh,0,0,w,h);g.globalCompositeOperation='destination-in';
+const gr=g.createRadialGradient(w/2,h/2,Math.min(w,h)*0.32,w/2,h/2,Math.max(w,h)*0.62);gr.addColorStop(0,'rgba(0,0,0,1)');gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.fillRect(0,0,w,h);
+let url=o.toDataURL('image/webp',0.72),t='webp';if(!url.startsWith('data:image/webp')){url=o.toDataURL('image/png');t='png';}
+cfg.im=url.split(',')[1];cfg.imt=t;cfg.ia=w/h;cfg=PL.clean(cfg);syncForm();changed();return!!cfg.im;}
+
+// Création depuis les photos : Claude regarde, puis compare son résultat aux photos et corrige tout seul
+let sample=null,imagesOK=false,maxImages=1,ctl=null;
+const WHO={seule:'la personne des photos',gauche:'la personne à gauche sur les photos',milieu:'la personne au milieu des photos',droite:'la personne à droite sur les photos'};
+function intro(w,slots){return "Tu reçois "+slots.length+" photo(s) de la même personne, souvent un personnage du jeu GTA en roleplay, dans cet ordre : "+slots.map((s,i)=>'image '+(i+1)+' = vue de '+SLOT_L[s]).join(', ')+". Décris "+WHO[w]+" pour fabriquer une peluche qui lui ressemble le plus possible.\n";}
+function prompt(w,slots){return intro(w,slots)+keysText();}
+function keysText(){return "Regarde d'abord ce qui rend la personne reconnaissable (coiffure et frange, couvre-chef ou capuche, forme des lunettes, barbe, imprimé du haut, veste, motif, accessoires, animal ou mascotte) et reprends tout ce qui se voit. Sers-toi des vues de côté et de dos pour l'arrière de la coiffure, la capuche et le texte au dos. "
++"Prends les vraies couleurs des photos en compensant l'éclairage si la scène est sombre ou colorée, jamais des couleurs génériques.\n"
++"Réponds uniquement avec un objet JSON qui a exactement ces clés :\n"
++'- "n" : nom court pour la peluche (métier ou surnom visible), 24 caractères maximum\n'
++'- "sk" : couleur de peau, "#rrggbb"\n'
++'- "hc" : couleur des cheveux (ou des sourcils si la personne est chauve), "#rrggbb"\n'
++'- "hs" : coiffure, parmi "court" (courts et nets), "banane" (plaqués en arrière ou banane : volume sur le dessus, côtés courts ou dégradés), "meches" (mi-longs en mèches ou frange sur le front), "herisse" (courts en petits pics), "iroquoise" (crête au milieu, côtés rasés), "carre" (carré au menton avec frange), "long" (aux épaules ou plus), "tresse" (une grosse tresse qui tombe devant l\'épaule), "couettes", "queue" (queue de cheval), "chignon", "boucle" (bouclés courts), "afro", "dreads" (dreadlocks ou tresses), "rase", "chauve"\n'
++'- "ec" : couleur des yeux, "#rrggbb" ("#5a3b22" si on ne les voit pas)\n'
++'- "ex" : expression, parmi "sourire" (grand sourire), "content" (petit sourire), "neutre", "serieux"\n'
++'- "bd" : pilosité du visage, parmi "aucune", "barbe3j" (barbe de quelques jours), "barbe", "longue" (barbe longue), "moustache", "bouc"\n'
++'- "fr" : 1 si on voit des taches de rousseur, sinon 0\n'
++'- "cl" : 1 pour de longs cils recourbés (visage féminin ou maquillé), 0 sinon\n'
++'- "gl" : lunettes, parmi "aucune", "lunettes" (de vue, sur les yeux), "soleil" (de soleil rondes ou rectangulaires, sur les yeux), "aviateur" (aviateur : verres en goutte, fine monture métal), "tete" (lunettes relevées sur le front, la tête ou la capuche), "masque" (lunettes de protection ou de ski sur les yeux)\n'
++'- "glc" : couleur de la monture, "#rrggbb"\n'
++'- "lc" : couleur des verres des lunettes de soleil ou aviateur, "#rrggbb" (brun, gris fumé, vert, bleu miroir…)\n'
++'- "hw" : couvre-chef, parmi "aucun", "capuche" (capuche relevée sur la tête), "casquette", "inverse" (casquette à l\'envers), "bonnet", "chapeau", "bandeau", "pompier" (casque de pompier ou de chantier), "police" (casquette d\'uniforme à visière)\n'
++'- "hwc" : couleur du couvre-chef ou de la capuche, "#rrggbb"\n'
++'- "hwt" : texte ou numéro visible sur le couvre-chef, 6 caractères maximum, sinon ""\n'
++'- "hm" : motif de la capuche, de la casquette ou du chapeau, parmi "uni", "rayures", "camo", "carreaux", "taches" (le motif prend la couleur "ac")\n'
++'- "tp" : haut, parmi "tshirt", "chemise", "sweat" (sweat ou pull), "veste" (veste ouverte sur un autre haut), "costume" (veste de costume, chemise et cravate), "gilet" (gilet sans manches porté sur un autre haut)\n'
++'- "mt" : motif du haut, parmi "uni", "rayures", "camo", "carreaux", "taches" (taches de vache, de dalmatien… dans la couleur "ac")\n'
++'- "tc" : couleur principale du haut (pour gilet, veste ou costume : la pièce du dessus), "#rrggbb"\n'
++'- "t2" : couleur du vêtement en dessous (les manches pour un gilet, le haut sous une veste, la chemise d\'un costume, les cordons d\'un sweat), "#rrggbb"\n'
++'- "imp" : si le haut porte un grand dessin, logo ou imprimé sur le devant, sa boîte [x, y, largeur, hauteur] dans l\'image 1, en fractions de 0 à 1 (x et y = coin en haut à gauche), bien serrée autour du dessin ; sinon null\n'
++'- "tt" : texte imprimé sur le haut (par exemple LSPD, EMS, LSFD), 8 caractères maximum, sinon ""\n'
++'- "rf" : 1 s\'il y a des bandes réfléchissantes, sinon 0\n'
++'- "ac" : couleur d\'accent pour les rayures, la cravate, le pompon, le bandana, l\'écharpe, le sac à dos ou les bandes du jogging, "#rrggbb"\n'
++'- "bt" : bas, parmi "pantalon", "jogging", "short"\n'
++'- "pc" : couleur du bas, "#rrggbb"\n'
++'- "sh" : chaussures, parmi "bottes", "baskets", "chaussures" (de ville)\n'
++'- "sc" : couleur des chaussures, "#rrggbb"\n'
++'- "gv" : couleur des gants, "#rrggbb", ou "" sans gants\n'
++'- "acc" : lettres des accessoires visibles, "" s\'il n\'y en a aucun : r = radio ou talkie, b = badge ou insigne, m = micro-casque ou oreillette, s = sacoche à la ceinture, c = chaîne ou collier, o = boucles d\'oreilles, w = montre, k = sac à dos, e = écharpe, h = casque audio autour du cou, a = bandana ou masque sur le bas du visage, n = sac en bandoulière\n'
++'- "it" : objet tenu en main, parmi "aucun", "lance" (lance à incendie), "coeur", "telephone", "cafe", "donut", "trousse" (trousse de secours)\n'
++'- "ms" : petite peluche ou petit animal porté par la personne (sur l\'épaule, accroché au sac ou dans les bras), parmi "aucune", "monstre" (petite peluche monstre à longues oreilles, visage clair et grand sourire plein de dents, comme les figurines de collection à la mode), "lapin" (lapin classique), "ours", "chat", "chien", "oiseau" (oiseau ou perroquet) ; prends la forme la plus proche\n'
++'- "mc" : couleur de cette mascotte, "#rrggbb"\n'
++'- "mp" : place de la mascotte, parmi "droite" (sur l\'épaule à droite de l\'image), "gauche" (sur l\'épaule à gauche de l\'image), "mains"\n'
++'- "mz" : taille de la mascotte, nombre de 0.5 à 2 (1 = normale, à peu près la moitié de la hauteur de la tête ; 0.6 = petit porte-clés ; 1.6 = grosse peluche) ; estime-la par rapport à la tête sur la photo\n'
++'- "pz" : liste de pièces sur mesure (0 à 16) pour reproduire tout ce qui rend la personne reconnaissable et que les choix ci-dessus ne couvrent pas : oreilles ou cornes d\'un costume d\'animal, queue, ailes, nœud, fleur, couronne, antennes, pompons, gros boutons, etc. Mets [] s\'il n\'y a rien de spécial.\n'
++'  Chaque pièce : {"forme":"sphere"|"goutte"|"cone"|"cylindre"|"tore"|"boite","ancre":"tete"|"corps"|"mains"|"dos"|"jambes","pos":[x,y,z],"taille":[tx,ty,tz],"rot":[rx,ry,rz],"couleur":"#rrggbb","colle":true|false}\n'
++'  Unités : 1 = le rayon de l\'ancre (la tête fait 1 de rayon). x vers la droite de l\'image quand la peluche te fait face, y vers le haut, z vers l\'avant. "taille" donne des demi-dimensions, "rot" des degrés.\n'
++'  "colle":true (conseillé pour ce qui est posé sur la tête ou le corps) : "pos" est une direction depuis le centre de l\'ancre ; la pièce est posée sur la surface la plus extérieure (cheveux, capuche ou chapeau compris) et son axe y pointe vers l\'extérieur. "colle":false : "pos" est une position libre autour de l\'ancre.\n'
++'  Formes : "cone" a la pointe vers +y, "goutte" a la pointe vers -y, "tore" est un anneau dans le plan x-y, "boite" est un bloc arrondi.\n'
++'  Exemple pour une capuche de vache : oreilles {"forme":"sphere","ancre":"tete","pos":[0.9,0.45,0],"taille":[0.2,0.34,0.08],"rot":[0,0,0],"couleur":"#f2b5a0","colle":true} et la même avec x = -0.9 ; cornes {"forme":"cone","ancre":"tete","pos":[0.35,1,0.1],"taille":[0.08,0.26,0.08],"rot":[0,0,0],"couleur":"#e8c27a","colle":true} et la même avec x = -0.35.\n'
++"N'utilise jamais les pièces sur mesure pour une mascotte, une coiffure, des lunettes ou un vêtement : il y a des clés pour ça. Une pièce isolée qui ne ressemble à rien est pire que pas de pièce : en cas de doute, mets [].\n"
++"Une combinaison ou un pyjama d'animal se fait avec tp sweat et hw capuche de la même couleur, le même motif sur mt et hm, puis les oreilles, cornes ou queue en pièces sur mesure.\n"
++"Exemple de forme (sans pièce sur mesure) : "+JSON.stringify(Object.assign({},PL.PRESETS.police,{hm:'uni',pz:[],cl:0,ms:'aucune',mc:'#8ec5f0',mp:'droite',mz:1,lc:'#3a2a1e',imp:null}));}
+function readyMsg(){if(!(sample&&imagesOK))return "La création automatique n'est pas disponible ici. Règle la peluche à la main : le bouton Pipette prend une couleur sur la photo.";return anyPhoto()?'Peluche prête. Tu peux relancer la création ou corriger les réglages.':'Ajoute une photo de face : la peluche se crée toute seule.';}
+function reviewPrompt(w,slots,nr){const cur=Object.assign({},cfg);delete cur.im;delete cur.imt;delete cur.ia;
+return intro(w,slots)+"Les "+nr+" dernières images ne sont pas des photos : c'est le rendu actuel de la peluche ("+(nr>1?'de face, puis de dos':'de face')+"), fabriquée avec ce réglage :\n"+JSON.stringify(cur)+"\n"
++"Compare la peluche aux photos comme un client exigeant : coiffure et frange, couleurs des cheveux, de la peau et des yeux, barbe, lunettes, couvre-chef, haut et motif, couleurs des vêtements, accessoires, mascotte, objets. "
++"Corrige tout ce qui ne ressemble pas et garde ce qui est juste. Renvoie le réglage complet corrigé.\n"+keysText();}
+function updateAnalyse(){const b=$('analyse');b.hidden=!(sample&&imagesOK&&anyPhoto());b.disabled=false;b.textContent=ctl?'Arrêter':'Relancer la création';}
+// Rendu de la peluche sur fond gris neutre, pour que Claude la compare aux photos
+async function renderView(rot,S){await new Promise(res=>setTimeout(res,250));const pr=r.getPixelRatio(),keep=cur.group.rotation.y;r.setPixelRatio(1);r.setSize(S,S,false);cam.aspect=1;cam.updateProjectionMatrix();cur.group.rotation.y=rot;PL.aim(cam,cur.fit,0.12,1.05,camFill);r.render(scene,cam);
+const o=document.createElement('canvas');o.width=o.height=S;const g=o.getContext('2d');g.fillStyle='#8a929c';g.fillRect(0,0,S,S);g.drawImage(r.domElement,0,0);cur.group.rotation.y=keep;r.setPixelRatio(pr);fitSize();return new Promise(res=>o.toBlob(res,'image/jpeg',0.9));}
+function applyAnswer(data,keep,first0,first){const prev=first?null:(cfg.im?{im:cfg.im,imt:cfg.imt,ia:cfg.ia}:null);cfg=PL.clean(Object.assign({},data,keep),PL.NEUTRAL);
+if(Array.isArray(data.imp)&&data.imp.length===4)cropPrint(shots[first0].cn,data.imp.map(Number));else if(prev&&data.imp!==null)Object.assign(cfg,prev);syncForm();rebuild();updateLink();}
+async function runAnalysis(){const slots=photoList();if(!slots.length||!sample||!imagesOK)return;clearTimeout(anaT);if(ctl)ctl.abort();const my=new AbortController();ctl=my;updateAnalyse();
+const w=$('who').value,keep={st:cfg.st,po:cfg.po,ey:cfg.ey,fc:''},use=slots.slice(0,Math.max(1,maxImages)),imgs=use.map(s=>shots[s].blob);
+try{say('ai-status','Claude regarde '+(use.length>1?'les photos':'la photo')+'… Ça prend souvent 10 à 40 secondes.');
+let data=await sample.json(prompt(w,use),{images:imgs,signal:my.signal});if(ctl!==my)return;applyAnswer(data,keep,use[0],true);
+const nr=Math.min(maxImages-use.length,shots.dos.blob?2:1);
+if($('review').checked&&nr>=1){say('ai-status','Peluche créée. Claude la compare maintenant aux photos pour corriger ce qui ne ressemble pas…');
+const renders=[await renderView(-0.34,512)];if(nr>1)renders.push(await renderView(Math.PI-0.34,512));
+data=await sample.json(reviewPrompt(w,use,renders.length),{images:imgs.concat(renders),signal:my.signal,cache:false});if(ctl!==my)return;applyAnswer(data,keep,use[0],false);
+say('ai-status','Peluche créée puis vérifiée par Claude. Corrige ce qui ne va pas, puis copie le lien.');}
+else say('ai-status','Peluche créée depuis '+(use.length>1?'les photos':'la photo')+'. Corrige ce qui ne va pas, puis copie le lien.');}
+catch(e){if(ctl!==my)return;const code=e&&e.code;
+if(['not_granted','sampling_disabled','not_declared','capability_disabled','capability_removed','images_unavailable'].includes(code)){sample=null;say('ai-status',"La création automatique n'est pas autorisée ici. Règle la peluche à la main : le bouton Pipette prend une couleur sur la photo.");}
+else say('ai-status',({cancelled:'Création arrêtée.',rate_limited:'Trop de demandes pour le moment. Réessaie dans un moment.',image_rejected:"Une des images n'est pas acceptée. Essaie des captures en PNG ou JPEG.",
+refused:"Claude n'a pas pu décrire cette photo. Essaie une autre image.",invalid_json:'La réponse était incomplète. Clique sur « Relancer la création ».',session_expired:'Reconnecte-toi à Claude, puis relance la création.'})[code]||'La création a échoué. Clique sur « Relancer la création ».');}
+finally{if(ctl===my){ctl=null;updateAnalyse();}}}
+const getSample=window.claude&&window.claude.use?window.claude.use('sample'):Promise.resolve(null);
+getSample.then(async s=>{sample=s;if(s){try{const lim=await s.limits();imagesOK=!!(lim&&lim.images);if(imagesOK)maxImages=lim.images.maxCount||1;}catch(e){imagesOK=false;}}updateAnalyse();if(!pick)say('ai-status',readyMsg());if(anyPhoto())runAnalysis();},()=>{updateAnalyse();say('ai-status',readyMsg());});
+$('analyse').addEventListener('click',()=>{if(ctl){const c0=ctl;ctl=null;c0.abort();updateAnalyse();say('ai-status','Création arrêtée.');return;}runAnalysis();});
+$('who').addEventListener('change',()=>{if(anyPhoto())runAnalysis();});
+
+// Lien
+const baseIn=$('base');baseIn.value=store('peluches-base')||'';
+baseIn.addEventListener('input',()=>{store('peluches-base',baseIn.value.trim());updateLink();});
+function baseUrl(){const v=baseIn.value.trim();if(!/^https?:\/\//i.test(v))return '';try{const u=new URL(v);if(!/\.[a-z0-9]+$/i.test(u.pathname)&&!u.pathname.endsWith('/'))u.pathname+='/';u.search='';u.hash='';return u.toString();}catch(e){return '';}}
+function updateLink(){const b=baseUrl(),url=(b||'https://ton-pseudo.github.io/peluches/')+'?p='+PL.encode(cfg);$('out').value=url;$('out2').value=url;$('out').classList.toggle('example',!b);
+$('open').hidden=!b;$('open').href=url;say('link-help',b?'Colle ce lien dans URLS, avec le type Site Web.':"Lien d'exemple : renseigne d'abord l'adresse de ta page 3D (étapes en bas de page).");}
+$('copy2').addEventListener('click',()=>{const t=$('out2').value,done=()=>{$('copy2').textContent='Lien copié';setTimeout(()=>{$('copy2').textContent='Copier le lien';},1500);},sel=()=>{$('out2').focus();$('out2').select();};
+try{navigator.clipboard.writeText(t).then(done,sel);}catch(e){sel();}});
+$('copy').addEventListener('click',()=>{const t=$('out').value,done=()=>{$('copy').textContent='Copié';setTimeout(()=>{$('copy').textContent='Copier';},1500);},sel=()=>{$('out').focus();$('out').select();};
+try{navigator.clipboard.writeText(t).then(done,sel);}catch(e){sel();}});
+
+// Téléchargements : icône PNG et page 3D
+const VIEWER_HEAD="<!doctype html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>Peluche<\/title>\n<style>html,body{margin:0;height:100%;background:transparent;overflow:hidden}canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}canvas.drag{cursor:grabbing}<\/style>\n<\/head>\n<body>\n<script src=\"https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js\"><\/script>\n<script>\n",VIEWER_TAIL="\n// Page 3D : la peluche est décrite dans l'adresse (?p=...). Glisser : tourner. Molette ou deux doigts : zoomer. Double-clic : remettre en place.\n// Option : &tourne=non pour qu'elle ne tourne pas toute seule.\nconst q=new URLSearchParams(location.search);\nconst cfg=(q.get('p')&&PL.decode(q.get('p')))||PL.clean(PL.PRESETS.pompier);\nif(cfg.n)document.title=cfg.n;\nconst scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(22,1,0.1,500);\nconst r=new THREE.WebGLRenderer({antialias:true,alpha:true});r.setClearColor(0x000000,0);r.setPixelRatio(Math.min(2,window.devicePixelRatio||1));r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;document.body.appendChild(r.domElement);\nPL.setup(r);const camFill=PL.lights(scene),P=PL.build(cfg);scene.add(P.group);\nconst reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches,autoSpin=q.get('tourne')!=='non'&&!reduce;\nconst START={ry:-0.25,el:0.24,zoom:1.05};let ry=START.ry,el=START.el,zoom=START.zoom,idle=0;\nconst clamp=(v,a,b)=>Math.min(b,Math.max(a,v));\nfunction fit(){const w=window.innerWidth||400,h=window.innerHeight||400;r.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();}\nfit();window.addEventListener('resize',fit);\nconst cvs=r.domElement,pts=new Map();\ncvs.addEventListener('pointerdown',e=>{cvs.setPointerCapture(e.pointerId);pts.set(e.pointerId,[e.clientX,e.clientY]);cvs.classList.add('drag');idle=performance.now();});\ncvs.addEventListener('pointermove',e=>{const p=pts.get(e.pointerId);if(!p)return;idle=performance.now();\nif(pts.size===2){const[a,b]=[...pts.values()],d0=Math.hypot(a[0]-b[0],a[1]-b[1]);pts.set(e.pointerId,[e.clientX,e.clientY]);const[c,d]=[...pts.values()],d1=Math.hypot(c[0]-d[0],c[1]-d[1]);if(d0>0&&d1>0)zoom=clamp(zoom*d0/d1,0.6,1.8);return;}\nry+=(e.clientX-p[0])*0.01;el=clamp(el+(e.clientY-p[1])*0.006,-0.15,0.8);pts.set(e.pointerId,[e.clientX,e.clientY]);});\nconst up=e=>{pts.delete(e.pointerId);if(!pts.size)cvs.classList.remove('drag');idle=performance.now();};\ncvs.addEventListener('pointerup',up);cvs.addEventListener('pointercancel',up);\ncvs.addEventListener('wheel',e=>{e.preventDefault();zoom=clamp(zoom*Math.exp(e.deltaY*0.001),0.6,1.8);idle=performance.now();},{passive:false});\ncvs.addEventListener('dblclick',()=>{ry=START.ry;el=START.el;zoom=START.zoom;});\n(function loop(now){now=now||0;if(autoSpin&&!pts.size&&now-idle>2500)ry+=0.006;\nP.group.rotation.y=ry;PL.aim(cam,P.fit,el,zoom,camFill);r.render(scene,cam);requestAnimationFrame(loop);})();\n<\/script>\n<\/body>\n<\/html>\n";
+let dl=null;const getDl=window.claude&&window.claude.use?window.claude.use('downloads'):Promise.resolve(null);
+getDl.then(d=>{dl=d;$('icon').disabled=$('get-viewer').disabled=!d;if(!d){say('dl-status',"Le téléchargement n'est pas disponible ici.");say('setup-status',"Le téléchargement n'est pas disponible ici.");}},()=>{});
+async function save(name,data,out){try{await dl.save({filename:name,data});say(out,'Fichier enregistré : '+name+'.');}
+catch(e){const c=e&&e.code;say(out,({declined:'Téléchargement annulé.',rate_limited:'Une fenêtre de téléchargement est déjà ouverte.',extension_not_enabled:'Ce type de fichier ne peut pas être téléchargé ici.'})[c]||"Le téléchargement n'est pas disponible ici.");}}
+const slug=s=>(s||'peluche').normalize('NFD').replace(/\p{M}/gu,'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'')||'peluche';
+function renderIcon(out){const S=1400,pr=r.getPixelRatio(),a=cam.aspect;r.setPixelRatio(1);r.setSize(S,S,false);cam.aspect=1;cam.updateProjectionMatrix();PL.aim(cam,cur.fit,el,1.25,camFill);r.render(scene,cam);
+const[c,g]=(()=>{const cn=document.createElement('canvas');cn.width=cn.height=S;return[cn,cn.getContext('2d')];})();g.drawImage(r.domElement,0,0);r.setPixelRatio(pr);fitSize();
+const px=g.getImageData(0,0,S,S).data;let x0=S,y0=S,x1=-1,y1=-1;for(let y=0;y<S;y++){const row=y*S*4;for(let x=0;x<S;x++)if(px[row+x*4+3]>6){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}}
+const w=x1-x0+1,h=y1-y0+1,k=out*0.9/Math.max(w,h),o=document.createElement('canvas');o.width=o.height=out;const og=o.getContext('2d');og.imageSmoothingQuality='high';og.drawImage(c,x0,y0,w,h,(out-w*k)/2,(out-h*k)/2,w*k,h*k);return o;}
+$('icon').addEventListener('click',async()=>{if(!dl||!cur)return;$('icon').disabled=true;say('dl-status','Création de l\'icône…');const blob=await new Promise(res=>renderIcon(512).toBlob(res,'image/png'));await save(slug(cfg.n)+'.png',blob,'dl-status');$('icon').disabled=!dl;});
+$('get-viewer').addEventListener('click',async()=>{if(!dl)return;await save('index.html',VIEWER_HEAD+$('pl-src').textContent.trim()+'\n'+VIEWER_TAIL,'setup-status');});
+
+syncForm();rebuild();updateLink();
+</script>
