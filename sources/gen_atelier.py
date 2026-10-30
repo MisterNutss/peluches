@@ -394,7 +394,20 @@ else if(f.type==='chips')$(id).querySelectorAll('button').forEach(b=>b.setAttrib
 else if(f.type==='check')$(id).checked=!!cfg[k];
 else if(f.type==='glove'){$(id+'-on').checked=!!cfg.gv;if(cfg.gv)lastGlove=cfg.gv;$(id).value=lastGlove;$(id).disabled=!cfg.gv;}
 else if(f.type==='optcolor'){$(id+'-on').checked=!!cfg[k];if(cfg[k])lastOpt[k]=cfg[k];$(id).value=lastOpt[k];$(id).disabled=!cfg[k];}
-else if(f.type==='flags')for(const v in FLAGS)$(id+'-'+v).checked=cfg.acc.includes(v);}renderPieces();}
+else if(f.type==='flags')for(const v in FLAGS)$(id+'-'+v).checked=cfg.acc.includes(v);}renderPieces();if(typeof renderAdj==='function')renderAdj();}
+// Ajuster un accessoire à la main : position, taille, rotation (montre et bracelets suivent le bras)
+const ADJ=[['x','Gauche ↔ Droite',-8,8,0.1,0],['y','Bas ↕ Haut',-8,8,0.1,0],['z','Arrière ↔ Avant',-8,8,0.1,0],['s','Taille',0.3,3,0.05,1],['r','Rotation',-180,180,5,0]];
+{const sel=el2('select',{id:'adj-k'}),grid=el2('div',{className:'fields'});
+for(const[k,l,mi,ma,stp]of ADJ){const row=el2('div',{className:'field'});row.append(el2('div',{className:'row rangehead'},[el2('label',{htmlFor:'adj-'+k,textContent:l}),el2('span',{className:'help',id:'adj-'+k+'-v'})]),el2('input',{type:'range',id:'adj-'+k,min:mi,max:ma,step:stp}));grid.append(row);}
+$('tab-accessoires').append(el2('section',{className:'card',id:'adj-card'},[el2('h2',{textContent:'Ajuster un accessoire'}),el2('p',{className:'help',textContent:"Choisis un accessoire, puis déplace-le, change sa taille ou tourne-le."}),
+el2('div',{className:'field'},[el2('label',{htmlFor:'adj-k',textContent:'Accessoire'}),sel]),grid,el2('div',{className:'row'},[el2('button',{type:'button',className:'btn',id:'adj-reset',textContent:'Remettre à sa place'})]),el2('p',{className:'help',id:'adj-none',textContent:'Ajoute un accessoire ou un objet dans les mains pour pouvoir le régler ici.'})]));}
+function adjList(){const l=[...cfg.acc].filter(k=>!'wl'.includes(k)).map(k=>[k,FLAGS[k]]);if(cfg.it&&cfg.it!=='aucun')l.unshift(['_','🤲 Objet dans les mains : '+CHOICES.it[cfg.it]]);return l;}
+function renderAdj(){const sel=$('adj-k');if(!sel)return;const l=adjList(),cur0=sel.value,old=sel.dataset.sig||'';if(old!==l.map(x=>x[0]).join('')){const added=l.map(x=>x[0]).filter(k=>!old.includes(k));sel.textContent='';l.forEach(([k,t])=>sel.append(el2('option',{value:k,textContent:t})));sel.dataset.sig=l.map(x=>x[0]).join('');if(old&&added.length)sel.value=added[added.length-1];else if(l.some(x=>x[0]===cur0))sel.value=cur0;}
+const none=!l.length;$('adj-none').hidden=!none;sel.disabled=none;$('adj-reset').disabled=none;const a=(cfg.aj&&cfg.aj[sel.value])||[0,0,0,1,0];
+ADJ.forEach(([k],i)=>{const inp=$('adj-'+k);inp.disabled=none;if(document.activeElement!==inp)inp.value=a[i];$('adj-'+k+'-v').textContent=k==='s'?'× '+Number(a[i]).toFixed(2).replace('.',','):k==='r'?Math.round(a[i])+'°':(a[i]>0?'+':'')+Number(a[i]).toFixed(1).replace('.',',');});}
+$('adj-card').addEventListener('input',e=>{if(e.target.id==='adj-k'){renderAdj();return;}const k=$('adj-k').value;if(!k)return;const a=ADJ.map(([n])=>Number($('adj-'+n).value));cfg.aj=Object.assign({},cfg.aj||{},{[k]:a});renderAdj();changed();});
+$('adj-k').addEventListener('change',renderAdj);
+$('adj-reset').addEventListener('click',()=>{const k=$('adj-k').value;if(!k||!cfg.aj)return;const n=Object.assign({},cfg.aj);delete n[k];cfg.aj=n;renderAdj();changed();});
 // Pièces sur mesure ajoutées par Claude : on peut changer leur couleur ou les retirer
 const SHAPE_L={sphere:'Boule',goutte:'Goutte',cone:'Cône',cylindre:'Cylindre',tore:'Anneau',boite:'Bloc'},ANCH_L={tete:'tête',corps:'corps',mains:'mains',dos:'dos',jambes:'jambes'};
 $('tab-accessoires').append(el2('section',{className:'card'},[el2('h2',{textContent:'Pièces sur mesure'}),el2('p',{className:'help',textContent:"Ce que Claude ajoute pour coller à la photo : oreilles, cornes, queue, nœud… Change une couleur ou retire une pièce."}),el2('div',{id:'pz-list',className:'pzlist'})]));
