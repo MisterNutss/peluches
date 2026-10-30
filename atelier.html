@@ -216,10 +216,11 @@ hp:['aucune','gauche','milieu','droite'],hf:['aucune','courte','droite','balayee
 const ACC='rbmscowkehan';
 // Proportions par style : h = taille de la tête, b = corps [largeur, hauteur, profondeur], a = bras [épaisseur, longueur], l = jambes [largeur, hauteur, longueur]
 // Ourson : ventre rond, membres épais. Lapin : corps allongé, longues pattes. Chaton : tête un peu plus grosse.
-// Petit monstre : tête surdimensionnée, corps trapu et dodu, petits bras et petites jambes. Avatar : grosse tête ronde, corps étroit, membres fins.
+// h peut être [largeur, hauteur, profondeur] pour une tête ovale.
+// Petit monstre : grosse tête ovale plus haute que large, corps trapu et dodu, petits bras et petites jambes. Avatar : grosse tête ronde, corps étroit, membres fins.
 const PROPS={classique:{h:1,b:[1,1,1],a:[1,1],l:[1,1,1]},ours:{h:1.0,b:[1.16,1.0,1.16],a:[1.25,1.05],l:[1.2,1.1,1.05]},
 lapin:{h:0.94,b:[0.9,1.14,0.9],a:[0.85,1.18],l:[0.88,0.9,1.35]},chat:{h:1.1,b:[0.92,0.92,0.92],a:[0.9,0.92],l:[0.9,0.9,0.95]},
-monstre:{h:1.24,b:[1.0,0.8,1.0],a:[1.0,0.72],l:[1.0,0.85,0.75]},avatar:{h:1.2,b:[0.74,0.95,0.78],a:[0.6,1.0],l:[0.62,0.85,0.95]}};
+monstre:{h:[1.4,1.62,1.4],b:[1.0,0.8,1.0],a:[1.0,0.72],l:[1.0,0.85,0.75]},avatar:{h:1.2,b:[0.74,0.95,0.78],a:[0.6,1.0],l:[0.62,0.85,0.95]}};
 const COLS=['sk','hc','ec','glc','lc','hwc','tc','t2','ac','pc','sc','gv','mc'];
 const HOOKS={onTex:null};
 const PRESETS={
@@ -801,7 +802,7 @@ for(const a of arms){a.updateMatrixWorld(true);before.add(a.localToWorld(V(0,-4.
 a.children.forEach(ch=>{if(!ch.userData.seam)ch.scale.multiply(V(1/th,1/ln,1/th));});a.updateMatrixWorld(true);after.add(a.localToWorld(V(0,-4.8,0)));}
 if(arms.length)IG.position.copy(after.sub(before).multiplyScalar(1/arms.length));BG.add(IG);
 const[bx,by,bz]=PR.b,[lx,ly,lz]=PR.l;BG.scale.set(bx,by,bz);LG.scale.set(lx,ly,lz);LG.position.set(0,0,1.5*(1-lz));
-const HP=new THREE.Group();HG.scale.setScalar(PR.h);HG.position.set(0,-17*PR.h,-0.6*PR.h);HP.position.set(0,17*by,0.6*bz);if(TILT)HP.rotation.set(TILT[0],TILT[1],TILT[2]);HP.add(HG);G.add(BG,LG,HP);}
+const HP=new THREE.Group();const hk=[].concat(PR.h),[hx,hy,hz]=hk.length>1?hk:[hk[0],hk[0],hk[0]];HG.scale.set(hx,hy,hz);HG.position.set(0,-17*hy,-0.6*hz);HP.position.set(0,17*by,0.6*bz);if(TILT)HP.rotation.set(TILT[0],TILT[1],TILT[2]);HP.add(HG);G.add(BG,LG,HP);}
 
 G.scale.setScalar(0.75);G.updateMatrixWorld(true);
 const box=new THREE.Box3().setFromObject(G),rx=Math.max(-box.min.x,box.max.x),rz=Math.max(-box.min.z,box.max.z);
