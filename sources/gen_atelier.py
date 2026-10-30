@@ -23,11 +23,10 @@ VIEWER_TAIL = r"""
 // Page 3D : la peluche est décrite dans l'adresse (?p=...). Glisser : tourner. Molette ou deux doigts : zoomer. Double-clic : remettre en place.
 // Option : &tourne=non pour qu'elle ne tourne pas toute seule.
 const q=new URLSearchParams(location.search);
-const cfg=(q.get('p')&&PL.decode(q.get('p')))||PL.clean(PL.PRESETS.pompier);
-if(cfg.n)document.title=cfg.n;
 const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(22,1,0.1,500);
 const r=new THREE.WebGLRenderer({antialias:true,alpha:true});r.setClearColor(0x000000,0);r.setPixelRatio(Math.min(2,window.devicePixelRatio||1));r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;document.body.appendChild(r.domElement);
-PL.setup(r);const camFill=PL.lights(scene),P=PL.build(cfg);scene.add(P.group);
+PL.setup(r);const camFill=PL.lights(scene);let P=null;
+PL.unpack(q.get('p')).then(c=>{const cfg=c||PL.clean(PL.PRESETS.pompier);if(cfg.n)document.title=cfg.n;P=PL.build(cfg);scene.add(P.group);});
 const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches,autoSpin=q.get('tourne')!=='non'&&!reduce;
 const START={ry:-0.25,el:0.24,zoom:1.05};let ry=START.ry,el=START.el,zoom=START.zoom,idle=0;
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
@@ -43,7 +42,7 @@ cvs.addEventListener('pointerup',up);cvs.addEventListener('pointercancel',up);
 cvs.addEventListener('wheel',e=>{e.preventDefault();zoom=clamp(zoom*Math.exp(e.deltaY*0.001),0.6,1.8);idle=performance.now();},{passive:false});
 cvs.addEventListener('dblclick',()=>{ry=START.ry;el=START.el;zoom=START.zoom;});
 (function loop(now){now=now||0;if(autoSpin&&!pts.size&&now-idle>2500)ry+=0.006;
-P.group.rotation.y=ry;PL.aim(cam,P.fit,el,zoom,camFill);r.render(scene,cam);requestAnimationFrame(loop);})();
+if(P){P.group.rotation.y=ry;PL.aim(cam,P.fit,el,zoom,camFill);r.render(scene,cam);}requestAnimationFrame(loop);})();
 </script>
 </body>
 </html>
@@ -204,8 +203,7 @@ code{font-family:var(--mono);font-size:13px;overflow-wrap:anywhere}
           </section>
         </div>
         <div class="tabpanel" data-tab="style" id="tab-style" hidden>
-          <section class="card"><h2>Modèles de départ</h2><div class="seg" id="presets"></div></section>
-          <section class="card"><h2>Reprendre une peluche</h2><p class="help">Colle le lien d'une peluche déjà faite pour la modifier.</p>
+                    <section class="card"><h2>Reprendre une peluche</h2><p class="help">Colle le lien d'une peluche déjà faite pour la modifier.</p>
             <div class="row"><input id="import" type="text" placeholder="https://misternutss.github.io/peluches/?p=…" autocomplete="off" spellcheck="false" aria-label="Lien d'une peluche"><button class="btn" id="import-go" type="button">Ouvrir</button></div><p class="status" id="import-status" aria-live="polite"></p></section>
         </div>
         <div class="tabpanel" data-tab="visage" id="tab-visage" hidden></div>
@@ -260,7 +258,7 @@ const reduceMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion
 const stage=$('stage'),scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(22,1,0.1,500);
 const r=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});r.setClearColor(0x000000,0);r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;stage.prepend(r.domElement);
 PL.setup(r);const camFill=PL.lights(scene);PL.HOOKS.onTex=()=>{dirty=true;};
-let cfg=(()=>{try{const p=new URLSearchParams(location.search).get('p');return(p&&PL.decode(p))||PL.clean(PL.PRESETS.pompier);}catch(e){return PL.clean(PL.PRESETS.pompier);}})(),cur=null,ry=-0.25,el=0.24,dirty=true,drag=false,lx=0,ly=0;
+let cfg=PL.clean(PL.NEUTRAL),cur=null,ry=-0.25,el=0.24,dirty=true,drag=false,lx=0,ly=0;
 function fitSize(){const w=stage.clientWidth||480,h=stage.clientHeight||480;r.setPixelRatio(Math.min(2,window.devicePixelRatio||1));r.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();dirty=true;}
 fitSize();if(window.ResizeObserver)new ResizeObserver(fitSize).observe(stage);window.addEventListener('resize',fitSize);
 function rebuild(){if(cur){scene.remove(cur.group);cur.dispose();}cur=PL.build(cfg);scene.add(cur.group);dirty=true;}
@@ -362,9 +360,6 @@ const view=r0=>{spin=false;$('v-spin').setAttribute('aria-pressed','false');ry=r
 $('v-front').addEventListener('click',()=>view(-0.34));$('v-side').addEventListener('click',()=>view(-0.34-Math.PI/2));$('v-back').addEventListener('click',()=>view(Math.PI-0.34));
 $('v-spin').addEventListener('click',()=>{spin=!spin;$('v-spin').setAttribute('aria-pressed',String(spin));dirty=true;});
 
-// Modèles
-const PRESET_NAMES={pompier:'Pompier',police:'Policier',ems:'Ambulancière',civil:'Civil'};
-for(const[p,t]of Object.entries(PRESET_NAMES)){const b=el2('button',{type:'button',className:'btn',textContent:t});b.addEventListener('click',()=>{cfg=PL.clean(PL.PRESETS[p]);syncForm();rebuild();updateLink();});$('presets').append(b);}
 
 // Photos (face, côté, dos), pipette et imprimé
 const SLOTS=['face','cote','dos'],SLOT_L={face:'face',cote:'côté',dos:'dos'},shots={};let pick=null,printPick=false,printA=null,anaT=0;
@@ -505,11 +500,12 @@ $('who').addEventListener('change',()=>{if(anyPhoto())runAnalysis();});
 const baseIn=$('base');baseIn.value=store('peluches-base')||(/(github\.io|vercel\.app)$/.test(location.hostname)?location.origin+location.pathname.replace(/[^/]*$/,''):'https://misternutss.github.io/peluches/');
 baseIn.addEventListener('input',()=>{store('peluches-base',baseIn.value.trim());updateLink();});
 function baseUrl(){const v=baseIn.value.trim();if(!/^https?:\/\//i.test(v))return '';try{const u=new URL(v);if(!/\.[a-z0-9]+$/i.test(u.pathname)&&!u.pathname.endsWith('/'))u.pathname+='/';u.search='';u.hash='';return u.toString();}catch(e){return '';}}
-function updateLink(){const b=baseUrl(),code=PL.encode(cfg),url=(b||'https://misternutss.github.io/peluches/')+'?p='+code;$('out').value=url;$('out2').value=url;$('edit').value=(b||'https://misternutss.github.io/peluches/').replace(/[^/]*$/,'')+'atelier.html?p='+code;$('out').classList.toggle('example',!b);
+let linkN=0;function updateLink(){const my=++linkN;PL.pack(cfg).then(code=>{if(my===linkN)showLink(code);});}
+function showLink(code){const b=baseUrl(),url=(b||'https://misternutss.github.io/peluches/')+'?p='+code;$('out').value=url;$('out2').value=url;$('edit').value=(b||'https://misternutss.github.io/peluches/').replace(/[^/]*$/,'')+'atelier.html?p='+code;$('out').classList.toggle('example',!b);
 $('open').hidden=!b;$('open').href=url;say('link-help',b?'Colle ce lien dans URLS, avec le type Site Web.':"Lien d'exemple : renseigne d'abord l'adresse de ta page 3D (étapes en bas de page).");}
 // Reprendre une peluche depuis son lien (page 3D ou atelier)
-$('import-go').addEventListener('click',()=>{const v=$('import').value.trim();let code=null;try{code=new URL(v).searchParams.get('p');}catch(e){const m=v.match(/[?&]p=([A-Za-z0-9_-]+)/);code=m?m[1]:(/^[A-Za-z0-9_-]{20,}$/.test(v)?v:null);}
-const c=code&&PL.decode(code);if(!c){say('import-status',"Ce lien ne contient pas de peluche. Copie le lien complet, avec ?p=…");return;}cfg=c;syncForm();rebuild();updateLink();say('import-status','Peluche ouverte : tu peux la modifier.');});
+$('import-go').addEventListener('click',()=>{const v=$('import').value.trim();let code=null;try{code=new URL(v).searchParams.get('p');}catch(e){const m=v.match(/[?&]p=(~?[A-Za-z0-9_-]+)/);code=m?m[1]:(/^~?[A-Za-z0-9_-]{8,}$/.test(v)?v:null);}
+PL.unpack(code).then(c=>{if(!code||!c){say('import-status',"Ce lien ne contient pas de peluche. Copie le lien complet, avec ?p=…");return;}cfg=c;syncForm();rebuild();updateLink();say('import-status','Peluche ouverte : tu peux la modifier.');});});
 $('copy-edit').addEventListener('click',()=>{const t=$('edit').value,done=()=>{$('copy-edit').textContent='Copié';setTimeout(()=>{$('copy-edit').textContent='Copier';},1500);},sel=()=>{$('edit').focus();$('edit').select();};
 try{navigator.clipboard.writeText(t).then(done,sel);}catch(e){sel();}});
 $('copy2').addEventListener('click',()=>{const t=$('out2').value,done=()=>{$('copy2').textContent='Lien copié';setTimeout(()=>{$('copy2').textContent='Copier le lien';},1500);},sel=()=>{$('out2').focus();$('out2').select();};
@@ -533,6 +529,8 @@ $('icon').addEventListener('click',async()=>{if(!dl||!cur)return;$('icon').disab
 $('get-viewer').addEventListener('click',async()=>{if(!dl)return;await save('index.html',VIEWER_HEAD+$('pl-src').textContent.trim()+'\n'+VIEWER_TAIL,'setup-status');});
 
 syncForm();rebuild();updateLink();
+// Atelier ouvert avec ?p=… : la peluche du lien
+{let p=null;try{p=new URLSearchParams(location.search).get('p');}catch(e){}if(p)PL.unpack(p).then(c=>{if(c){cfg=c;syncForm();rebuild();updateLink();}});}
 </script>
 """
 

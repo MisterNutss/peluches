@@ -64,6 +64,14 @@ out.push([v[0],v[1],num(v[2],-3,3,0),num(v[3],-3,3,0),num(v[4],-3,3,0),num(v[5],
 return out;}
 function encode(c){const b=new TextEncoder().encode(JSON.stringify(clean(c)));let s='';b.forEach(x=>{s+=String.fromCharCode(x);});return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
 function decode(str){try{const s=atob(String(str).replace(/-/g,'+').replace(/_/g,'/'));return clean(JSON.parse(new TextDecoder().decode(Uint8Array.from(s,ch=>ch.charCodeAt(0)))));}catch(e){return null;}}
+// Lien court : seulement ce qui diffère de la peluche neutre, compressé (deflate). Commence par « ~ » ; les anciens liens restent lisibles.
+const b64u=bytes=>{let s='';bytes.forEach(x=>{s+=String.fromCharCode(x);});return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');};
+async function pack(c){const d=clean(c),o={};for(const k in d)if(JSON.stringify(d[k])!==JSON.stringify(NEUTRAL[k]))o[k]=d[k];
+if(typeof CompressionStream==='undefined')return encode(c);
+const z=new Blob([new TextEncoder().encode(JSON.stringify(o))]).stream().pipeThrough(new CompressionStream('deflate-raw'));return '~'+b64u(new Uint8Array(await new Response(z).arrayBuffer()));}
+async function unpack(str){str=String(str||'');if(str[0]!=='~')return decode(str);
+try{const s=atob(str.slice(1).replace(/-/g,'+').replace(/_/g,'/')),z=new Blob([Uint8Array.from(s,ch=>ch.charCodeAt(0))]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+return clean(JSON.parse(await new Response(z).text()),NEUTRAL);}catch(e){return null;}}
 
 // Hasard reproductible : une même peluche a toujours les mêmes petites bosses
 let R=Math.random;
@@ -643,5 +651,5 @@ const camFill=new THREE.DirectionalLight(0xfff6ee,0.22);scene.add(camFill);retur
 function aim(cam,fit,el,zoom,light){const vh=cam.fov*Math.PI/360,hh=Math.atan(Math.tan(vh)*cam.aspect),d=fit.r/Math.sin(Math.min(vh,hh))*zoom,AZ=0.34;
 cam.position.set(fit.c.x+d*Math.sin(AZ)*Math.cos(el),fit.c.y+d*Math.sin(el),fit.c.z+d*Math.cos(AZ)*Math.cos(el));cam.lookAt(fit.c);if(light)light.position.copy(cam.position);}
 
-return{build,clean,encode,decode,lights,setup,aim,hair,HAIRK,HSDEF,PRESETS,NEUTRAL,ENUM,ACC,SHAPES,ANCHORS,HOOKS};
+return{build,clean,encode,decode,pack,unpack,lights,setup,aim,hair,HAIRK,HSDEF,PRESETS,NEUTRAL,ENUM,ACC,SHAPES,ANCHORS,HOOKS};
 })();

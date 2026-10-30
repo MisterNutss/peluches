@@ -75,6 +75,14 @@ out.push([v[0],v[1],num(v[2],-3,3,0),num(v[3],-3,3,0),num(v[4],-3,3,0),num(v[5],
 return out;}
 function encode(c){const b=new TextEncoder().encode(JSON.stringify(clean(c)));let s='';b.forEach(x=>{s+=String.fromCharCode(x);});return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
 function decode(str){try{const s=atob(String(str).replace(/-/g,'+').replace(/_/g,'/'));return clean(JSON.parse(new TextDecoder().decode(Uint8Array.from(s,ch=>ch.charCodeAt(0)))));}catch(e){return null;}}
+// Lien court : seulement ce qui diffère de la peluche neutre, compressé (deflate). Commence par « ~ » ; les anciens liens restent lisibles.
+const b64u=bytes=>{let s='';bytes.forEach(x=>{s+=String.fromCharCode(x);});return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');};
+async function pack(c){const d=clean(c),o={};for(const k in d)if(JSON.stringify(d[k])!==JSON.stringify(NEUTRAL[k]))o[k]=d[k];
+if(typeof CompressionStream==='undefined')return encode(c);
+const z=new Blob([new TextEncoder().encode(JSON.stringify(o))]).stream().pipeThrough(new CompressionStream('deflate-raw'));return '~'+b64u(new Uint8Array(await new Response(z).arrayBuffer()));}
+async function unpack(str){str=String(str||'');if(str[0]!=='~')return decode(str);
+try{const s=atob(str.slice(1).replace(/-/g,'+').replace(/_/g,'/')),z=new Blob([Uint8Array.from(s,ch=>ch.charCodeAt(0))]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+return clean(JSON.parse(await new Response(z).text()),NEUTRAL);}catch(e){return null;}}
 
 // Hasard reproductible : une même peluche a toujours les mêmes petites bosses
 let R=Math.random;
@@ -654,17 +662,16 @@ const camFill=new THREE.DirectionalLight(0xfff6ee,0.22);scene.add(camFill);retur
 function aim(cam,fit,el,zoom,light){const vh=cam.fov*Math.PI/360,hh=Math.atan(Math.tan(vh)*cam.aspect),d=fit.r/Math.sin(Math.min(vh,hh))*zoom,AZ=0.34;
 cam.position.set(fit.c.x+d*Math.sin(AZ)*Math.cos(el),fit.c.y+d*Math.sin(el),fit.c.z+d*Math.cos(AZ)*Math.cos(el));cam.lookAt(fit.c);if(light)light.position.copy(cam.position);}
 
-return{build,clean,encode,decode,lights,setup,aim,hair,HAIRK,HSDEF,PRESETS,NEUTRAL,ENUM,ACC,SHAPES,ANCHORS,HOOKS};
+return{build,clean,encode,decode,pack,unpack,lights,setup,aim,hair,HAIRK,HSDEF,PRESETS,NEUTRAL,ENUM,ACC,SHAPES,ANCHORS,HOOKS};
 })();
 
 // Page 3D : la peluche est décrite dans l'adresse (?p=...). Glisser : tourner. Molette ou deux doigts : zoomer. Double-clic : remettre en place.
 // Option : &tourne=non pour qu'elle ne tourne pas toute seule.
 const q=new URLSearchParams(location.search);
-const cfg=(q.get('p')&&PL.decode(q.get('p')))||PL.clean(PL.PRESETS.pompier);
-if(cfg.n)document.title=cfg.n;
 const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(22,1,0.1,500);
 const r=new THREE.WebGLRenderer({antialias:true,alpha:true});r.setClearColor(0x000000,0);r.setPixelRatio(Math.min(2,window.devicePixelRatio||1));r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;document.body.appendChild(r.domElement);
-PL.setup(r);const camFill=PL.lights(scene),P=PL.build(cfg);scene.add(P.group);
+PL.setup(r);const camFill=PL.lights(scene);let P=null;
+PL.unpack(q.get('p')).then(c=>{const cfg=c||PL.clean(PL.PRESETS.pompier);if(cfg.n)document.title=cfg.n;P=PL.build(cfg);scene.add(P.group);});
 const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches,autoSpin=q.get('tourne')!=='non'&&!reduce;
 const START={ry:-0.25,el:0.24,zoom:1.05};let ry=START.ry,el=START.el,zoom=START.zoom,idle=0;
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
@@ -680,7 +687,7 @@ cvs.addEventListener('pointerup',up);cvs.addEventListener('pointercancel',up);
 cvs.addEventListener('wheel',e=>{e.preventDefault();zoom=clamp(zoom*Math.exp(e.deltaY*0.001),0.6,1.8);idle=performance.now();},{passive:false});
 cvs.addEventListener('dblclick',()=>{ry=START.ry;el=START.el;zoom=START.zoom;});
 (function loop(now){now=now||0;if(autoSpin&&!pts.size&&now-idle>2500)ry+=0.006;
-P.group.rotation.y=ry;PL.aim(cam,P.fit,el,zoom,camFill);r.render(scene,cam);requestAnimationFrame(loop);})();
+if(P){P.group.rotation.y=ry;PL.aim(cam,P.fit,el,zoom,camFill);r.render(scene,cam);}requestAnimationFrame(loop);})();
 </script>
 </body>
 </html>
