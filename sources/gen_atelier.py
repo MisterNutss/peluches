@@ -30,7 +30,8 @@ PL.setQuality(0.55);PL.setup(r);const camFill=PL.lights(scene);let P=null;
 const API=/vercel\.app$/.test(location.hostname)?'':'https://peluches-tau.vercel.app';
 const nom=q.get('nom')||decodeURIComponent((location.pathname.match(/\/p\/([^/?#]+)\/?$/)||[])[1]||'');
 // Lecture directe dans le stockage Blob (rapide, pas de contrôle anti-robot), sinon par le serveur Vercel
-const BLOB='',slug=nom.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40);
+// ?b=… : identifiant du stockage Blob, ajouté au lien par la bibliothèque ; la peluche est alors lue sans passer par Vercel
+const bq=q.get('b')||'',BLOB=/^[a-z0-9]{6,40}$/.test(bq)?'https://'+bq+'.public.blob.vercel-storage.com':'',slug=nom.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40);
 // why : raison de l'échec, affichée sous le message pour comprendre ce qui bloque (réseau, serveur, lecture)
 let why='';const getJ=(u,k)=>fetch(u,{cache:'no-store'}).then(x=>{if(!x.ok){why+=k+' : réponse '+x.status+'. ';return Promise.reject();}return x.json().catch(()=>{why+=k+' : réponse illisible (page de contrôle ?). ';return Promise.reject();});},e=>{if(e!==undefined)why+=k+' : injoignable. ';return Promise.reject();});
 (nom?(BLOB?getJ(BLOB+'/peluches/'+slug+'.json?t='+Date.now(),'stockage'):Promise.reject()).catch(()=>getJ(API+'/api/peluches?nom='+encodeURIComponent(slug),'serveur')).then(d=>d&&d.p?PL.unpack(d.p).then(c=>{if(!c)why+='lecture du lien impossible. ';return c;}):null).catch(()=>null):PL.unpack(q.get('p'))).then(c=>{
@@ -562,7 +563,7 @@ $('lib-save').disabled=true;say('lib-status','Enregistrement…');
 try{const p=await PL.pack(cfg),image=cur?renderIcon(512).toDataURL('image/png'):'';
 const x=await fetch('/api/peluches',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({nom,p,image,code})}),d=await x.json().catch(()=>({}));
 if(!x.ok){say('lib-status',d.erreur||"L'enregistrement a échoué.");return;}
-store('peluches-code',code);$('lib-out').value=VIEW+'p/'+d.slug;$('lib-link').hidden=false;if(d.image){$('lib-ico-out').value=d.image;$('lib-ico').hidden=false;}say('lib-status','Peluche enregistrée dans la bibliothèque.');}
+store('peluches-code',code);const bid=(String(d.image||'').match(/^https:\/\/([a-z0-9]+)\.public\.blob\.vercel-storage\.com\//)||[])[1];$('lib-out').value=VIEW+'p/'+d.slug+(bid?'?b='+bid:'');$('lib-link').hidden=false;if(d.image){$('lib-ico-out').value=d.image;$('lib-ico').hidden=false;}say('lib-status','Peluche enregistrée dans la bibliothèque.');}
 catch(e){say('lib-status',"L'enregistrement a échoué. Vérifie ta connexion.");}finally{$('lib-save').disabled=false;}});
 $('lib-ico-copy').addEventListener('click',()=>{const t=$('lib-ico-out').value;try{navigator.clipboard.writeText(t).then(()=>{$('lib-ico-copy').textContent='Copié';setTimeout(()=>{$('lib-ico-copy').textContent='Copier';},1500);});}catch(e){$('lib-ico-out').select();}});
 $('lib-copy').addEventListener('click',()=>{const t=$('lib-out').value;try{navigator.clipboard.writeText(t).then(()=>{$('lib-copy').textContent='Copié';setTimeout(()=>{$('lib-copy').textContent='Copier';},1500);});}catch(e){$('lib-out').select();}});
