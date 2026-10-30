@@ -149,6 +149,18 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{ou
 .pills .check input{position:absolute;opacity:0;width:1px;height:1px}
 .pills .check:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
 .seg.small .btn{padding:8px 12px;font-size:13px}
+details.card>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:-4px 0}
+details.card>summary::-webkit-details-marker{display:none}
+details.card>summary::after{content:'';flex:none;width:9px;height:9px;border-right:2.5px solid var(--muted);border-bottom:2.5px solid var(--muted);transform:rotate(45deg);transition:transform .15s;margin:0 6px 4px 0}
+details.card[open]>summary::after{transform:rotate(-135deg);margin-bottom:-4px}
+details.card:not([open]){padding-block:16px}
+details.more{border-top:1px dashed var(--line);padding-top:10px}
+details.more>summary{cursor:pointer;font:700 14px var(--body);color:var(--accent);list-style:none;display:inline-flex;align-items:center;gap:6px}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary::before{content:'＋';font-weight:800}
+details.more[open]>summary::before{content:'－'}
+details.more>.fields{margin-top:12px}
+@media (prefers-reduced-motion:reduce){details.card>summary::after{transition:none}}
 .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px}
 .tile{display:grid;justify-items:center;align-content:start;gap:4px;padding:10px 4px 9px;border-radius:18px;border:1px solid var(--line);background:var(--surface-2);color:var(--fg);font:700 12px/1.15 var(--body);text-align:center;cursor:pointer;transition:transform .12s,border-color .12s,background .12s}
 .tile .em{font-size:26px;line-height:1.1}
@@ -354,24 +366,29 @@ ms:{aucune:'🚫',monstre:'👹',lapin:'🐰',ours:'🐻',chat:'🐱',chien:'�
 const hairOn=c=>!['rase','chauve','iroquoise'].includes(c.hs);
 const SECTIONS=[
 {t:'Style, pose et nom',f:[{k:'st',type:'tiles',l:'Style de peluche',wide:1},{k:'po',type:'tiles',l:'Position',wide:1},{k:'fc',type:'color',l:'Couleur de la fourrure',show:c=>['ours','lapin','chat','monstre'].includes(c.st)},{k:'n',type:'text',l:'Nom',max:24,wide:1}]},
-{t:'Visage',f:[{k:'ey',type:'chips',l:'Yeux',wide:1},{k:'sk',type:'color',l:'Peau'},{k:'ec',type:'color',l:'Yeux'},{k:'ex',type:'tiles',wide:1,l:'Expression'},{k:'bd',type:'choice',l:'Barbe'},{k:'fr',type:'check',l:'Taches de rousseur'},{k:'cl',type:'check',l:'Longs cils'}]},
-{t:'Cheveux',f:[{k:'hs',type:'choice',l:'Coiffure de départ'},{k:'hc',type:'color',l:'Couleur des cheveux'},{k:'h2',type:'optcolor',l:"Mèches d'une autre couleur",show:hairOn},
-{k:'hl',type:'range',l:'Longueur',min:0.3,max:5,step:0.1,fmt:'len',show:hairOn},{k:'hv',type:'range',l:'Volume',min:0,max:1,step:0.05,fmt:'pct',show:hairOn},
-{k:'hx',type:'choice',l:'Texture',show:hairOn},{k:'hp',type:'choice',l:'Raie',show:hairOn},{k:'hf',type:'choice',l:'Frange',show:hairOn},{k:'ht',type:'choice',l:'Attache',show:hairOn},{k:'hd',type:'choice',l:'Côtés et nuque',show:hairOn}]},
-{t:'Tête',f:[{k:'hw',type:'tiles',wide:1,l:'Couvre-chef'},{k:'hwc',type:'color',l:'Couleur du couvre-chef',show:c=>c.hw!=='aucun'},{k:'hwt',type:'text',l:'Texte ou numéro',max:6,show:c=>['casquette','bonnet','pompier'].includes(c.hw)},{k:'hm',type:'choice',l:'Motif du couvre-chef',show:c=>['capuche','casquette','inverse','chapeau'].includes(c.hw)},
-{k:'gl',type:'tiles',wide:1,l:'Lunettes'},{k:'glc',type:'color',l:'Monture',show:c=>c.gl!=='aucune'},{k:'lc',type:'color',l:'Couleur des verres',show:c=>['soleil','aviateur','tete'].includes(c.gl)}]},
-{t:'Tenue',f:[{k:'tp',type:'choice',l:'Haut'},{k:'mt',type:'choice',l:'Motif'},{k:'tc',type:'color',l:c=>({gilet:'Gilet',veste:'Veste',costume:'Veste de costume'})[c.tp]||'Couleur du haut'},
+{t:'Visage',f:[{k:'ey',type:'chips',l:'Yeux',wide:1},{k:'sk',type:'color',l:'Peau'},{k:'ec',type:'color',l:'Yeux'},{k:'ex',type:'tiles',wide:1,l:'Expression'},{k:'bd',type:'choice',l:'Barbe'},{k:'fr',adv:1,type:'check',l:'Taches de rousseur'},{k:'cl',adv:1,type:'check',l:'Longs cils'}]},
+{t:'Cheveux',f:[{k:'hs',type:'choice',l:'Coiffure de départ'},{k:'hc',type:'color',l:'Couleur des cheveux'},{k:'h2',adv:1,type:'optcolor',l:"Mèches d'une autre couleur",show:hairOn},
+{k:'hl',type:'range',l:'Longueur',min:0.3,max:5,step:0.1,fmt:'len',show:hairOn},{k:'hv',adv:1,type:'range',l:'Volume',min:0,max:1,step:0.05,fmt:'pct',show:hairOn},
+{k:'hx',type:'choice',l:'Texture',show:hairOn},{k:'hp',adv:1,type:'choice',l:'Raie',show:hairOn},{k:'hf',type:'choice',l:'Frange',show:hairOn},{k:'ht',adv:1,type:'choice',l:'Attache',show:hairOn},{k:'hd',adv:1,type:'choice',l:'Côtés et nuque',show:hairOn}]},
+{t:'Couvre-chef',f:[{k:'hw',type:'tiles',wide:1,l:'Couvre-chef'},{k:'hwc',type:'color',l:'Couleur du couvre-chef',show:c=>c.hw!=='aucun'},{k:'hwt',type:'text',l:'Texte ou numéro',max:6,show:c=>['casquette','bonnet','pompier'].includes(c.hw)},{k:'hm',adv:1,type:'choice',l:'Motif du couvre-chef',show:c=>['capuche','casquette','inverse','chapeau'].includes(c.hw)}]},
+{t:'Lunettes',f:[{k:'gl',type:'tiles',wide:1,l:'Lunettes'},{k:'glc',type:'color',l:'Monture',show:c=>c.gl!=='aucune'},{k:'lc',type:'color',l:'Couleur des verres',show:c=>['soleil','aviateur','tete'].includes(c.gl)}]},
+{t:'Haut',f:[{k:'tp',type:'choice',l:'Haut'},{k:'mt',type:'choice',l:'Motif'},{k:'tc',type:'color',l:c=>({gilet:'Gilet',veste:'Veste',costume:'Veste de costume'})[c.tp]||'Couleur du haut'},
 {k:'t2',type:'color',l:c=>({gilet:'Manches',veste:'Haut en dessous',costume:'Chemise',sweat:'Cordons'})[c.tp]||'Dessous',show:c=>['gilet','veste','costume','sweat'].includes(c.tp)},
-{k:'yc',type:'optcolor',l:"Épaules d'une autre couleur",show:c=>!['veste','costume','gilet'].includes(c.tp)},{k:'sl',type:'optcolor',l:"Manches d'une autre couleur",show:c=>c.tp!=='gilet'},{k:'sb',type:'optcolor',l:'Bandes sur les manches',show:c=>c.tp!=='tshirt'},
-{k:'im',type:'print',l:'Imprimé sur le devant (découpé dans la photo)',wide:1,show:c=>c.tp!=='costume'},{k:'tt',type:'text',l:'Texte imprimé (dos)',max:8},{k:'rf',type:'check',l:'Bandes réfléchissantes'},{k:'bt',type:'choice',l:'Bas'},{k:'pc',type:'color',l:c=>c.bt==='short'?'Couleur du short':'Couleur du bas'},{k:'pb',type:'optcolor',l:'Bandes sur les côtés du bas',show:c=>c.bt!=='short'},
-{k:'sh',type:'choice',l:'Chaussures'},{k:'sc',type:'color',l:'Couleur des chaussures'},{k:'gv',type:'glove',l:'Gants'}]},
-{t:'Accessoires',f:[{k:'acc',type:'flags',l:'Équipement',wide:1},{k:'it',type:'tiles',wide:1,l:'Dans les mains'},{k:'ac',type:'color',l:"Couleur d'accent"},
-{k:'ms',type:'tiles',wide:1,l:'Mascotte (mini-peluche)'},{k:'mc',type:'color',l:'Couleur de la mascotte',show:c=>c.ms!=='aucune'},{k:'mp',type:'choice',l:'Place de la mascotte',show:c=>c.ms!=='aucune'},{k:'mz',type:'range',l:'Taille de la mascotte',min:0.5,max:2,step:0.05,show:c=>c.ms!=='aucune'},{k:'mx',type:'range',l:'Mascotte : gauche / droite',min:-1,max:1,step:0.05,fmt:'off',show:c=>c.ms!=='aucune'},{k:'my',type:'range',l:'Mascotte : bas / haut',min:-1,max:1,step:0.05,fmt:'off',show:c=>c.ms!=='aucune'},{k:'mf',type:'range',l:'Mascotte : arrière / avant',min:-1,max:1,step:0.05,fmt:'off',show:c=>c.ms!=='aucune'},{k:'mr',type:'range',l:'Mascotte : rotation',min:-180,max:180,step:5,fmt:'deg',show:c=>c.ms!=='aucune'}]}];
+{k:'yc',adv:1,type:'optcolor',l:"Épaules d'une autre couleur",show:c=>!['veste','costume','gilet'].includes(c.tp)},{k:'sl',adv:1,type:'optcolor',l:"Manches d'une autre couleur",show:c=>c.tp!=='gilet'},{k:'sb',adv:1,type:'optcolor',l:'Bandes sur les manches',show:c=>c.tp!=='tshirt'},
+{k:'im',type:'print',l:'Imprimé sur le devant (découpé dans la photo)',wide:1,show:c=>c.tp!=='costume'},{k:'tt',adv:1,type:'text',l:'Texte imprimé (dos)',max:8},{k:'rf',adv:1,type:'check',l:'Bandes réfléchissantes'},]},
+{t:'Bas et chaussures',f:[{k:'bt',type:'choice',l:'Bas'},{k:'pc',type:'color',l:c=>c.bt==='short'?'Couleur du short':'Couleur du bas'},{k:'pb',adv:1,type:'optcolor',l:'Bandes sur les côtés du bas',show:c=>c.bt!=='short'},
+{k:'sh',type:'choice',l:'Chaussures'},{k:'sc',type:'color',l:'Couleur des chaussures'},{k:'gv',adv:1,type:'glove',l:'Gants'}]},
+{t:'Accessoires',f:[{k:'acc',type:'flags',l:'Équipement',wide:1},{k:'ac',type:'color',l:"Couleur d'accent (nœud, cape, sac…)"}]},
+{t:'Dans les mains',f:[{k:'it',type:'tiles',wide:1,l:'Objet'}]},
+{t:'Mascotte',f:[{k:'ms',type:'tiles',wide:1,l:'Mascotte (mini-peluche)'},{k:'mc',type:'color',l:'Couleur de la mascotte',show:c=>c.ms!=='aucune'},{k:'mp',type:'choice',l:'Place de la mascotte',show:c=>c.ms!=='aucune'},{k:'mz',type:'range',l:'Taille de la mascotte',min:0.5,max:2,step:0.05,show:c=>c.ms!=='aucune'},{k:'mx',adv:1,type:'range',l:'Mascotte : gauche / droite',min:-1,max:1,step:0.05,fmt:'off',show:c=>c.ms!=='aucune'},{k:'my',adv:1,type:'range',l:'Mascotte : bas / haut',min:-1,max:1,step:0.05,fmt:'off',show:c=>c.ms!=='aucune'},{k:'mf',adv:1,type:'range',l:'Mascotte : arrière / avant',min:-1,max:1,step:0.05,fmt:'off',show:c=>c.ms!=='aucune'},{k:'mr',adv:1,type:'range',l:'Mascotte : rotation',min:-180,max:180,step:5,fmt:'deg',show:c=>c.ms!=='aucune'}]}];
 const F={};let lastGlove='#86ace6';const lastOpt={h2:'#f3dc9a',yc:'#f2f2f2',sl:'#f2f2f2',sb:'#f2f2f2',pb:'#1c1c1e'};
 function el2(tag,props,kids){const n=document.createElement(tag);Object.assign(n,props||{});(kids||[]).forEach(k=>n.append(k));return n;}
 function colorRow(k,id){return el2('div',{className:'colorrow'},[el2('input',{type:'color',id}),el2('button',{type:'button',className:'pip',textContent:'Pipette',title:'Prendre la couleur sur la photo'})]);}
-const TAB_OF={'Style, pose et nom':'style',Visage:'visage',Cheveux:'tete','Tête':'tete',Tenue:'tenue',Accessoires:'accessoires'};
-for(const sec of SECTIONS){const grid=el2('div',{className:'fields'});$('tab-'+TAB_OF[sec.t]).append(el2('section',{className:'card'},[el2('h2',{textContent:sec.t}),grid]));
+const TAB_OF={'Style, pose et nom':'style',Visage:'visage',Cheveux:'tete','Couvre-chef':'tete',Lunettes:'tete',Haut:'tenue','Bas et chaussures':'tenue',Accessoires:'accessoires','Dans les mains':'accessoires',Mascotte:'accessoires'};
+// Cartes repliables : la première de chaque onglet est ouverte, le navigateur se souvient du reste
+function foldCard(title,kids,first,id){const d=el2('details',{className:'card'});if(id)d.id=id;const st=store('peluches-ouvert-'+title);d.open=st===null?!!first:st==='1';
+d.addEventListener('toggle',()=>store('peluches-ouvert-'+title,d.open?'1':'0'));d.append(el2('summary',{},[el2('h2',{textContent:title})]),...kids);return d;}
+for(const sec of SECTIONS){const grid=el2('div',{className:'fields'}),tab=$('tab-'+TAB_OF[sec.t]),first=!tab.querySelector('details.card');let adv=null;const card=foldCard(sec.t,[grid],first);tab.append(card);
 for(const f of sec.f){const id='f-'+f.k,row=el2('div',{className:'field'+(f.wide?' wide':'')});const lab=el2('label',{htmlFor:id});f.lab=lab;
 if(f.type==='color'){row.append(lab,colorRow(f.k,id));row.querySelector('.pip').dataset.pip=f.k;}
 else if(f.type==='choice'&&Object.keys(CHOICES[f.k]).length<=6){f.type='chips';const g=el2('div',{className:'seg small',id});for(const[v,t]of Object.entries(CHOICES[f.k])){const b=el2('button',{type:'button',className:'btn',textContent:t});b.dataset.v=v;g.append(b);}row.append(lab,g);lab.htmlFor='';}
@@ -385,7 +402,7 @@ else if(f.type==='print'){const im=el2('img',{id:id+'-img',alt:'Imprimé pris su
 else if(f.type==='tiles'){f.type='chips';const g=el2('div',{className:'tiles',id,role:'group'});for(const[v,t]of Object.entries(CHOICES[f.k])){const b=el2('button',{type:'button',className:'tile'},[el2('span',{className:'em',textContent:(EMO[f.k]||{})[v]||'•'}),el2('span',{textContent:t})]);b.dataset.v=v;g.append(b);}row.append(el2('span',{className:'lbl',textContent:typeof f.l==='function'?f.l(cfg):f.l}),g);f.lab=null;}
 else if(f.type==='chips'){const g=el2('div',{className:'seg',id});for(const[v,t]of Object.entries(CHOICES[f.k])){const b=el2('button',{type:'button',className:'btn',textContent:t});b.dataset.v=v;g.append(b);}row.append(el2('span',{className:'help',textContent:f.l}),g);f.lab=null;}
 else if(f.type==='flags'){row.append(el2('span',{className:'help',textContent:f.l}),el2('div',{className:'flags'},FLAG_GROUPS.map(([gt,ks])=>el2('div',{className:'fgroup'},[el2('span',{textContent:gt}),el2('div',{className:'pills'},[...ks].map(v=>el2('label',{className:'check'},[el2('input',{type:'checkbox',id:id+'-'+v,value:v}),FLAGS[v]])))]))));f.lab=null;}
-f.row=row;F[f.k]=f;grid.append(row);}}
+f.row=row;F[f.k]=f;if(f.adv){if(!adv){adv=el2('div',{className:'fields'});card.append(el2('details',{className:'more'},[el2('summary',{textContent:'Plus de réglages'}),adv]));}adv.append(row);}else grid.append(row);}}
 function syncForm(){const HV=PL.hair(cfg),val=k=>PL.HAIRK.includes(k)?HV[k]:cfg[k];for(const k in F){const f=F[k],id='f-'+k;if(f.lab)f.lab.textContent=typeof f.l==='function'?f.l(cfg):f.l;f.row.hidden=!!(f.show&&!f.show(cfg));
 if(f.type==='color'||f.type==='choice'||f.type==='text'){if(document.activeElement!==$(id))$(id).value=k==='fc'?(cfg.fc||cfg.hc):val(k);}
 else if(f.type==='range'){if(document.activeElement!==$(id))$(id).value=val(k);const v=Number(val(k));$(id+'-v').textContent=f.fmt==='len'?[[0.6,'Ras'],[1.4,'Courts'],[2.2,'Aux oreilles'],[2.8,'Mi-longs'],[3.5,'Au menton'],[4.5,'Aux épaules'],[9,'Dans le dos']].find(x=>v<x[0])[1]+' ('+v.toFixed(1).replace('.',',')+')':f.fmt==='pct'?Math.round(v*100)+' %':f.fmt==='deg'?Math.round(v)+'°':f.fmt==='off'?(v>0?'+':'')+v.toFixed(2).replace('.',','):'× '+v.toFixed(2).replace('.',',');}
@@ -399,8 +416,8 @@ else if(f.type==='flags')for(const v in FLAGS)$(id+'-'+v).checked=cfg.acc.includ
 const ADJ=[['x','Gauche ↔ Droite',-8,8,0.1,0],['y','Bas ↕ Haut',-8,8,0.1,0],['z','Arrière ↔ Avant',-8,8,0.1,0],['s','Taille',0.3,3,0.05,1],['r','Rotation',-180,180,5,0]];
 {const sel=el2('select',{id:'adj-k'}),grid=el2('div',{className:'fields'});
 for(const[k,l,mi,ma,stp]of ADJ){const row=el2('div',{className:'field'});row.append(el2('div',{className:'row rangehead'},[el2('label',{htmlFor:'adj-'+k,textContent:l}),el2('span',{className:'help',id:'adj-'+k+'-v'})]),el2('input',{type:'range',id:'adj-'+k,min:mi,max:ma,step:stp}));grid.append(row);}
-$('tab-accessoires').append(el2('section',{className:'card',id:'adj-card'},[el2('h2',{textContent:'Ajuster un accessoire'}),el2('p',{className:'help',textContent:"Choisis un accessoire, puis déplace-le, change sa taille ou tourne-le."}),
-el2('div',{className:'field'},[el2('label',{htmlFor:'adj-k',textContent:'Accessoire'}),sel]),grid,el2('div',{className:'row'},[el2('button',{type:'button',className:'btn',id:'adj-reset',textContent:'Remettre à sa place'})]),el2('p',{className:'help',id:'adj-none',textContent:'Ajoute un accessoire ou un objet dans les mains pour pouvoir le régler ici.'})]));}
+$('tab-accessoires').append(foldCard('Ajuster un accessoire',[el2('p',{className:'help',textContent:"Choisis un accessoire, puis déplace-le, change sa taille ou tourne-le."}),
+el2('div',{className:'field'},[el2('label',{htmlFor:'adj-k',textContent:'Accessoire'}),sel]),grid,el2('div',{className:'row'},[el2('button',{type:'button',className:'btn',id:'adj-reset',textContent:'Remettre à sa place'})]),el2('p',{className:'help',id:'adj-none',textContent:'Ajoute un accessoire ou un objet dans les mains pour pouvoir le régler ici.'})],false,'adj-card'));}
 function adjList(){const l=[...cfg.acc].filter(k=>!'wl'.includes(k)).map(k=>[k,FLAGS[k]]);if(cfg.it&&cfg.it!=='aucun')l.unshift(['_','🤲 Objet dans les mains : '+CHOICES.it[cfg.it]]);return l;}
 function renderAdj(){const sel=$('adj-k');if(!sel)return;const l=adjList(),cur0=sel.value,old=sel.dataset.sig||'';if(old!==l.map(x=>x[0]).join('')){const added=l.map(x=>x[0]).filter(k=>!old.includes(k));sel.textContent='';l.forEach(([k,t])=>sel.append(el2('option',{value:k,textContent:t})));sel.dataset.sig=l.map(x=>x[0]).join('');if(old&&added.length)sel.value=added[added.length-1];else if(l.some(x=>x[0]===cur0))sel.value=cur0;}
 const none=!l.length;$('adj-none').hidden=!none;sel.disabled=none;$('adj-reset').disabled=none;const a=(cfg.aj&&cfg.aj[sel.value])||[0,0,0,1,0];
@@ -410,7 +427,7 @@ $('adj-k').addEventListener('change',renderAdj);
 $('adj-reset').addEventListener('click',()=>{const k=$('adj-k').value;if(!k||!cfg.aj)return;const n=Object.assign({},cfg.aj);delete n[k];cfg.aj=n;renderAdj();changed();});
 // Pièces sur mesure ajoutées par Claude : on peut changer leur couleur ou les retirer
 const SHAPE_L={sphere:'Boule',goutte:'Goutte',cone:'Cône',cylindre:'Cylindre',tore:'Anneau',boite:'Bloc'},ANCH_L={tete:'tête',corps:'corps',mains:'mains',dos:'dos',jambes:'jambes'};
-$('tab-accessoires').append(el2('section',{className:'card'},[el2('h2',{textContent:'Pièces sur mesure'}),el2('p',{className:'help',textContent:"Ce que Claude ajoute pour coller à la photo : oreilles, cornes, queue, nœud… Change une couleur ou retire une pièce."}),el2('div',{id:'pz-list',className:'pzlist'})]));
+$('tab-accessoires').append(foldCard('Pièces sur mesure',[el2('p',{className:'help',textContent:"Ce que Claude ajoute pour coller à la photo : oreilles, cornes, queue, nœud… Change une couleur ou retire une pièce."}),el2('div',{id:'pz-list',className:'pzlist'})],false));
 function renderPieces(){const box=$('pz-list');if(!box)return;box.textContent='';if(!cfg.pz.length){box.append(el2('p',{className:'help',textContent:'Aucune pièce sur mesure pour cette peluche.'}));return;}
 cfg.pz.forEach((q,i)=>{const b=el2('button',{type:'button',className:'btn',textContent:'Retirer'});b.dataset.rm=i;box.append(el2('div',{className:'pzrow'},[el2('label',{htmlFor:'pz-'+i,textContent:(i+1)+'. '+SHAPE_L[q[0]]+' sur '+ANCH_L[q[1]]}),el2('input',{type:'color',id:'pz-'+i,value:q[11]}),b]));});}
 $('pz-list').addEventListener('input',e=>{const m=e.target.id.match(/^pz-(\d+)$/);if(m&&cfg.pz[+m[1]]){cfg.pz[+m[1]][11]=e.target.value;changed();}});

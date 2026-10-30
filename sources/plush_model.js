@@ -135,7 +135,11 @@ g.textAlign='center';g.textBaseline='middle';rr(g,52,40,152,34,14);g.fillStyle='
 rr(g,62,84,132,96,10);g.fillStyle='#c8261f';g.fill();if(num){g.fillStyle='#ffffff';g.font='bold '+(num.length>2?(num.length>4?34:50):76)+'px sans-serif';g.fillText(num,128,135);}
 rr(g,70,190,116,30,8);g.fillStyle='#4a0d0a';g.fill();const t=new THREE.CanvasTexture(c);t.anisotropy=8;return t;}
 function discTex(num){const[c,g]=cv(128);g.fillStyle='#151515';g.beginPath();g.arc(64,64,60,0,7);g.fill();g.fillStyle='#ffffff';g.font='bold '+(num.length>2?30:52)+'px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(num,64,68);const t=new THREE.CanvasTexture(c);t.anisotropy=8;return t;}
-function tagTex(){const[c,g]=cv(128);g.fillStyle='#fbf8f2';g.fillRect(0,0,128,128);g.fillStyle='#c8261f';g.beginPath();g.arc(56,40,10,0,7);g.arc(72,40,10,0,7);g.fill();g.beginPath();g.moveTo(47,45);g.lineTo(64,64);g.lineTo(81,45);g.fill();g.fillStyle='#b8b2a8';for(let i=0;i<3;i++)g.fillRect(30,80+i*12,68-i*14,4);return new THREE.CanvasTexture(c);}
+function tagTex(){// Étiquette cousue : « B&B » (Blake en bleu, Billy en vert) et un petit cœur
+const[c,g]=cv(256);g.fillStyle='#fbf8f2';g.fillRect(0,0,256,256);g.strokeStyle='#d9d2c4';g.lineWidth=6;g.setLineDash([12,9]);g.strokeRect(14,14,228,228);g.setLineDash([]);
+g.textAlign='center';g.textBaseline='middle';g.font='bold 92px "Arial Rounded MT Bold","Arial Black",Arial,sans-serif';const w1=g.measureText('B').width,wa=g.measureText('&').width,x0=128-(2*w1+wa)/2;
+g.textAlign='left';g.fillStyle='#2a74c9';g.fillText('B',x0,108);g.fillStyle='#7d7263';g.fillText('&',x0+w1,108);g.fillStyle='#1f9a63';g.fillText('B',x0+w1+wa,108);
+g.fillStyle='#ff7eb6';g.beginPath();g.arc(116,180,15,0,7);g.arc(140,180,15,0,7);g.fill();g.beginPath();g.moveTo(102,187);g.lineTo(128,214);g.lineTo(154,187);g.fill();return new THREE.CanvasTexture(c);}
 function irisTex(c1,c2){const[c,g]=cv(256);const gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#0a0a10');gr.addColorStop(0.2,'#0a0a10');gr.addColorStop(0.23,c1);gr.addColorStop(0.45,c2);gr.addColorStop(0.62,c1);gr.addColorStop(0.68,'#140d0b');gr.addColorStop(1,'#140d0b');g.fillStyle=gr;g.fillRect(0,0,256,256);
 g.globalAlpha=0.22;for(let x=0;x<256;x+=3){g.fillStyle=R()<0.5?'#ffffff':'#000000';g.fillRect(x,58,1.5,25+R()*95);}g.globalAlpha=1;return new THREE.CanvasTexture(c);}
 function fuzz(m){m.onBeforeCompile=sh=>{sh.fragmentShader=sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance += diffuseColor.rgb * pow(1.0 - saturate(dot(normal, normalize(vViewPosition))), 2.2) * 0.32;');};m.customProgramCacheKey=()=>'fuzz';return m;}
@@ -298,7 +302,7 @@ const b=leg.localToWorld(V(0,0,3.3));add(mk(blob(3.0,2.95,2.1),paw?mFur:shoeMat)
 const so=leg.localToWorld(V(0,0,!paw&&c.sh==='baskets'?5.4:5.3));add(mk(blob(paw?1.9:2.7,paw?1.8:2.6,!paw&&c.sh==='baskets'?0.6:0.4,{lump:0}),paw?mPad:soleMat),[so.x,so.y,so.z],rot);
 if(!paw&&c.sh==='baskets'){const lc=leg.localToWorld(V(0,1.9,3.6));add(mk(blob(1.2,0.5,1.0,{lump:0}),mWhite),[lc.x,lc.y,lc.z],rot);
 const rim=leg.localToWorld(V(0,0,5.1));add(mk(new THREE.TorusGeometry(2.6,0.42,8,36),mWhite),[rim.x,rim.y,rim.z],rot);}}
-PART=null;add(mk(new THREE.BoxGeometry(0.08,2.2,1.5),SM({map:own(tagTex()),roughness:0.9})),[-7.0,2.4,-2.5],[0,0,-0.35]);
+PART=null;add(mk(new THREE.BoxGeometry(0.08,2.6,2.6),SM({map:own(tagTex()),roughness:0.9})),[-7.0,2.4,-2.6],[0,0,-0.35]);
 
 // Tête et cheveux
 const head=add(mk(blob(9.6,8.8,9.0,{lump:0.012,pear:0.05}),animal?mFur:mSkin),[0,24.6,0.6]);
