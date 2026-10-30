@@ -149,6 +149,13 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{ou
 .pills .check input{position:absolute;opacity:0;width:1px;height:1px}
 .pills .check:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
 .seg.small .btn{padding:8px 12px;font-size:13px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px}
+.tile{display:grid;justify-items:center;align-content:start;gap:4px;padding:10px 4px 9px;border-radius:18px;border:1px solid var(--line);background:var(--surface-2);color:var(--fg);font:700 12px/1.15 var(--body);text-align:center;cursor:pointer;transition:transform .12s,border-color .12s,background .12s}
+.tile .em{font-size:26px;line-height:1.1}
+.tile:hover{border-color:var(--accent);transform:translateY(-1px)}
+.tile[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.lbl{font-size:14px;color:var(--muted);font-weight:700}
+@media (prefers-reduced-motion:reduce){.tile{transition:none}.tile:hover{transform:none}}
 .btn,.pip{font:700 14px/1 var(--body);padding:10px 15px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;white-space:nowrap;text-decoration:none}
 .pip{font-size:13px;padding:8px 10px}
 .btn:hover,.pip:hover{border-color:var(--accent)}
@@ -203,13 +210,13 @@ code{font-family:var(--mono);font-size:13px;overflow-wrap:anywhere}
     </section>
     <section class="panel no-photo" id="right">
       <nav class="tabs" role="tablist" aria-label="Réglages de la peluche">
-        <button type="button" role="tab" data-tab="photos">Photos</button>
-        <button type="button" role="tab" data-tab="style">Style et pose</button>
-        <button type="button" role="tab" data-tab="visage">Visage</button>
-        <button type="button" role="tab" data-tab="tete">Tête</button>
-        <button type="button" role="tab" data-tab="tenue">Tenue</button>
-        <button type="button" role="tab" data-tab="accessoires">Accessoires</button>
-        <button type="button" role="tab" data-tab="lien">Lien</button>
+        <button type="button" role="tab" data-tab="photos">📷 Photos</button>
+        <button type="button" role="tab" data-tab="style">🧸 Style et pose</button>
+        <button type="button" role="tab" data-tab="visage">😊 Visage</button>
+        <button type="button" role="tab" data-tab="tete">💇 Tête</button>
+        <button type="button" role="tab" data-tab="tenue">👕 Tenue</button>
+        <button type="button" role="tab" data-tab="accessoires">🎀 Accessoires</button>
+        <button type="button" role="tab" data-tab="lien">🔗 Lien</button>
       </nav>
       <div id="settings">
         <div class="tabpanel" data-tab="photos" id="tab-photos">
@@ -314,12 +321,12 @@ stage.addEventListener('dblclick',()=>{ry=-0.25;el=0.24;dirty=true;});
 
 // Réglages
 const CHOICES={hs:{court:'Courts',banane:'Banane (plaqués en arrière)',meches:'Mi-longs en mèches',herisse:'Hérissés',iroquoise:'Iroquoise',carre:'Carré',long:'Longs',tresse:"Tresse sur l'épaule",couettes:'Couettes',queue:'Queue de cheval',chignon:'Chignon',boucle:'Bouclés',afro:'Afro',dreads:'Dreads',rase:'Rasés',chauve:'Chauve'},
-bd:{aucune:'Aucune',barbe3j:'Barbe de 3 jours',barbe:'Barbe',longue:'Barbe longue',moustache:'Moustache',bouc:'Bouc'},ex:{sourire:'Grand sourire',content:'Petit sourire',rire:'Rire (yeux fermés)',clin:"Clin d'œil",amour:'Yeux en cœur',surpris:'Surpris',neutre:'Neutre',serieux:'Sérieux',triste:'Triste',boude:'Boude',dodo:'Endormi'},
+bd:{aucune:'Aucune',barbe3j:'Barbe de 3 jours',barbe:'Barbe',longue:'Barbe longue',moustache:'Moustache',bouc:'Bouc'},ex:{sourire:'Grand sourire',content:'Petit sourire',rire:'Rire',clin:"Clin d'œil",amour:'Yeux en cœur',etoiles:'Yeux étoiles',langue:'Tire la langue',bisou:'Bisou',surpris:'Surpris',gene:'Gêné',neutre:'Neutre',serieux:'Sérieux',boude:'Boude',triste:'Triste',pleure:'Pleure',dodo:'Endormi'},
 gl:{aucune:'Aucunes',lunettes:'Lunettes de vue',soleil:'Lunettes de soleil',aviateur:'Lunettes aviateur',tete:'Lunettes relevées sur la tête',masque:'Lunettes de protection'},
 hw:{aucun:'Aucun',capuche:'Capuche relevée',casquette:'Casquette',inverse:"Casquette à l'envers",bonnet:'Bonnet',chapeau:'Chapeau',bandeau:'Bandeau',durag:'Durag',pompier:'Casque de pompier',police:'Casquette de police'},
 tp:{tshirt:'T-shirt',chemise:'Chemise',sweat:'Sweat à capuche',zip:'Veste zippée fermée (survêtement)',veste:'Veste ouverte',costume:'Costume',gilet:'Gilet sur manches'},mt:{uni:'Uni',rayures:'Rayures',camo:'Camouflage',carreaux:'Carreaux',taches:'Taches'},
 bt:{pantalon:'Pantalon',jogging:'Jogging',short:'Short',salopette:'Salopette'},sh:{bottes:'Bottes',baskets:'Baskets',chaussures:'Chaussures de ville'},
-it:{aucun:'Rien',lance:'Lance à incendie',coeur:'Cœur',telephone:'Téléphone',cafe:'Café',donut:'Donut',trousse:'Trousse de secours',bouquet:'Bouquet de fleurs',billets:'Liasse de billets',manette:'Manette de jeu',ballon:'Ballon de basket',cle:'Clé de voiture',micro:'Micro de chanteur'}};
+it:{aucun:'Rien',lance:'Lance à incendie',coeur:'Cœur',telephone:'Téléphone',cafe:'Café',donut:'Donut',trousse:'Trousse de secours',bouquet:'Bouquet de fleurs',billets:'Liasse de billets',manette:'Manette de jeu',ballon:'Ballon de basket',cle:'Clé de voiture',micro:'Micro de chanteur',glace:'Glace',sucette:'Sucette',cadeau:'Cadeau',livre:'Livre',pizza:'Pizza'}};
 CHOICES.hm=CHOICES.mt;
 CHOICES.hp={aucune:'Pas de raie',gauche:"Raie à gauche de l'image",milieu:'Raie au milieu',droite:"Raie à droite de l'image"};
 CHOICES.hf={aucune:'Pas de frange (coiffés en arrière ou sur les côtés)',courte:'Frange courte',droite:'Frange droite (au ras des sourcils)',balayee:'Frange balayée sur le côté',rideau:'Frange rideau (ouverte au milieu)',longue:'Frange longue (sur les yeux)',arriere:'Relevés en arrière (banane, houppe)'};
@@ -327,30 +334,38 @@ CHOICES.hx={lisse:'Lisses',ondule:'Ondulés',boucle:'Bouclés',crepu:'Crépus (a
 CHOICES.ht={aucune:'Détachés',queue:'Queue de cheval basse',haute:'Queue de cheval haute',couettes:'Deux couettes',chignon:'Chignon',tresse:"Tresse sur l'épaule",demi:'Demi-queue (dessus attaché)'};
 CHOICES.hd={normaux:'Comme le reste',courts:'Courts (dégradé)',rases:'Rasés'};
 CHOICES.ms={aucune:'Aucune',monstre:'Petit monstre (oreilles et dents)',lapin:'Lapin',ours:'Ours',chat:'Chat',chien:'Chien',oiseau:'Oiseau / perroquet'};
-CHOICES.po={assis:'Assise',debout:'Debout',coucou:'Coucou',bravo:'Bras levés',calin:'Câlin',coeur:'Cœur',pensif:'Pensive',tailleur:'En tailleur',dab:'Dab',joues:'Mains sur les joues',danse:'Danse',victoire:'Victoire'};
+CHOICES.po={assis:'Assise',debout:'Debout',coucou:'Coucou',bravo:'Bras levés',calin:'Câlin',coeur:'Cœur',pensif:'Pensive',tailleur:'En tailleur',dab:'Dab',joues:'Mains sur les joues',danse:'Danse',victoire:'Victoire',croises:'Bras croisés',bisou:'Envoie un bisou',salut:'Coucou assise'};
 CHOICES.ey={kawaii:'Mignons (peluche)',realiste:'Réalistes'};
 CHOICES.st={classique:'Classique',ours:'Ourson',lapin:'Lapin',chat:'Chaton',monstre:'Petit monstre',avatar:'Avatar'};
 CHOICES.mp={droite:"Sur l'épaule, à droite de l'image",gauche:"Sur l'épaule, à gauche de l'image",tete:'Sur la tête',mains:'Dans les mains'};
-const FLAGS={m:'Micro-casque',o:"Boucles d'oreilles",a:'Bandana sur le visage',q:'Nœud dans les cheveux',f:'Fleur dans les cheveux',
-r:'Radio',b:'Badge',c:'Chaîne en or',d:'Plaques militaires',e:'Écharpe',h:'Casque audio au cou',p:'Pins',n:'Sac en bandoulière',
-s:'Sacoche',u:'Sac banane',v:'Étui à la ceinture',y:'Lampe torche',z:'Menottes',w:'Montre',l:'Bracelets',k:'Sac à dos'};
-const FLAG_GROUPS=[['Tête et visage','moaqf'],['Haut du corps','rbcdehpn'],['Ceinture','suvyz'],['Bras et dos','wlk']];
+const FLAGS={m:'🎧 Micro-casque',o:"💎 Boucles d'oreilles",a:'😷 Bandana sur le visage',q:'🎀 Nœud dans les cheveux',f:'🌼 Fleur dans les cheveux',x:'👑 Couronne',j:'🐱 Oreilles de chat',
+r:'📻 Radio',b:'⭐ Badge',c:'📿 Chaîne en or',d:'🏷️ Plaques militaires',e:'🧣 Écharpe',h:'🎧 Casque audio au cou',p:'📍 Pins',n:'👜 Sac en bandoulière',t:'🎩 Nœud papillon',
+s:'💼 Sacoche',u:'👝 Sac banane',v:'🔫 Étui à la ceinture',y:'🔦 Lampe torche',z:'⛓️ Menottes',w:'⌚ Montre',l:'📿 Bracelets',k:'🎒 Sac à dos',i:"🪽 Ailes d'ange",g:'🦸 Cape'};
+const FLAG_GROUPS=[['Tête et visage','moaqfxj'],['Haut du corps','rbcdehpnt'],['Ceinture','suvyz'],['Bras et dos','wlkig']];
+// Émoji des tuiles : on voit le choix d'un coup d'œil
+const EMO={ex:{sourire:'😄',content:'🙂',rire:'😆',clin:'😉',amour:'😍',etoiles:'🤩',langue:'😛',bisou:'😘',surpris:'😮',neutre:'😐',gene:'😳',serieux:'😠',triste:'😢',pleure:'😭',boude:'😤',dodo:'😴'},
+po:{assis:'🧸',debout:'🧍',coucou:'👋',salut:'🙋',bravo:'🙌',calin:'🤗',coeur:'🫶',pensif:'🤔',tailleur:'🧘',dab:'🕺',joues:'🥰',danse:'💃',victoire:'✌️',croises:'🙅',bisou:'😘'},
+it:{aucun:'🚫',lance:'🚒',coeur:'❤️',telephone:'📱',cafe:'☕',donut:'🍩',trousse:'🩹',bouquet:'💐',billets:'💵',manette:'🎮',ballon:'🏀',cle:'🔑',micro:'🎤',glace:'🍦',sucette:'🍭',cadeau:'🎁',livre:'📖',pizza:'🍕'},
+hw:{aucun:'🚫',capuche:'🧥',casquette:'🧢',inverse:'🧢',bonnet:'🧶',chapeau:'🎩',bandeau:'🎽',durag:'🖤',pompier:'⛑️',police:'👮'},
+gl:{aucune:'🚫',lunettes:'👓',soleil:'🕶️',aviateur:'😎',tete:'🕶️',masque:'🥽'},
+st:{classique:'🧒',ours:'🐻',lapin:'🐰',chat:'🐱',monstre:'👹',avatar:'🙂'},
+ms:{aucune:'🚫',monstre:'👹',lapin:'🐰',ours:'🐻',chat:'🐱',chien:'🐶',oiseau:'🦜'}};
 const hairOn=c=>!['rase','chauve','iroquoise'].includes(c.hs);
 const SECTIONS=[
-{t:'Style, pose et nom',f:[{k:'st',type:'chips',l:'Style de peluche',wide:1},{k:'po',type:'chips',l:'Position',wide:1},{k:'fc',type:'color',l:'Couleur de la fourrure',show:c=>['ours','lapin','chat','monstre'].includes(c.st)},{k:'n',type:'text',l:'Nom',max:24,wide:1}]},
-{t:'Visage',f:[{k:'ey',type:'chips',l:'Yeux',wide:1},{k:'sk',type:'color',l:'Peau'},{k:'ec',type:'color',l:'Yeux'},{k:'ex',type:'choice',l:'Expression'},{k:'bd',type:'choice',l:'Barbe'},{k:'fr',type:'check',l:'Taches de rousseur'},{k:'cl',type:'check',l:'Longs cils'}]},
+{t:'Style, pose et nom',f:[{k:'st',type:'tiles',l:'Style de peluche',wide:1},{k:'po',type:'tiles',l:'Position',wide:1},{k:'fc',type:'color',l:'Couleur de la fourrure',show:c=>['ours','lapin','chat','monstre'].includes(c.st)},{k:'n',type:'text',l:'Nom',max:24,wide:1}]},
+{t:'Visage',f:[{k:'ey',type:'chips',l:'Yeux',wide:1},{k:'sk',type:'color',l:'Peau'},{k:'ec',type:'color',l:'Yeux'},{k:'ex',type:'tiles',wide:1,l:'Expression'},{k:'bd',type:'choice',l:'Barbe'},{k:'fr',type:'check',l:'Taches de rousseur'},{k:'cl',type:'check',l:'Longs cils'}]},
 {t:'Cheveux',f:[{k:'hs',type:'choice',l:'Coiffure de départ'},{k:'hc',type:'color',l:'Couleur des cheveux'},{k:'h2',type:'optcolor',l:"Mèches d'une autre couleur",show:hairOn},
 {k:'hl',type:'range',l:'Longueur',min:0.3,max:5,step:0.1,fmt:'len',show:hairOn},{k:'hv',type:'range',l:'Volume',min:0,max:1,step:0.05,fmt:'pct',show:hairOn},
 {k:'hx',type:'choice',l:'Texture',show:hairOn},{k:'hp',type:'choice',l:'Raie',show:hairOn},{k:'hf',type:'choice',l:'Frange',show:hairOn},{k:'ht',type:'choice',l:'Attache',show:hairOn},{k:'hd',type:'choice',l:'Côtés et nuque',show:hairOn}]},
-{t:'Tête',f:[{k:'hw',type:'choice',l:'Couvre-chef'},{k:'hwc',type:'color',l:'Couleur du couvre-chef',show:c=>c.hw!=='aucun'},{k:'hwt',type:'text',l:'Texte ou numéro',max:6,show:c=>['casquette','bonnet','pompier'].includes(c.hw)},{k:'hm',type:'choice',l:'Motif du couvre-chef',show:c=>['capuche','casquette','inverse','chapeau'].includes(c.hw)},
-{k:'gl',type:'choice',l:'Lunettes'},{k:'glc',type:'color',l:'Monture',show:c=>c.gl!=='aucune'},{k:'lc',type:'color',l:'Couleur des verres',show:c=>['soleil','aviateur','tete'].includes(c.gl)}]},
+{t:'Tête',f:[{k:'hw',type:'tiles',wide:1,l:'Couvre-chef'},{k:'hwc',type:'color',l:'Couleur du couvre-chef',show:c=>c.hw!=='aucun'},{k:'hwt',type:'text',l:'Texte ou numéro',max:6,show:c=>['casquette','bonnet','pompier'].includes(c.hw)},{k:'hm',type:'choice',l:'Motif du couvre-chef',show:c=>['capuche','casquette','inverse','chapeau'].includes(c.hw)},
+{k:'gl',type:'tiles',wide:1,l:'Lunettes'},{k:'glc',type:'color',l:'Monture',show:c=>c.gl!=='aucune'},{k:'lc',type:'color',l:'Couleur des verres',show:c=>['soleil','aviateur','tete'].includes(c.gl)}]},
 {t:'Tenue',f:[{k:'tp',type:'choice',l:'Haut'},{k:'mt',type:'choice',l:'Motif'},{k:'tc',type:'color',l:c=>({gilet:'Gilet',veste:'Veste',costume:'Veste de costume'})[c.tp]||'Couleur du haut'},
 {k:'t2',type:'color',l:c=>({gilet:'Manches',veste:'Haut en dessous',costume:'Chemise',sweat:'Cordons'})[c.tp]||'Dessous',show:c=>['gilet','veste','costume','sweat'].includes(c.tp)},
 {k:'yc',type:'optcolor',l:"Épaules d'une autre couleur",show:c=>!['veste','costume','gilet'].includes(c.tp)},{k:'sl',type:'optcolor',l:"Manches d'une autre couleur",show:c=>c.tp!=='gilet'},{k:'sb',type:'optcolor',l:'Bandes sur les manches',show:c=>c.tp!=='tshirt'},
 {k:'im',type:'print',l:'Imprimé sur le devant (découpé dans la photo)',wide:1,show:c=>c.tp!=='costume'},{k:'tt',type:'text',l:'Texte imprimé (dos)',max:8},{k:'rf',type:'check',l:'Bandes réfléchissantes'},{k:'bt',type:'choice',l:'Bas'},{k:'pc',type:'color',l:c=>c.bt==='short'?'Couleur du short':'Couleur du bas'},{k:'pb',type:'optcolor',l:'Bandes sur les côtés du bas',show:c=>c.bt!=='short'},
 {k:'sh',type:'choice',l:'Chaussures'},{k:'sc',type:'color',l:'Couleur des chaussures'},{k:'gv',type:'glove',l:'Gants'}]},
-{t:'Accessoires',f:[{k:'acc',type:'flags',l:'Équipement',wide:1},{k:'it',type:'choice',l:'Dans les mains'},{k:'ac',type:'color',l:"Couleur d'accent"},
-{k:'ms',type:'choice',l:'Mascotte (mini-peluche)'},{k:'mc',type:'color',l:'Couleur de la mascotte',show:c=>c.ms!=='aucune'},{k:'mp',type:'choice',l:'Place de la mascotte',show:c=>c.ms!=='aucune'},{k:'mz',type:'range',l:'Taille de la mascotte',min:0.5,max:2,step:0.05,show:c=>c.ms!=='aucune'},{k:'mx',type:'range',l:'Mascotte : gauche / droite',min:-1,max:1,step:0.05,fmt:'off',show:c=>c.ms!=='aucune'},{k:'my',type:'range',l:'Mascotte : bas / haut',min:-1,max:1,step:0.05,fmt:'off',show:c=>c.ms!=='aucune'},{k:'mf',type:'range',l:'Mascotte : arrière / avant',min:-1,max:1,step:0.05,fmt:'off',show:c=>c.ms!=='aucune'},{k:'mr',type:'range',l:'Mascotte : rotation',min:-180,max:180,step:5,fmt:'deg',show:c=>c.ms!=='aucune'}]}];
+{t:'Accessoires',f:[{k:'acc',type:'flags',l:'Équipement',wide:1},{k:'it',type:'tiles',wide:1,l:'Dans les mains'},{k:'ac',type:'color',l:"Couleur d'accent"},
+{k:'ms',type:'tiles',wide:1,l:'Mascotte (mini-peluche)'},{k:'mc',type:'color',l:'Couleur de la mascotte',show:c=>c.ms!=='aucune'},{k:'mp',type:'choice',l:'Place de la mascotte',show:c=>c.ms!=='aucune'},{k:'mz',type:'range',l:'Taille de la mascotte',min:0.5,max:2,step:0.05,show:c=>c.ms!=='aucune'},{k:'mx',type:'range',l:'Mascotte : gauche / droite',min:-1,max:1,step:0.05,fmt:'off',show:c=>c.ms!=='aucune'},{k:'my',type:'range',l:'Mascotte : bas / haut',min:-1,max:1,step:0.05,fmt:'off',show:c=>c.ms!=='aucune'},{k:'mf',type:'range',l:'Mascotte : arrière / avant',min:-1,max:1,step:0.05,fmt:'off',show:c=>c.ms!=='aucune'},{k:'mr',type:'range',l:'Mascotte : rotation',min:-180,max:180,step:5,fmt:'deg',show:c=>c.ms!=='aucune'}]}];
 const F={};let lastGlove='#86ace6';const lastOpt={h2:'#f3dc9a',yc:'#f2f2f2',sl:'#f2f2f2',sb:'#f2f2f2',pb:'#1c1c1e'};
 function el2(tag,props,kids){const n=document.createElement(tag);Object.assign(n,props||{});(kids||[]).forEach(k=>n.append(k));return n;}
 function colorRow(k,id){return el2('div',{className:'colorrow'},[el2('input',{type:'color',id}),el2('button',{type:'button',className:'pip',textContent:'Pipette',title:'Prendre la couleur sur la photo'})]);}
@@ -366,6 +381,7 @@ else if(f.type==='glove'){row.append(el2('label',{className:'check'},[el2('input
 else if(f.type==='optcolor'){row.append(el2('label',{className:'check'},[el2('input',{type:'checkbox',id:id+'-on'}),f.l]),colorRow(f.k,id));row.querySelector('.pip').dataset.pip=f.k;f.lab=null;}
 else if(f.type==='range'){row.append(el2('div',{className:'row rangehead'},[lab,el2('span',{className:'help',id:id+'-v'})]),el2('input',{type:'range',id,min:f.min,max:f.max,step:f.step}));}
 else if(f.type==='print'){const im=el2('img',{id:id+'-img',alt:'Imprimé pris sur la photo',className:'printimg'});row.append(el2('span',{className:'help',textContent:f.l}),el2('div',{className:'row'},[im,el2('button',{type:'button',className:'btn',id:id+'-pick',textContent:'Choisir sur la photo'}),el2('button',{type:'button',className:'btn',id:id+'-rm',textContent:'Retirer'})]));f.lab=null;}
+else if(f.type==='tiles'){f.type='chips';const g=el2('div',{className:'tiles',id,role:'group'});for(const[v,t]of Object.entries(CHOICES[f.k])){const b=el2('button',{type:'button',className:'tile'},[el2('span',{className:'em',textContent:(EMO[f.k]||{})[v]||'•'}),el2('span',{textContent:t})]);b.dataset.v=v;g.append(b);}row.append(el2('span',{className:'lbl',textContent:typeof f.l==='function'?f.l(cfg):f.l}),g);f.lab=null;}
 else if(f.type==='chips'){const g=el2('div',{className:'seg',id});for(const[v,t]of Object.entries(CHOICES[f.k])){const b=el2('button',{type:'button',className:'btn',textContent:t});b.dataset.v=v;g.append(b);}row.append(el2('span',{className:'help',textContent:f.l}),g);f.lab=null;}
 else if(f.type==='flags'){row.append(el2('span',{className:'help',textContent:f.l}),el2('div',{className:'flags'},FLAG_GROUPS.map(([gt,ks])=>el2('div',{className:'fgroup'},[el2('span',{textContent:gt}),el2('div',{className:'pills'},[...ks].map(v=>el2('label',{className:'check'},[el2('input',{type:'checkbox',id:id+'-'+v,value:v}),FLAGS[v]])))]))));f.lab=null;}
 f.row=row;F[f.k]=f;grid.append(row);}}
@@ -429,7 +445,7 @@ function setPick(k){pick=k;printPick=false;document.querySelectorAll('.pip').for
 if(k){goPhotos();const f=F[k];say('ai-status','Clique sur une photo pour prendre la couleur : '+((typeof f.l==='function'?f.l(cfg):f.l)||'Gants').toLowerCase()+'.');$('shots').scrollIntoView({block:'nearest',behavior:'smooth'});}}
 function startPrintPick(){setPick(null);goPhotos();printPick=true;printA=null;pickUI(true);say('ai-status',"Clique sur un coin de l'imprimé, puis sur le coin opposé.");$('shots').scrollIntoView({block:'nearest',behavior:'smooth'});}
 $('settings').addEventListener('click',e=>{const b=e.target.closest('.pip');if(b)setPick(pick===b.dataset.pip?null:b.dataset.pip);
-const ch=e.target.closest('.seg button');if(ch&&ch.parentElement.id.startsWith('f-')){cfg[ch.parentElement.id.slice(2)]=ch.dataset.v;cfg=PL.clean(cfg);syncForm();changed();}
+const ch=e.target.closest('.seg button,.tiles button');if(ch&&ch.parentElement.id.startsWith('f-')){cfg[ch.parentElement.id.slice(2)]=ch.dataset.v;cfg=PL.clean(cfg);syncForm();changed();}
 if(e.target.id==='f-im-pick')startPrintPick();if(e.target.id==='f-im-rm'){cfg.im='';syncForm();changed();}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&(pick||printPick)){setPick(null);pickUI(false);printPick=false;say('ai-status',readyMsg());goBack();}});
 function photoClick(slot,e){const cn=shots[slot].cn,b=cn.getBoundingClientRect(),x=(e.clientX-b.left)*cn.width/b.width,y=(e.clientY-b.top)*cn.height/b.height;
@@ -469,7 +485,7 @@ function keysText(){return "Regarde d'abord ce qui rend la personne reconnaissab
 +'- "ht" : attache, parmi "aucune" (détachés), "queue" (queue de cheval basse), "haute" (queue de cheval haute), "couettes", "chignon", "tresse" (une tresse devant l\'épaule), "demi" (le dessus attaché derrière, le reste détaché)\n'
 +'- "hd" : côtés et nuque, parmi "normaux", "courts" (dégradé), "rases" (undercut, côtés rasés)\n'
 +'- "ec" : couleur des yeux, "#rrggbb" ("#5a3b22" si on ne les voit pas)\n'
-+'- "ex" : expression, parmi "sourire" (grand sourire), "content" (petit sourire), "rire" (rire, yeux fermés), "clin" (clin d\'œil), "amour" (yeux en cœur), "surpris", "neutre", "serieux", "triste", "boude" (fâché, boudeur), "dodo" (endormi)\n'
++'- "ex" : expression, parmi "sourire" (grand sourire), "content" (petit sourire), "rire" (rire, yeux fermés), "clin" (clin d\'œil), "amour" (yeux en cœur), "surpris", "neutre", "serieux", "triste", "boude" (fâché, boudeur), "dodo" (endormi), "etoiles" (yeux étoiles, émerveillé), "langue" (tire la langue), "bisou" (fait un bisou), "pleure" (en larmes), "gene" (gêné, rougit)\n'
 +'- "bd" : pilosité du visage, parmi "aucune", "barbe3j" (barbe de quelques jours), "barbe", "longue" (barbe longue), "moustache", "bouc"\n'
 +'- "fr" : 1 si on voit des taches de rousseur, sinon 0\n'
 +'- "cl" : 1 pour de longs cils recourbés (visage féminin ou maquillé), 0 sinon\n'
@@ -497,8 +513,8 @@ function keysText(){return "Regarde d'abord ce qui rend la personne reconnaissab
 +'- "sh" : chaussures, parmi "bottes", "baskets", "chaussures" (de ville)\n'
 +'- "sc" : couleur des chaussures, "#rrggbb"\n'
 +'- "gv" : couleur des gants, "#rrggbb", ou "" sans gants\n'
-+'- "acc" : lettres des accessoires visibles, "" s\'il n\'y en a aucun : r = radio ou talkie, b = badge ou insigne, m = micro-casque ou oreillette, s = sacoche à la ceinture, c = chaîne ou collier, o = boucles d\'oreilles, w = montre, k = sac à dos, e = écharpe, h = casque audio autour du cou, a = bandana ou masque sur le bas du visage, n = sac en bandoulière, u = sac banane, d = plaques militaires, q = nœud dans les cheveux, f = fleur dans les cheveux, v = étui ou holster à la ceinture, y = lampe torche à la ceinture, z = menottes à la ceinture, l = bracelets, p = pins sur le haut\n'
-+'- "it" : objet tenu en main, parmi "aucun", "lance" (lance à incendie), "coeur", "telephone", "cafe", "donut", "trousse" (trousse de secours), "bouquet" (fleurs), "billets" (liasse d\'argent), "manette" (manette de jeu), "ballon" (ballon de basket ou de sport), "cle" (clé de voiture), "micro" (micro de chanteur)\n'
++'- "acc" : lettres des accessoires visibles, "" s\'il n\'y en a aucun : r = radio ou talkie, b = badge ou insigne, m = micro-casque ou oreillette, s = sacoche à la ceinture, c = chaîne ou collier, o = boucles d\'oreilles, w = montre, k = sac à dos, e = écharpe, h = casque audio autour du cou, a = bandana ou masque sur le bas du visage, n = sac en bandoulière, u = sac banane, d = plaques militaires, q = nœud dans les cheveux, f = fleur dans les cheveux, v = étui ou holster à la ceinture, y = lampe torche à la ceinture, z = menottes à la ceinture, l = bracelets, p = pins sur le haut, x = couronne, j = serre-tête oreilles de chat, t = nœud papillon, i = ailes d\'ange, g = cape\n'
++'- "it" : objet tenu en main, parmi "aucun", "lance" (lance à incendie), "coeur", "telephone", "cafe", "donut", "trousse" (trousse de secours), "bouquet" (fleurs), "billets" (liasse d\'argent), "manette" (manette de jeu), "ballon" (ballon de basket ou de sport), "cle" (clé de voiture), "micro" (micro de chanteur), "glace", "sucette", "cadeau", "livre", "pizza"\n'
 +'- "ms" : petite peluche ou petit animal porté par la personne (sur l\'épaule, accroché au sac ou dans les bras), parmi "aucune", "monstre" (petite peluche monstre à longues oreilles, visage clair et grand sourire plein de dents, comme les figurines de collection à la mode), "lapin" (lapin classique), "ours", "chat", "chien", "oiseau" (oiseau ou perroquet) ; prends la forme la plus proche\n'
 +'- "mc" : couleur de cette mascotte, "#rrggbb"\n'
 +'- "mp" : place de la mascotte, parmi "droite" (sur l\'épaule à droite de l\'image), "gauche" (sur l\'épaule à gauche de l\'image), "mains"\n'
