@@ -96,10 +96,12 @@ const ink=c=>lum(c)>0.55?'#1a1a1a':'#f6f6f2';
 
 // Textures
 function cv(w,h){h=h||w;const c=document.createElement('canvas');c.width=w;c.height=h;return[c,c.getContext('2d')];}
-function fabTex(base,lo,n,rep){const[c,g]=cv(512);g.fillStyle=base;g.fillRect(0,0,512,512);
+// Qualité : 1 dans l'atelier ; plus bas sur la page 3D (formes moins découpées, textures plus petites) pour s'ouvrir vite dans FiveM
+let QUAL=1;const setQuality=q=>{QUAL=q;};
+function fabTex(base,lo,n,rep){const S=QUAL<1?256:512,[c,g]=cv(S);g.fillStyle=base;g.fillRect(0,0,S,S);if(S<512){g.scale(0.5,0.5);n=Math.round(n/4);}
 for(let i=0;i<n;i++){const x=Math.random()*512,y=Math.random()*512,a=Math.random()*6.28,l=2+Math.random()*6;g.strokeStyle=Math.random()<0.5?lo:'#ffffff';g.globalAlpha=0.15+Math.random()*0.3;g.lineWidth=0.6+Math.random()*0.9;g.beginPath();g.moveTo(x,y);g.quadraticCurveTo(x+Math.cos(a)*l*0.5+1,y+Math.sin(a)*l*0.5,x+Math.cos(a)*l,y+Math.sin(a)*l);g.stroke();}
 const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rep,rep);t.anisotropy=8;return t;}
-function bumpTex(){const[c,g]=cv(256);g.fillStyle='#808080';g.fillRect(0,0,256,256);g.globalAlpha=0.6;for(let i=0;i<12000;i++){const v=Math.floor(60+Math.random()*140);g.fillStyle='rgb('+v+','+v+','+v+')';g.fillRect(Math.random()*256,Math.random()*256,1.2,2.5);}
+function bumpTex(){const[c,g]=cv(256);g.fillStyle='#808080';g.fillRect(0,0,256,256);g.globalAlpha=0.6;for(let i=0;i<12000*(QUAL<1?0.4:1);i++){const v=Math.floor(60+Math.random()*140);g.fillStyle='rgb('+v+','+v+','+v+')';g.fillRect(Math.random()*256,Math.random()*256,1.2,2.5);}
 const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(6,6);return t;}
 function knitTex(){const[c,g]=cv(256);g.fillStyle='#ededed';g.fillRect(0,0,256,256);for(let x=0;x<256;x+=16){g.fillStyle='rgba(0,0,0,0.16)';g.fillRect(x,0,5,256);g.fillStyle='rgba(255,255,255,0.4)';g.fillRect(x+8,0,4,256);}
 for(let y=0;y<256;y+=8){g.fillStyle='rgba(0,0,0,0.05)';g.fillRect(0,y,256,2);}const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(10,2);return t;}
@@ -135,7 +137,8 @@ function fuzz(m){m.onBeforeCompile=sh=>{sh.fragmentShader=sh.fragmentShader.repl
 
 // Formes
 function blob(rx,ry,rz,o){o=o||{};const big=Math.max(rx,ry,rz)>=2.5,part=o.t1||o.pl;
-const g=part?new THREE.SphereGeometry(1,big?64:32,big?40:20,o.p0||0,o.pl||Math.PI*2,o.t0||0,(o.t1||Math.PI)-(o.t0||0)):new THREE.SphereGeometry(1,big?64:32,big?48:24);
+const sw=Math.max(12,Math.round((big?64:32)*QUAL)),sh=k=>Math.max(8,Math.round(k*QUAL));
+const g=part?new THREE.SphereGeometry(1,sw,sh(big?40:20),o.p0||0,o.pl||Math.PI*2,o.t0||0,(o.t1||Math.PI)-(o.t0||0)):new THREE.SphereGeometry(1,sw,sh(big?48:24));
 const p=g.attributes.position;const s=R()*10;const L=o.lump===undefined?0.025:o.lump,P=o.pear||0,T=o.tip||0,Q=o.sq||0;
 for(let i=0;i<p.count;i++){let x=p.getX(i),y=p.getY(i),z=p.getZ(i);if(Q){x=Math.sign(x)*Math.pow(Math.abs(x),Q);y=Math.sign(y)*Math.pow(Math.abs(y),Q);z=Math.sign(z)*Math.pow(Math.abs(z),Q);}
 const f=(1+P*(-y))*(y<0?1+y*T:1);const n=1+L*(Math.sin(x*4+s)*Math.cos(y*3.3+s)+0.6*Math.sin(z*4.6+s*1.7));p.setXYZ(i,x*rx*f*n,y*ry*n,z*rz*f*n);}g.computeVertexNormals();return g;}
@@ -168,7 +171,7 @@ const m=mk(new THREE.ConeGeometry(rad,len,10),mat);m.position.set(p.x,cy+p.y,cz+
 // Coutures : tube fin texturé en pointillés, comme des points de couture
 const[stc,stg]=cv(64,8);stg.clearRect(0,0,64,8);stg.fillStyle='#ffffff';stg.fillRect(10,1,30,6);
 function seam(pts,col,closed,par){if(pts.length<2)return null;const curve=new THREE.CatmullRomCurve3(pts,!!closed),len=curve.getLength(),t=own(new THREE.CanvasTexture(stc));t.wrapS=THREE.RepeatWrapping;t.repeat.set(Math.max(1,Math.round(len/0.8)),1);
-const m=new THREE.Mesh(new THREE.TubeGeometry(curve,Math.max(24,Math.round(len*4)),0.08,5,!!closed),SM({color:col,map:t,transparent:true,alphaTest:0.5,roughness:0.9}));m.userData.seam=true;(par||G).add(m);return m;}
+const m=new THREE.Mesh(new THREE.TubeGeometry(curve,Math.max(16,Math.round(len*4*QUAL)),0.08,QUAL<1?4:5,!!closed),SM({color:col,map:t,transparent:true,alphaTest:0.5,roughness:0.9}));m.userData.seam=true;(par||G).add(m);return m;}
 const ring=(r1,r2,axis,at,n)=>{const pts=[];for(let i=0;i<(n||36);i++){const a=i/(n||36)*Math.PI*2,u=Math.cos(a),v=Math.sin(a);pts.push(axis==='y'?V(u*r1,at,v*r2):V(u*r1,v*r2,at));}return pts;};
 
 // Matières (le style change la peau : fourrure pour les animaux, peau lisse pour l'avatar)
@@ -321,7 +324,7 @@ if(!H.fur)add(mk(blob(HA.x*1.012,HA.y*1.012,HA.z*1.012,{lump:0.004,t0:1.9,t1:2.1
 const faceO=u=>(u.x/0.66)**2+((u.y+0.1)/0.58)**2,scalp=H.fur?u=>u.y>-0.82&&!(u.z>0.1&&faceO(u)<1):u=>{const th=Math.acos(Math.max(-1,Math.min(1,u.y)));let ph=Math.atan2(u.z,-u.x);if(ph<0)ph+=Math.PI*2;return th<0.84||(th<1.93&&(ph>=2.56||ph<=0.58))||(th<2.12&&ph>3.85&&ph<5.57);};
 const pos=[],uvs=[],cols=[],idx=[],cBase=col(H.fur?fur:c.hc).convertSRGBToLinear(),cHi=H.h2?col(H.h2).convertSRGBToLinear():null;
 // Mèche : section en amande qui s'enroule vers le crâne, large au départ, pointue au bout (bout net pour une frange droite)
-function ribbon(P,w,th,tint,blunt,round){const n=P.length;if(n<3)return;const base=pos.length/3,RS=8,acc=[0];for(let i=1;i<n;i++)acc.push(acc[i-1]+P[i].distanceTo(P[i-1]));const len=acc[n-1]||1;let prevN=V(0,0,1);
+function ribbon(P,w,th,tint,blunt,round){const n=P.length;if(n<3)return;const base=pos.length/3,RS=QUAL<1?6:8,acc=[0];for(let i=1;i<n;i++)acc.push(acc[i-1]+P[i].distanceTo(P[i-1]));const len=acc[n-1]||1;let prevN=V(0,0,1);
 for(let i=0;i<n;i++){const T=P[Math.min(i+1,n-1)].clone().sub(P[Math.max(i-1,0)]).normalize(),N0=enorm(q(P[i]));let N=N0.clone().addScaledVector(T,-N0.dot(T));if(N.lengthSq()<1e-4)N=prevN.clone();N.normalize();prevN=N;
 const B=V(0,0,0).crossVectors(T,N).normalize(),s=acc[i]/len,root=0.75+0.25*Math.min(1,acc[i]/1.4),prof=root*(blunt?1-Math.pow(s,10)*0.5:soft?Math.max(0.35,1-Math.pow(s,2)*0.62):Math.max(0.12,1-Math.pow(s,3.2)*0.9)),wi=w*prof,ti=th*Math.max(0.45,prof);
 for(let k=0;k<RS;k++){const a=k/RS*Math.PI*2,ca=Math.cos(a),sa=Math.sin(a),p=P[i].clone().addScaledVector(B,ca*wi).addScaledVector(N,sa*ti-(round?0:ca*ca*wi*(soft?0.12:0.28)));pos.push(p.x,p.y,p.z);uvs.push(k/RS,acc[i]/3);
@@ -353,7 +356,7 @@ const Lh=lerpT([[0,1.6],[1,5.2],[2,9],[3,14],[4,21],[5,32]],hl)*(hx==='boucle'?0
 const blunt=H.hf==='droite'||hs==='carre',sw=H.hp==='droite'?-1:1,px={gauche:-0.3,milieu:0,droite:0.3,aucune:0}[H.hp];
 const TIES={queue:[V(0,25.2,-9.7)],haute:[V(0,31.6,-7.4)],couettes:[V(-9.2,26.2,-2.6),V(9.2,26.2,-2.6)],chignon:[V(0,31.2,-6.6)],tresse:[V(-8.6,22.6,1.2)],demi:[V(0,28.6,-9.3)]}[H.ht]||null;
 const fringeZone=u=>u.z>0.42&&u.y>0.38&&Math.abs(u.x)<0.62;
-const N=H.fur?1100:hx==='dreads'?150:hx==='pique'?190:hx==='boucle'?420:hl<1.5?400:260,wid=hx==='dreads'?0.62:hx==='boucle'?0.8:hx==='pique'?1.45:hl<1.5?1.2:1.85,thk=hx==='dreads'||hx==='boucle'?wid:0.42;
+const N=H.fur?Math.round(1100*(QUAL<1?0.75:1)):hx==='dreads'?150:hx==='pique'?190:hx==='boucle'?420:hl<1.5?400:260,wid=hx==='dreads'?0.62:hx==='boucle'?0.8:hx==='pique'?1.45:hl<1.5?1.2:1.85,thk=hx==='dreads'||hx==='boucle'?wid:0.42;
 if(hx==='crepu'){// Afro ou cheveux crépus : volume rond fait de petites bouclettes serrées, sans cacher le visage
 const E=(hats?0.25:1)*(0.6+hl*0.55)*(0.55+H.hv*0.6),cy=25.4,R0=V(10.0+E,9.2+E*0.9,9.6+E);
 const mCurl=FZ({color:c.hc,map:HAIR,bumpMap:BMP,bumpScale:0.6,roughness:1}),mCurl2=FZ({color:shade(c.hc,0.85),map:HAIR,bumpMap:BMP,bumpScale:0.6,roughness:1});
@@ -656,23 +659,25 @@ es.add(new THREE.Mesh(sg,new THREE.MeshBasicMaterial({vertexColors:true,side:THR
 for(const[x,y,z,w,h,k]of[[22,28,34,34,22,1.6],[-34,18,-20,26,30,0.8]]){const pl=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({color:new THREE.Color(k,k,k)}));pl.position.set(x,y,z);pl.lookAt(0,0,0);es.add(pl);}
 const pm=new THREE.PMREMGenerator(RR);scene.environment=pm.fromScene(es,0.04).texture;pm.dispose();}
 function lights(scene){studioEnv(scene);scene.add(new THREE.HemisphereLight(0xfff6ee,0x8a8494,0.32));
-const key=new THREE.DirectionalLight(0xfff4ea,0.95);key.position.set(30,36,72);key.castShadow=true;key.shadow.mapSize.set(2048,2048);const sc=key.shadow.camera;sc.left=-35;sc.right=35;sc.top=35;sc.bottom=-35;sc.near=1;sc.far=200;key.shadow.bias=-0.0004;key.shadow.radius=3;scene.add(key);
+const key=new THREE.DirectionalLight(0xfff4ea,0.95);key.position.set(30,36,72);key.castShadow=true;key.shadow.mapSize.set(QUAL<1?1024:2048,QUAL<1?1024:2048);const sc=key.shadow.camera;sc.left=-35;sc.right=35;sc.top=35;sc.bottom=-35;sc.near=1;sc.far=200;key.shadow.bias=-0.0004;key.shadow.radius=3;scene.add(key);
 const rim=new THREE.DirectionalLight(0xffe6d0,0.85);rim.position.set(-40,30,-50);scene.add(rim);const fill=new THREE.DirectionalLight(0xe0ecff,0.22);fill.position.set(-50,10,30);scene.add(fill);
 const camFill=new THREE.DirectionalLight(0xfff6ee,0.22);scene.add(camFill);return camFill;}
 function aim(cam,fit,el,zoom,light){const vh=cam.fov*Math.PI/360,hh=Math.atan(Math.tan(vh)*cam.aspect),d=fit.r/Math.sin(Math.min(vh,hh))*zoom,AZ=0.34;
 cam.position.set(fit.c.x+d*Math.sin(AZ)*Math.cos(el),fit.c.y+d*Math.sin(el),fit.c.z+d*Math.cos(AZ)*Math.cos(el));cam.lookAt(fit.c);if(light)light.position.copy(cam.position);}
 
-return{build,clean,encode,decode,pack,unpack,lights,setup,aim,hair,HAIRK,HSDEF,PRESETS,NEUTRAL,ENUM,ACC,SHAPES,ANCHORS,HOOKS};
+return{build,clean,encode,decode,pack,unpack,setQuality,lights,setup,aim,hair,HAIRK,HSDEF,PRESETS,NEUTRAL,ENUM,ACC,SHAPES,ANCHORS,HOOKS};
 })();
 
 // Page 3D : la peluche est décrite dans l'adresse (?p=...). Glisser : tourner. Molette ou deux doigts : zoomer. Double-clic : remettre en place.
 // Option : &tourne=non pour qu'elle ne tourne pas toute seule. Une peluche de la bibliothèque s'ouvre avec /p/son-nom.
 const q=new URLSearchParams(location.search);
 const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(22,1,0.1,500);
-const r=new THREE.WebGLRenderer({antialias:true,alpha:true});r.setClearColor(0x000000,0);r.setPixelRatio(Math.min(2,window.devicePixelRatio||1));r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;document.body.appendChild(r.domElement);
-PL.setup(r);const camFill=PL.lights(scene);let P=null;
+const r=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'high-performance'});r.setClearColor(0x000000,0);r.setPixelRatio(1);r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;document.body.appendChild(r.domElement);
+PL.setQuality(0.55);PL.setup(r);const camFill=PL.lights(scene);let P=null;
+// Le lien court /p/nom est servi par la page 404 de GitHub Pages (même page que celle-ci) ; la peluche est lue sur le serveur Vercel
+const API=/vercel\.app$/.test(location.hostname)?'':'https://peluches-tau.vercel.app';
 const nom=q.get('nom')||decodeURIComponent((location.pathname.match(/\/p\/([^/?#]+)\/?$/)||[])[1]||'');
-(nom?fetch('/api/peluches?nom='+encodeURIComponent(nom)).then(x=>x.ok?x.json():null).then(d=>d?PL.unpack(d.p):null).catch(()=>null):PL.unpack(q.get('p'))).then(c=>{
+(nom?fetch(API+'/api/peluches?nom='+encodeURIComponent(nom)).then(x=>x.ok?x.json():null).then(d=>d?PL.unpack(d.p):null).catch(()=>null):PL.unpack(q.get('p'))).then(c=>{
 // Peluche de la bibliothèque introuvable : on le dit au lieu d'afficher une autre peluche
 if(nom&&!c){const m=document.createElement('p');m.textContent='Peluche « '+nom+' » introuvable.';m.style.cssText='position:fixed;inset:auto 0 45% 0;text-align:center;font:600 18px system-ui,sans-serif;color:#888;margin:0';document.body.append(m);return;}
 const cfg=c||PL.clean(PL.PRESETS.pompier);if(cfg.n)document.title=cfg.n;P=PL.build(cfg);scene.add(P.group);});
@@ -690,8 +695,9 @@ const up=e=>{pts.delete(e.pointerId);if(!pts.size)cvs.classList.remove('drag');i
 cvs.addEventListener('pointerup',up);cvs.addEventListener('pointercancel',up);
 cvs.addEventListener('wheel',e=>{e.preventDefault();zoom=clamp(zoom*Math.exp(e.deltaY*0.001),0.6,1.8);idle=performance.now();},{passive:false});
 cvs.addEventListener('dblclick',()=>{ry=START.ry;el=START.el;zoom=START.zoom;});
-(function loop(now){now=now||0;if(autoSpin&&!pts.size&&now-idle>2500)ry+=0.006;
-if(P){P.group.rotation.y=ry;PL.aim(cam,P.fit,el,zoom,camFill);r.render(scene,cam);}requestAnimationFrame(loop);})();
+// 30 images par seconde : assez fluide pour une peluche qui tourne, deux fois moins de travail
+let last=0;(function loop(now){requestAnimationFrame(loop);now=now||0;if(now-last<32)return;last=now;if(autoSpin&&!pts.size&&now-idle>2500)ry+=0.012;
+if(P){P.group.rotation.y=ry;PL.aim(cam,P.fit,el,zoom,camFill);r.render(scene,cam);}})();
 </script>
 </body>
 </html>

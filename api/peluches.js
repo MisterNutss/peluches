@@ -39,6 +39,9 @@ async function readAll(prefix) {
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
+  // La page 3D sur GitHub Pages lit les peluches ici
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  if (req.method === 'OPTIONS') { res.setHeader('Access-Control-Allow-Methods', 'GET'); return res.status(204).end(); }
   AUTH = authFrom(req);
   try {
     if (req.method === 'GET') {

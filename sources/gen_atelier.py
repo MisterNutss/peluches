@@ -24,10 +24,12 @@ VIEWER_TAIL = r"""
 // Option : &tourne=non pour qu'elle ne tourne pas toute seule. Une peluche de la bibliothèque s'ouvre avec /p/son-nom.
 const q=new URLSearchParams(location.search);
 const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(22,1,0.1,500);
-const r=new THREE.WebGLRenderer({antialias:true,alpha:true});r.setClearColor(0x000000,0);r.setPixelRatio(Math.min(2,window.devicePixelRatio||1));r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;document.body.appendChild(r.domElement);
-PL.setup(r);const camFill=PL.lights(scene);let P=null;
+const r=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'high-performance'});r.setClearColor(0x000000,0);r.setPixelRatio(1);r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;document.body.appendChild(r.domElement);
+PL.setQuality(0.55);PL.setup(r);const camFill=PL.lights(scene);let P=null;
+// Le lien court /p/nom est servi par la page 404 de GitHub Pages (même page que celle-ci) ; la peluche est lue sur le serveur Vercel
+const API=/vercel\.app$/.test(location.hostname)?'':'https://peluches-tau.vercel.app';
 const nom=q.get('nom')||decodeURIComponent((location.pathname.match(/\/p\/([^/?#]+)\/?$/)||[])[1]||'');
-(nom?fetch('/api/peluches?nom='+encodeURIComponent(nom)).then(x=>x.ok?x.json():null).then(d=>d?PL.unpack(d.p):null).catch(()=>null):PL.unpack(q.get('p'))).then(c=>{
+(nom?fetch(API+'/api/peluches?nom='+encodeURIComponent(nom)).then(x=>x.ok?x.json():null).then(d=>d?PL.unpack(d.p):null).catch(()=>null):PL.unpack(q.get('p'))).then(c=>{
 // Peluche de la bibliothèque introuvable : on le dit au lieu d'afficher une autre peluche
 if(nom&&!c){const m=document.createElement('p');m.textContent='Peluche « '+nom+' » introuvable.';m.style.cssText='position:fixed;inset:auto 0 45% 0;text-align:center;font:600 18px system-ui,sans-serif;color:#888;margin:0';document.body.append(m);return;}
 const cfg=c||PL.clean(PL.PRESETS.pompier);if(cfg.n)document.title=cfg.n;P=PL.build(cfg);scene.add(P.group);});
@@ -45,8 +47,9 @@ const up=e=>{pts.delete(e.pointerId);if(!pts.size)cvs.classList.remove('drag');i
 cvs.addEventListener('pointerup',up);cvs.addEventListener('pointercancel',up);
 cvs.addEventListener('wheel',e=>{e.preventDefault();zoom=clamp(zoom*Math.exp(e.deltaY*0.001),0.6,1.8);idle=performance.now();},{passive:false});
 cvs.addEventListener('dblclick',()=>{ry=START.ry;el=START.el;zoom=START.zoom;});
-(function loop(now){now=now||0;if(autoSpin&&!pts.size&&now-idle>2500)ry+=0.006;
-if(P){P.group.rotation.y=ry;PL.aim(cam,P.fit,el,zoom,camFill);r.render(scene,cam);}requestAnimationFrame(loop);})();
+// 30 images par seconde : assez fluide pour une peluche qui tourne, deux fois moins de travail
+let last=0;(function loop(now){requestAnimationFrame(loop);now=now||0;if(now-last<32)return;last=now;if(autoSpin&&!pts.size&&now-idle>2500)ry+=0.012;
+if(P){P.group.rotation.y=ry;PL.aim(cam,P.fit,el,zoom,camFill);r.render(scene,cam);}})();
 </script>
 </body>
 </html>
@@ -208,7 +211,7 @@ code{font-family:var(--mono);font-size:13px;overflow-wrap:anywhere}
         </div>
         <div class="tabpanel" data-tab="style" id="tab-style" hidden>
                     <section class="card"><h2>Reprendre une peluche</h2><p class="help">Colle le lien d'une peluche déjà faite pour la modifier.</p>
-            <div class="row"><input id="import" type="text" placeholder="https://peluches-tau.vercel.app/?p=…" autocomplete="off" spellcheck="false" aria-label="Lien d'une peluche"><button class="btn" id="import-go" type="button">Ouvrir</button></div><p class="status" id="import-status" aria-live="polite"></p></section>
+            <div class="row"><input id="import" type="text" placeholder="https://misternutss.github.io/peluches/p/nom" autocomplete="off" spellcheck="false" aria-label="Lien d'une peluche"><button class="btn" id="import-go" type="button">Ouvrir</button></div><p class="status" id="import-status" aria-live="polite"></p></section>
         </div>
         <div class="tabpanel" data-tab="visage" id="tab-visage" hidden></div>
         <div class="tabpanel" data-tab="tete" id="tab-tete" hidden></div>
@@ -217,7 +220,7 @@ code{font-family:var(--mono);font-size:13px;overflow-wrap:anywhere}
         <div class="tabpanel" data-tab="lien" id="tab-lien" hidden>
           <section class="card">
             <h2>Lien pour ton item</h2>
-            <div class="field"><label for="base">Adresse de ta page 3D</label><input id="base" type="url" placeholder="https://peluches-tau.vercel.app/" autocomplete="off" spellcheck="false"></div>
+            <div class="field"><label for="base">Adresse de ta page 3D</label><input id="base" type="url" placeholder="https://misternutss.github.io/peluches/" autocomplete="off" spellcheck="false"></div>
             <div class="field"><label for="out">Lien de cette peluche</label><div class="row"><input id="out" type="text" readonly><button class="btn" id="copy" type="button">Copier</button></div></div>
             <p class="help" id="link-help"></p>
             <div class="field"><label for="edit">Lien pour la modifier plus tard (atelier GitHub)</label><div class="row"><input id="edit" type="text" readonly><button class="btn" id="copy-edit" type="button">Copier</button></div></div>
@@ -237,9 +240,9 @@ code{font-family:var(--mono);font-size:13px;overflow-wrap:anywhere}
           <section class="card setup">
             <h2>Ton site</h2>
             <ol>
-              <li>Ta page 3D est en ligne sur <code>https://peluches-tau.vercel.app/</code> : chaque envoi sur le dépôt GitHub la met à jour tout seul.</li>
+              <li>Les peluches s'affichent depuis <code>https://misternutss.github.io/peluches/</code> (GitHub Pages, sans contrôle anti-robot, donc fiable dans FiveM).</li>
               <li>L'atelier public est à <code>https://peluches-tau.vercel.app/atelier</code> et la bibliothèque à <code>https://peluches-tau.vercel.app/bibliotheque</code>.</li>
-              <li>Chaque peluche est entièrement décrite dans son lien ; une peluche enregistrée dans la bibliothèque a en plus un lien court <code>/p/son-nom</code>.</li>
+              <li>Chaque peluche est entièrement décrite dans son lien ; une peluche enregistrée dans la bibliothèque a en plus un lien court <code>https://misternutss.github.io/peluches/p/son-nom</code>.</li>
               <li>Pour remettre la page 3D à jour à la main : <button class="btn" id="get-viewer" type="button" disabled>Télécharger index.html</button></li>
             </ol>
             <h2>Dans « Créer une image item »</h2>
@@ -510,11 +513,11 @@ $('analyse').addEventListener('click',()=>{if(ctl){const c0=ctl;ctl=null;c0.abor
 $('who').addEventListener('change',()=>{if(anyPhoto())runAnalysis();});
 
 // Lien
-const baseIn=$('base');{const v=store('peluches-base');if(v&&/github\.io/.test(v))store('peluches-base','');}baseIn.value=store('peluches-base')||(/(github\.io|vercel\.app)$/.test(location.hostname)?location.origin+location.pathname.replace(/[^/]*$/,''):'https://peluches-tau.vercel.app/');
+const VIEW='https://misternutss.github.io/peluches/',baseIn=$('base');{const v=store('peluches-base');if(v&&!v.startsWith(VIEW))store('peluches-base','');}baseIn.value=store('peluches-base')||VIEW;
 baseIn.addEventListener('input',()=>{store('peluches-base',baseIn.value.trim());updateLink();});
 function baseUrl(){const v=baseIn.value.trim();if(!/^https?:\/\//i.test(v))return '';try{const u=new URL(v);if(!/\.[a-z0-9]+$/i.test(u.pathname)&&!u.pathname.endsWith('/'))u.pathname+='/';u.search='';u.hash='';return u.toString();}catch(e){return '';}}
 let linkN=0;function updateLink(){const my=++linkN;PL.pack(cfg).then(code=>{if(my===linkN)showLink(code);});}
-function showLink(code){if($('lib-nom')&&document.activeElement!==$('lib-nom')&&!$('lib-nom').value)$('lib-nom').value=cfg.n||'';const b=baseUrl(),url=(b||'https://peluches-tau.vercel.app/')+'?p='+code;$('out').value=url;$('out2').value=url;$('edit').value=(b||'https://peluches-tau.vercel.app/').replace(/[^/]*$/,'')+'atelier?p='+code;$('out').classList.toggle('example',!b);
+function showLink(code){if($('lib-nom')&&document.activeElement!==$('lib-nom')&&!$('lib-nom').value)$('lib-nom').value=cfg.n||'';const b=baseUrl(),url=(b||VIEW)+'?p='+code;$('out').value=url;$('out2').value=url;$('edit').value='https://peluches-tau.vercel.app/atelier?p='+code;$('out').classList.toggle('example',!b);
 $('open').hidden=!b;$('open').href=url;say('link-help',b?'Colle ce lien dans URLS, avec le type Site Web.':"Lien d'exemple : renseigne d'abord l'adresse de ta page 3D (étapes en bas de page).");}
 // Reprendre une peluche depuis son lien (page 3D ou atelier)
 $('import-go').addEventListener('click',()=>{const v=$('import').value.trim();let code=null;try{code=new URL(v).searchParams.get('p');}catch(e){const m=v.match(/[?&]p=(~?[A-Za-z0-9_-]+)/);code=m?m[1]:(/^~?[A-Za-z0-9_-]{8,}$/.test(v)?v:null);}
@@ -545,7 +548,7 @@ syncForm();rebuild();updateLink();
 // Atelier ouvert avec ?p=… ou ?nom=… : la peluche du lien ou de la bibliothèque
 {let p=null,n=null;try{const u=new URLSearchParams(location.search);p=u.get('p');n=u.get('nom');}catch(e){}
 const got=c=>{if(c){cfg=c;syncForm();rebuild();updateLink();}};
-if(n)fetch('/api/peluches?nom='+encodeURIComponent(n)).then(x=>x.ok?x.json():null).then(d=>{if(d){$('lib-nom').value=d.nom||'';return PL.unpack(d.p);}}).then(got).catch(()=>{});else if(p)PL.unpack(p).then(got);}
+if(n)fetch((/vercel\.app$/.test(location.hostname)?'':'https://peluches-tau.vercel.app')+'/api/peluches?nom='+encodeURIComponent(n)).then(x=>x.ok?x.json():null).then(d=>{if(d){$('lib-nom').value=d.nom||'';return PL.unpack(d.p);}}).then(got).catch(()=>{});else if(p)PL.unpack(p).then(got);}
 // Bibliothèque : seulement sur le site (Vercel), là où le petit serveur existe
 if(/^https?:$/.test(location.protocol))fetch('/api/peluches?nom=__test__').then(x=>{if((x.headers.get('content-type')||'').includes('json'))$('lib-card').hidden=false;}).catch(()=>{});
 $('lib-code').value=store('peluches-code')||'';
@@ -554,7 +557,7 @@ $('lib-save').disabled=true;say('lib-status','Enregistrement…');
 try{const p=await PL.pack(cfg),image=cur?renderIcon(256).toDataURL('image/png'):'';
 const x=await fetch('/api/peluches',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({nom,p,image,code})}),d=await x.json().catch(()=>({}));
 if(!x.ok){say('lib-status',d.erreur||"L'enregistrement a échoué.");return;}
-store('peluches-code',code);$('lib-out').value=location.origin+'/p/'+d.slug;$('lib-link').hidden=false;say('lib-status','Peluche enregistrée dans la bibliothèque.');}
+store('peluches-code',code);$('lib-out').value=VIEW+'p/'+d.slug;$('lib-link').hidden=false;say('lib-status','Peluche enregistrée dans la bibliothèque.');}
 catch(e){say('lib-status',"L'enregistrement a échoué. Vérifie ta connexion.");}finally{$('lib-save').disabled=false;}});
 $('lib-copy').addEventListener('click',()=>{const t=$('lib-out').value;try{navigator.clipboard.writeText(t).then(()=>{$('lib-copy').textContent='Copié';setTimeout(()=>{$('lib-copy').textContent='Copier';},1500);});}catch(e){$('lib-out').select();}});
 </script>
@@ -568,6 +571,8 @@ viewer = VIEWER_HEAD + model.strip() + "\n" + VIEWER_TAIL
 os.makedirs(os.path.dirname(viewer_out) or ".", exist_ok=True)
 open(atelier_out, "w", encoding="utf-8").write(atelier)
 open(viewer_out, "w", encoding="utf-8").write(viewer)
+# GitHub Pages sert 404.html pour /p/nom : c'est la même page 3D, qui lit le nom dans l'adresse
+open(os.path.join(os.path.dirname(viewer_out) or ".", "404.html"), "w", encoding="utf-8").write(viewer)
 if site_out:
     # Même atelier, en page complète pour GitHub Pages
     open(site_out, "w", encoding="utf-8").write('<!doctype html>\n<html lang="fr">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n' + atelier + '\n</html>\n')

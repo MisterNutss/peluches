@@ -66,7 +66,8 @@ input:focus-visible,a:focus-visible,button:focus-visible{outline:2px solid var(-
 const $=id=>document.getElementById(id);
 function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}catch(e){}return null;}
 let all=[];
-const link=s=>location.origin+'/p/'+s;
+// Les peluches s'affichent depuis GitHub Pages (pas de contrôle anti-robot dans FiveM)
+const link=s=>'https://misternutss.github.io/peluches/p/'+s;
 function el(tag,props,kids){const n=document.createElement(tag);Object.assign(n,props||{});(kids||[]).forEach(k=>n.append(k));return n;}
 function render(){const q=$('q').value.trim().toLowerCase(),list=all.filter(x=>!q||String(x.nom).toLowerCase().includes(q));$('grid').textContent='';
 $('status').textContent=all.length?(list.length?'':'Aucune peluche ne correspond.'):"La bibliothèque est vide. Crée une peluche dans l'atelier, puis enregistre-la depuis l'onglet « Lien ».";
