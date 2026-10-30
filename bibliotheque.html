@@ -10,23 +10,23 @@
 <style>
 /* Même atelier de jouets que l'atelier : une étagère de vignettes, chaque peluche avec son lien court */
 :root{
-  --bg:#fff4f8; --surface:#ffffff; --surface-2:#fff0f6; --fg:#4a2b3f; --muted:#9a6f88; --line:rgba(226,120,170,.22);
-  --accent:#ff5fa2; --accent-soft:#ffe1ef; --mint:#3fb59c; --on-accent:#ffffff; --stage-a:#fff8fb; --stage-b:#ffe9f3;
-  --shadow:0 2px 4px rgba(255,95,162,.07),0 14px 34px rgba(255,95,162,.13);
+  --bg:#f1f7ff; --surface:#ffffff; --surface-2:#eef5ff; --fg:#2c3b57; --muted:#6c7f9f; --line:rgba(110,160,225,.25);
+  --accent:#5aa2ea; --accent-soft:#e1efff; --pink:#4fbf8b; --pink-soft:#dcf5e8; --mint:#5aa2ea; --mint-soft:#e1efff; --on-accent:#ffffff; --stage-a:#f8fbff; --stage-b:#e6f1ff;
+  --shadow:0 2px 4px rgba(90,162,234,.08),0 14px 34px rgba(90,162,234,.15);
   --display:"Fredoka","Trebuchet MS",system-ui,sans-serif; --body:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --heart:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cpath d='M16 22c-3-5-11-3-10 3 1 5 10 10 10 10s9-5 10-10c1-6-7-8-10-3z' fill='%23ff5fa2' fill-opacity='.08'/%3E%3Ccircle cx='48' cy='46' r='2.5' fill='%233fb59c' fill-opacity='.12'/%3E%3C/svg%3E");
+  --heart:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cpath d='M16 22c-3-5-11-3-10 3 1 5 10 10 10 10s9-5 10-10c1-6-7-8-10-3z' fill='%235aa2ea' fill-opacity='.1'/%3E%3Cpath d='M52 50c-2-3.5-8-2-7 2 .7 3.5 7 7 7 7s6.3-3.5 7-7c1-4-5-5.5-7-2z' fill='%234fbf8b' fill-opacity='.12'/%3E%3C/svg%3E");
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#21162a; --surface:#2c1e37; --surface-2:#271a31; --fg:#ffeaf4; --muted:#d0a7c1; --line:rgba(255,190,225,.15);
-  --accent:#ff86bd; --accent-soft:#4a2540; --mint:#6fd6bf; --on-accent:#2a0f1f; --stage-a:#33233f; --stage-b:#2c1e37;
+  --bg:#16202f; --surface:#1f2b3d; --surface-2:#1b2636; --fg:#eaf3ff; --muted:#a6bad6; --line:rgba(160,200,255,.16);
+  --accent:#8cc4ff; --accent-soft:#233a57; --pink:#7fdcae; --pink-soft:#1d3b30; --mint:#8cc4ff; --mint-soft:#233a57; --on-accent:#0f1d2e; --stage-a:#24334a; --stage-b:#1f2b3d;
   --shadow:0 2px 4px rgba(0,0,0,.3),0 14px 34px rgba(0,0,0,.35); color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#21162a; --surface:#2c1e37; --surface-2:#271a31; --fg:#ffeaf4; --muted:#d0a7c1; --line:rgba(255,190,225,.15);
-  --accent:#ff86bd; --accent-soft:#4a2540; --mint:#6fd6bf; --on-accent:#2a0f1f; --stage-a:#33233f; --stage-b:#2c1e37;
+  --bg:#16202f; --surface:#1f2b3d; --surface-2:#1b2636; --fg:#eaf3ff; --muted:#a6bad6; --line:rgba(160,200,255,.16);
+  --accent:#8cc4ff; --accent-soft:#233a57; --pink:#7fdcae; --pink-soft:#1d3b30; --mint:#8cc4ff; --mint-soft:#233a57; --on-accent:#0f1d2e; --stage-a:#24334a; --stage-b:#1f2b3d;
   --shadow:0 2px 4px rgba(0,0,0,.3),0 14px 34px rgba(0,0,0,.35); color-scheme:dark}
 [hidden]{display:none!important}
 *{box-sizing:border-box}
-body{margin:0;background:var(--heart) 0 0/64px 64px,var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5}
+body{margin:0;background:var(--heart) 0 0/72px 72px,var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5}
 .app{max-width:1200px;margin:0 auto;padding:20px 16px 40px;display:grid;gap:18px}
 .top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px}
 h1{font-family:var(--display);font-weight:700;font-size:clamp(26px,3.4vw,34px);line-height:1;margin:0}
@@ -38,7 +38,8 @@ input:focus-visible,a:focus-visible,button:focus-visible{outline:2px solid var(-
 .btn:hover{border-color:var(--accent)}
 .btn.main{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .btn.danger{color:var(--accent)}
-.amp{color:var(--accent);font-weight:600}
+.amp{color:var(--pink);font-weight:600}
+.blake{color:var(--accent)}.billy{color:var(--pink)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);overflow:hidden;display:grid;min-width:0}
 .thumb{aspect-ratio:1;background:repeating-conic-gradient(var(--stage-a) 0 25%,var(--stage-b) 0 50%) 0 0/22px 22px;display:grid;place-items:center}
@@ -57,7 +58,7 @@ input:focus-visible,a:focus-visible,button:focus-visible{outline:2px solid var(-
 <body>
 <div class="app">
   <header class="top">
-    <div><h1>Blake <span class="amp">&amp;</span> Billy</h1><p>La bibliothèque des peluches toutes douces ♡ chacune avec son lien pour l'item FiveM.</p></div>
+    <div><h1><span class="blake">Blake</span> <span class="amp">&amp;</span> <span class="billy">Billy</span></h1><p>La bibliothèque des peluches toutes douces ♡ chacune avec son lien pour l'item FiveM.</p></div>
     <div class="bar">
       <input id="q" type="search" placeholder="Chercher une peluche" aria-label="Chercher une peluche">
       <a class="btn main" href="atelier">Nouvelle peluche</a>

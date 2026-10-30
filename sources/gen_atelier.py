@@ -70,27 +70,28 @@ ATELIER = r"""<title>Blake & Billy</title>
 <style>
 /* Layout: a toy-maker's studio — the plush on a big turntable stage pinned on the left, a tabbed workbench on the right (photos, réglages, lien); on phones the stage sits on top of the tabs. */
 :root{
-  --bg:#fff4f8; --surface:#ffffff; --surface-2:#fff0f6; --fg:#4a2b3f; --muted:#9a6f88; --line:rgba(226,120,170,.22);
-  --accent:#ff5fa2; --accent-soft:#ffe1ef; --mint:#3fb59c; --mint-soft:#dcf6ef; --on-accent:#ffffff; --stage-a:#fff8fb; --stage-b:#ffe9f3;
-  --shadow:0 2px 4px rgba(255,95,162,.07),0 14px 34px rgba(255,95,162,.13);
+  --bg:#f1f7ff; --surface:#ffffff; --surface-2:#eef5ff; --fg:#2c3b57; --muted:#6c7f9f; --line:rgba(110,160,225,.25);
+  --accent:#5aa2ea; --accent-soft:#e1efff; --pink:#4fbf8b; --pink-soft:#dcf5e8; --mint:#5aa2ea; --mint-soft:#e1efff; --on-accent:#ffffff; --stage-a:#f8fbff; --stage-b:#e6f1ff;
+  --shadow:0 2px 4px rgba(90,162,234,.08),0 14px 34px rgba(90,162,234,.15);
   --display:"Fredoka","Trebuchet MS",system-ui,sans-serif; --body:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"DM Mono",ui-monospace,Consolas,monospace;
-  --heart:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cpath d='M16 22c-3-5-11-3-10 3 1 5 10 10 10 10s9-5 10-10c1-6-7-8-10-3z' fill='%23ff5fa2' fill-opacity='.08'/%3E%3Ccircle cx='48' cy='46' r='2.5' fill='%233fb59c' fill-opacity='.12'/%3E%3C/svg%3E");
+  --heart:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cpath d='M16 22c-3-5-11-3-10 3 1 5 10 10 10 10s9-5 10-10c1-6-7-8-10-3z' fill='%235aa2ea' fill-opacity='.1'/%3E%3Cpath d='M52 50c-2-3.5-8-2-7 2 .7 3.5 7 7 7 7s6.3-3.5 7-7c1-4-5-5.5-7-2z' fill='%234fbf8b' fill-opacity='.12'/%3E%3C/svg%3E");
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#21162a; --surface:#2c1e37; --surface-2:#271a31; --fg:#ffeaf4; --muted:#d0a7c1; --line:rgba(255,190,225,.15);
-  --accent:#ff86bd; --accent-soft:#4a2540; --mint:#6fd6bf; --mint-soft:#1f3a36; --on-accent:#2a0f1f; --stage-a:#33233f; --stage-b:#2c1e37;
+  --bg:#16202f; --surface:#1f2b3d; --surface-2:#1b2636; --fg:#eaf3ff; --muted:#a6bad6; --line:rgba(160,200,255,.16);
+  --accent:#8cc4ff; --accent-soft:#233a57; --pink:#7fdcae; --pink-soft:#1d3b30; --mint:#8cc4ff; --mint-soft:#233a57; --on-accent:#0f1d2e; --stage-a:#24334a; --stage-b:#1f2b3d;
   --shadow:0 2px 4px rgba(0,0,0,.3),0 14px 34px rgba(0,0,0,.35); color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#21162a; --surface:#2c1e37; --surface-2:#271a31; --fg:#ffeaf4; --muted:#d0a7c1; --line:rgba(255,190,225,.15);
-  --accent:#ff86bd; --accent-soft:#4a2540; --mint:#6fd6bf; --mint-soft:#1f3a36; --on-accent:#2a0f1f; --stage-a:#33233f; --stage-b:#2c1e37;
+  --bg:#16202f; --surface:#1f2b3d; --surface-2:#1b2636; --fg:#eaf3ff; --muted:#a6bad6; --line:rgba(160,200,255,.16);
+  --accent:#8cc4ff; --accent-soft:#233a57; --pink:#7fdcae; --pink-soft:#1d3b30; --mint:#8cc4ff; --mint-soft:#233a57; --on-accent:#0f1d2e; --stage-a:#24334a; --stage-b:#1f2b3d;
   --shadow:0 2px 4px rgba(0,0,0,.3),0 14px 34px rgba(0,0,0,.35); color-scheme:dark}
 [hidden]{display:none!important}
-body{background:var(--heart) 0 0/64px 64px,var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5}
+body{background:var(--heart) 0 0/72px 72px,var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5}
 .app{max-width:1360px;margin:0 auto;padding-block:20px 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:18px}
 .top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px}
 .brand{display:flex;align-items:center;gap:12px;min-width:0}
 .logo{width:64px;height:48px;flex:none}
-.amp{color:var(--accent);font-weight:600}
+.amp{color:var(--pink);font-weight:600}
+.blake{color:var(--accent)}.billy{color:var(--pink)}
 h1{font-family:var(--display);font-weight:700;font-size:clamp(26px,3.4vw,34px);line-height:1;margin:0;letter-spacing:-.01em}
 .brand p{margin:4px 0 0;color:var(--muted);font-size:14px;max-width:46ch}
 .steps{list-style:none;margin:0;padding:4px;display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;box-shadow:var(--shadow)}
@@ -124,7 +125,7 @@ h1{font-family:var(--display);font-weight:700;font-size:clamp(26px,3.4vw,34px);l
 .tabpanel,#settings{display:grid;gap:14px;min-width:0}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:26px;padding:18px 20px;display:grid;gap:12px;min-width:0;box-shadow:var(--shadow)}
 h2{font-family:var(--display);font-weight:600;font-size:19px;line-height:1.2;margin:0;color:var(--fg)}
-h2::before{content:'♡ ';color:var(--accent)}
+h2::before{content:'♡ ';color:var(--pink)}
 label{font-size:14px;color:var(--muted);font-weight:700}
 input[type=text],input[type=url],input[type=password],select{font:16px var(--body);padding:10px 14px;border-radius:16px;border:1px solid var(--line);background:var(--surface-2);color:var(--fg);width:100%;min-width:0;box-sizing:border-box}
 input[readonly]{font-family:var(--mono);font-size:13px}
@@ -180,8 +181,8 @@ code{font-family:var(--mono);font-size:13px;overflow-wrap:anywhere}
 <div class="app">
   <header class="top">
     <div class="brand">
-      <svg class="logo" viewBox="0 0 64 48" aria-hidden="true"><g><circle cx="10" cy="12" r="5.5" fill="var(--accent)"/><circle cx="26" cy="12" r="5.5" fill="var(--accent)"/><circle cx="18" cy="24" r="13" fill="var(--accent)"/><circle cx="18" cy="28" r="5.5" fill="var(--accent-soft)"/><circle cx="13.5" cy="22" r="1.8" fill="var(--fg)"/><circle cx="22.5" cy="22" r="1.8" fill="var(--fg)"/></g><g><circle cx="38" cy="16" r="5.5" fill="var(--mint)"/><circle cx="54" cy="16" r="5.5" fill="var(--mint)"/><circle cx="46" cy="28" r="13" fill="var(--mint)"/><circle cx="46" cy="32" r="5.5" fill="var(--mint-soft)"/><circle cx="41.5" cy="26" r="1.8" fill="var(--fg)"/><circle cx="50.5" cy="26" r="1.8" fill="var(--fg)"/></g><path d="M32 41c-2-3-6-2-5 1 .5 2 5 5 5 5s4.5-3 5-5c1-3-3-4-5-1z" fill="var(--accent)"/></svg>
-      <div><h1>Blake <span class="amp">&amp;</span> Billy</h1><p>L'atelier des peluches toutes douces ♡ faites d'après une photo, pour tes items FiveM.</p></div>
+      <svg class="logo" viewBox="0 0 64 48" aria-hidden="true"><g><circle cx="10" cy="12" r="5.5" fill="var(--accent)"/><circle cx="26" cy="12" r="5.5" fill="var(--accent)"/><circle cx="18" cy="24" r="13" fill="var(--accent)"/><circle cx="18" cy="28" r="5.5" fill="var(--accent-soft)"/><circle cx="13.5" cy="22" r="1.8" fill="var(--fg)"/><circle cx="22.5" cy="22" r="1.8" fill="var(--fg)"/></g><g><circle cx="38" cy="16" r="5.5" fill="var(--pink)"/><circle cx="54" cy="16" r="5.5" fill="var(--pink)"/><circle cx="46" cy="28" r="13" fill="var(--pink)"/><circle cx="46" cy="32" r="5.5" fill="var(--pink-soft)"/><circle cx="41.5" cy="26" r="1.8" fill="var(--fg)"/><circle cx="50.5" cy="26" r="1.8" fill="var(--fg)"/></g><path d="M32 41c-2-3-6-2-5 1 .5 2 5 5 5 5s4.5-3 5-5c1-3-3-4-5-1z" fill="var(--pink)"/></svg>
+      <div><h1><span class="blake">Blake</span> <span class="amp">&amp;</span> <span class="billy">Billy</span></h1><p>L'atelier des peluches toutes douces ♡ faites d'après une photo, pour tes items FiveM.</p></div>
     </div>
     <ol class="steps">
       <li data-step="photos"><button type="button"><span class="n">1</span>Photos</button></li>

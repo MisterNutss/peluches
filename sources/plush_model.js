@@ -251,7 +251,7 @@ const mHand=c.gv?SM({color:c.gv,roughness:0.45}):mBodySkin;
 // Bras selon la pose ; debout sans rien à tenir, les bras tombent le long du corps
 const empty=showIt==='aucun'&&mpE!=='mains';
 for(const s of[-1,1]){let kind=POSE.a[s<0?0:1];if(kind==='hold'&&POSE.l==='stand'&&empty)kind='down';const a=mk(blob(2.8,5.1,2.8),longS?mSl:mBodySkin);
-if(kind==='hold')add(a,[s*6.6,11.3,3.8],[-0.85,0,-s*0.45]);else if(kind==='down')add(a,[s*10.0,10.2,0.6],[0.1,0,s*0.2]);
+if(kind==='hold')add(a,[s*6.3,11.3,6.4],[-1.15,0,-s*0.5]);else if(kind==='down')add(a,[s*10.0,10.2,0.6],[0.1,0,s*0.2]);
 else{const d=V(s*ARM[kind][0],ARM[kind][1],ARM[kind][2]).normalize();a.position.copy(V(s*7.0,15.0,1.2)).addScaledVector(d,4.4);a.quaternion.setFromUnitVectors(V(0,-1,0),d);add(a);}
 a.userData.part='arm';
 if(!longS){const cp=mk(blob(3.1,2.7,3.1,{lump:0.01}),mCap);cp.position.set(0,2.7,0);a.add(cp);}
@@ -595,7 +595,7 @@ if(has('z')){// Menottes accrochées à la ceinture
 for(const k of[0,1])add(mk(new THREE.TorusGeometry(0.8,0.17,8,24),mSilver),[-4.4+k*1.0,4.7-k*0.4,7.0],[0.3,0.2,k*0.6]);}
 
 // Objet dans les mains (étiqueté pour suivre les mains quand la longueur des bras change)
-PART='item';const iy=c.po==='coeur'?6.6:0;
+PART='item';const iy=c.po==='coeur'?6.6:0,it0=G.children.length;
 if(showIt==='lance'){const mR=FZ({color:0xc8261f,map:FAB,bumpMap:BMP,bumpScale:0.1,roughness:0.6});
 add(mk(new THREE.CylinderGeometry(0.7,0.75,5.8,24),mR),[-0.7,7.9,9.5],[0,0,Math.PI/2]);add(mk(blob(0.55,1.25,0.6,{lump:0}),mR),[-2.7,6.7,9.5],[0,0,0.25]);
 add(mk(new THREE.TorusGeometry(1.0,0.17,8,20,Math.PI),mDark),[0.4,7.9,9.5]);add(mk(new THREE.TorusGeometry(0.9,0.3,10,24),mSilver),[2.3,7.9,9.5],[0,Math.PI/2,0]);
@@ -627,6 +627,11 @@ add(mk(new THREE.CylinderGeometry(0.45,0.3,3.2,16),mDark),[0,8.4,10.6],[0.35,0,0
 if(showIt==='trousse'){add(mk(blob(2.7,1.9,1.1,{lump:0,sq:0.35}),SM({color:0xd23a3a,roughness:0.6})),[0,8.4,10.6]);const mW=SM({color:0xffffff,roughness:0.5});
 add(mk(new THREE.BoxGeometry(1.6,0.5,0.2),mW),[0,8.4,11.7]);add(mk(new THREE.BoxGeometry(0.5,1.6,0.2),mW),[0,8.4,11.7]);add(mk(new THREE.TorusGeometry(0.8,0.18,8,20,Math.PI),mDark),[0,10.2,10.6]);}
 
+// L'objet tenu est mis à la taille de l'écart entre les pattes et posé entre elles, contre les pattes (il ne flotte pas devant)
+// Pattes en position « tenir » : centres vers x = ±4, y = 9.6, z = 10.3, rayon 1.75 ; le ventre est vers z = 8
+if(holding&&showIt!=='aucun'&&showIt!=='lance'){const items=G.children.slice(it0);if(items.length){const grp=new THREE.Group(),bb=new THREE.Box3();items.forEach(m=>bb.expandByObject(m));
+const ctr=bb.getCenter(V(0,0,0)),sz=bb.getSize(V(0,0,0)),k=Math.min(1.6,Math.max(0.8,Math.min(5.0/Math.max(sz.x,0.1),4.4/Math.max(sz.z,0.1))));
+items.forEach(m=>{G.remove(m);m.position.sub(ctr);grp.add(m);});grp.scale.setScalar(k);grp.position.set(0,9.6,Math.max(10.3,8.2+sz.z*k/2));grp.userData.part='item';G.add(grp);}}
 PART=null;
 // Mascotte : mini-peluche assise sur une épaule ou tenue dans les mains
 if(c.ms!=='aucune'){const mM=FZ({color:c.mc,map:HAIR,bumpMap:BMP,bumpScale:0.35,roughness:1}),mMl=FZ({color:mix(c.mc,'#ffffff',0.5),map:FAB,roughness:1}),mE=SM({color:0x111111,roughness:0.15}),M=new THREE.Group();
