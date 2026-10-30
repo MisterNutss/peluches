@@ -215,7 +215,7 @@ const ACC='rbmscowkehan';
 // Petit monstre : grosse tête ovale plus haute que large, corps trapu et dodu, petits bras et petites jambes. Avatar : grosse tête ronde, corps étroit, membres fins.
 const PROPS={classique:{h:1,b:[1,1,1],a:[1,1],l:[1,1,1]},ours:{h:1.0,b:[1.16,1.0,1.16],a:[1.25,1.05],l:[1.2,1.1,1.05]},
 lapin:{h:0.94,b:[0.9,1.14,0.9],a:[0.85,1.18],l:[0.88,0.9,1.35]},chat:{h:1.1,b:[0.92,0.92,0.92],a:[0.9,0.92],l:[0.9,0.9,0.95]},
-monstre:{h:[1.4,1.62,1.4],b:[1.0,0.8,1.0],a:[1.0,0.72],l:[1.0,0.85,0.75]},avatar:{h:1.2,b:[0.74,0.95,0.78],a:[0.6,1.0],l:[0.62,0.85,0.95]}};
+monstre:{h:[1.55,1.78,1.55],b:[0.98,0.88,0.98],a:[0.95,0.75],l:[1.0,0.95,0.85]},avatar:{h:1.2,b:[0.74,0.95,0.78],a:[0.6,1.0],l:[0.62,0.85,0.95]}};
 const COLS=['sk','hc','ec','glc','lc','hwc','tc','t2','ac','pc','sc','gv','mc'];
 const HOOKS={onTex:null};
 const PRESETS={
@@ -515,7 +515,7 @@ t=np.clone().sub(p).normalize();p=np;P.push(p.clone());s+=ds;}
 for(let k=0;k<2;k++)for(let i=1;i<P.length-1;i++)P[i]=P[i-1].clone().add(P[i+1]).multiplyScalar(0.25).addScaledVector(P[i],0.5);
 if((hx==='ondule'||hx==='boucle')&&P.length>4){const Q=P.map(x=>x.clone()),ph=R()*6.28;let a=0;for(let i=1;i<P.length;i++){a+=Q[i].distanceTo(Q[i-1]);const T=Q[Math.min(i+1,Q.length-1)].clone().sub(Q[i-1]).normalize(),N=enorm(q(Q[i])),B=V(0,0,0).crossVectors(T,N).normalize(),gr=Math.min(1,a/2.5);
 if(hx==='ondule')P[i].addScaledVector(B,Math.sin(a/5.2*6.28+ph)*0.65*gr);else{const w=a/2.1*6.28+ph;P[i].addScaledVector(B,Math.cos(w)*0.75*gr).addScaledVector(N,(Math.sin(w)+1)*0.6*gr);}}}
-if(cutY!==null){const k=P.findIndex(x=>x.y<cutY);return k<0?[]:P.slice(k);}
+if(cutY!==null&&!H.fur){const k=P.findIndex(x=>x.y<cutY);return k<0?[]:P.slice(k);}
 return P;}
 // Longueur des mèches et hauteur où s'arrêtent les pointes
 const Lh=lerpT([[0,1.6],[1,5.2],[2,9],[3,14],[4,21],[5,32]],hl)*(hx==='boucle'?0.8:1),yEnd=hl<1.6?-99:lerpT([[1.6,24],[2,21.5],[3,17.4],[4,12.8],[5,5.5]],hl);
@@ -534,6 +534,7 @@ const roots=[];for(let i=0;i<N;i++){const y=1-(i+0.5)/N*2,rr=Math.sqrt(1-y*y),a=
 const isTied=u=>TIES&&(H.ht!=='demi'||u.y>0.3);
 PART='head';
 for(const u of roots){const P0=fromQ(u.clone().multiplyScalar(1.02)),n=enorm(u),layer=0.012+0.05*(u.y+1)/2+R()*0.012,side=u.y<0.25&&Math.abs(u.z)<0.75;
+if(H.fur&&cutY!==null&&P0.y>cutY-0.6)continue;
 if(H.fur){// Poils courts couchés vers l'arrière ; autour du visage, une collerette plus longue et gonflée qui encadre la figure
 const rim=u.z>0.05&&faceO(u)<1.9,d=rim?V(u.x,u.y+0.1,0).normalize().multiplyScalar(1.4).add(V(0,0,0.5)):u.clone().sub(V(0,-0.1,1.2)).add(V(0,-0.35,0));
 const t0=d.clone().addScaledVector(n,-d.dot(n));if(t0.lengthSq()<1e-6)t0.set(0,-1,0);t0.normalize();
@@ -634,7 +635,7 @@ add(mk(blob(9.8,9.0,9.25,{lump:0.01,t0:1.84,t1:2.62,p0:0.42,pl:2.3}),mBd),[0,24.
 if(has('o'))for(const s of[-1,1])add(mk(new THREE.TorusGeometry(0.5,0.13,8,20),mGold),[s*9.9,21.4,1.2],[0,Math.PI/2,0]);
 
 // Couvre-chef
-const tops=[];
+const tops=[],hat0=G.children.length;
 if(hood){// Capuche relevée : dessus fermé, ouverture devant le visage, bord roulé
 const mHd=c.hm==='uni'?FZ({color:c.hwc,map:FAB,bumpMap:BMP,bumpScale:0.15,roughness:0.9,side:THREE.DoubleSide}):clothMat(c.hwc,false,'torse',c.hm),RX=10.6,RY=9.85,RZ=10.15,T0=0.84,T1=2.55,P0=Math.PI/2+0.78,PLn=2*Math.PI-1.56,CY=24.8,CZ=0.45;
 tops.push(add(mk(blob(RX,RY,RZ,{lump:0.012,t0:0,t1:T0+0.04}),mHd),[0,CY,CZ]));
@@ -649,9 +650,9 @@ const bg=new THREE.CylinderGeometry(1,1,1,72,1);const bp=bg.attributes.position;
 [[0,0.75,-80,15],[-4.6,0.45,-80,55],[4.6,0.45,-80,55]].forEach(rb=>{const kx=Math.sqrt(1-(rb[0]/10.6)**2);const pts=[];for(let a=rb[2];a<=rb[3];a+=5){const t=a*Math.PI/180;pts.push(V(rb[0],27+8*kx*Math.cos(t),-0.4+10*kx*Math.sin(t)));}tube(pts,rb[1],mH);});
 add(mk(conform([dome],V(0,32.2,0),X,Y,4.8,4.8,16,FWD,0.14),decal(shieldTex(c.hwt))));
 if(c.hwt){add(mk(conform([dome],V(0,30.6,-1.2),V(0,0,1),Y,2.6,2.6,10,X,0.1),decal(discTex(c.hwt))));add(mk(conform([dome],V(0,30.6,-1.2),V(0,0,-1),Y,2.6,2.6,10,NX,0.1),decal(discTex(c.hwt))));}
-const hc=V(0,24.6,0.6),Dc=V(0,-0.8,0.6).normalize(),cs=[V(-10.6,27.0,0.6)],tg2=[hairS,head].filter(Boolean);
+if(st!=='monstre'){const hc=V(0,24.6,0.6),Dc=V(0,-0.8,0.6).normalize(),cs=[V(-10.6,27.0,0.6)],tg2=[hairS,head].filter(Boolean);
 for(let a=-90;a<=90;a+=10){const t=a*Math.PI/180;const d=X.clone().multiplyScalar(Math.sin(t)).addScaledVector(Dc,Math.cos(t)).normalize();const h=hitAt(tg2,hc.clone().addScaledVector(d,40),d.clone().negate());if(h)cs.push(h.p.addScaledVector(d,0.25));}
-cs.push(V(10.6,27.0,0.6));tube(cs,0.18,mDark);}
+cs.push(V(10.6,27.0,0.6));tube(cs,0.18,mDark).userData.onHead=1;}}
 if(c.hw==='casquette'||c.hw==='inverse'){const rev=c.hw==='inverse',mC=c.hm==='uni'?FZ({color:c.hwc,map:FAB,bumpMap:BMP,bumpScale:0.12,roughness:0.85,side:THREE.DoubleSide}):clothMat(c.hwc,false,'torse',c.hm),mSeam=FZ({color:shade(c.hwc,0.8),map:FAB,roughness:0.85});
 const crown=add(mk(blob(10.4,8.0,10.0,{lump:0,t0:0,t1:1.5}),mC),[0,26.8,0.4]);tops.push(crown);
 add(mk(visor(9.2,10.5,3.0,rev?0.05:0.12),FZ({color:shade(c.hwc,0.9),map:FAB,roughness:0.8})),[0,27.4,0.4],[0,rev?Math.PI:0,0]);
@@ -675,11 +676,13 @@ add(mk(blob(10.25,1.6,10.0,{lump:0}),mTop),[0,31.0,0.5]);tops.push(band,add(mk(b
 add(mk(visor(8.4,7.0,3.0,0.18),SM({color:0x0d0d10,roughness:0.15,metalness:0.2})),[0,27.9,0.5]);
 stick(mk(blob(1.3,1.5,0.35,{lump:0,sq:0.6}),mGold),[band],0,29.6,0.1);}
 
+// Petit monstre : sa tête de fourrure est plus grosse, le couvre-chef est agrandi autour du centre de la tête
+if(st==='monstre'&&hats){const k=1.14,C0=V(0,24.6,0.6);for(const m of G.children.slice(hat0)){if(m.userData.onHead)continue;m.position.sub(C0).multiplyScalar(k).add(C0);m.scale.multiplyScalar(k);m.updateMatrixWorld(true);}}
 // Lunettes
 if(c.gl==='masque'){const mF=SM({color:c.glc,roughness:0.45}),mL=SM({color:0xe8f25a,emissive:0x6b7a00,emissiveIntensity:0.12,transparent:true,opacity:0.28,roughness:0.05,metalness:0.1,depthWrite:false});
 for(const s of[-1,1]){const fr=mk(new THREE.TorusGeometry(2.0,0.4,12,40),mF);stick(fr,[head],s*3.7,24.1,-0.3);fr.scale.set(1.18,0.95,1);stick(mk(blob(2.25,1.85,0.45,{lump:0}),mL),[head],s*3.7,24.1,-0.55);}
 stick(mk(blob(1.0,0.45,0.4,{lump:0}),mF),[head],0,24.4,-0.45);
-const sg=new THREE.Group();const sm=mk(new THREE.TorusGeometry(10.45,0.42,10,80,Math.PI+1.6),mDark);sm.rotation.x=-Math.PI/2;sm.scale.set(1,0.94,1);sg.add(sm);sg.position.set(0,24.1,0.6);sg.rotation.y=-0.8;G.add(sg);}
+const sg=new THREE.Group();const sm=mk(new THREE.TorusGeometry(10.45,0.42,10,80,Math.PI+1.6),mDark);sm.rotation.x=-Math.PI/2;sm.scale.set(1,0.94,1);sg.add(sm);sg.position.set(0,24.1,0.6);sg.rotation.y=-0.8;if(st==='monstre')sg.scale.setScalar(1.12);G.add(sg);}
 if(c.gl==='lunettes'||c.gl==='soleil'){const mF=SM({color:c.glc,roughness:0.35,metalness:0.25}),sun=c.gl==='soleil';
 const mL=sun?SM({color:c.lc,transparent:true,opacity:0.86,roughness:0.08,metalness:0.3}):SM({color:0xe8f4ff,transparent:true,opacity:0.14,roughness:0.05,depthWrite:false});
 const k=sun?0.86:1;for(const s of[-1,1]){const fr=mk(new THREE.TorusGeometry(2.05*k,0.24,10,40),mF);stick(fr,[head],s*3.7,24.1,-0.25);fr.scale.set(1.12,sun?0.85:0.98,1);stick(mk(blob(2.2*k,(sun?1.6:1.95),0.3,{lump:0}),mL),[head],s*3.7,24.1,-0.4);}
@@ -694,7 +697,7 @@ for(const s of[-1,1]){const g=new THREE.Group(),fr=mk(new THREE.TorusGeometry(1.
 stick(mk(blob(0.75,0.18,0.18,{lump:0}),mF),tg,0,32.2,-0.08);}
 
 // Oreilles d'animal ou de petit monstre, posées sur ce qui est le plus à l'extérieur (cheveux, capuche, chapeau)
-if(furry){const tg=tops.concat([hairCap,hairS,head].filter(Boolean)),mIn=FZ({color:st==='monstre'?mix(fur,'#f2a6b0',0.6):mix(fur,'#ffffff',0.55),map:FAB,roughness:1});
+if(furry){const tg=tops.concat((st==='monstre'?[hairCap,head]:[hairCap,hairS,head]).filter(Boolean)),mIn=FZ({color:st==='monstre'?mix(fur,'#f2a6b0',0.6):mix(fur,'#ffffff',0.55),map:FAB,roughness:1});
 const E={ours:[[0.62,0.78,0],[2.3,2.3,1.1],[1.35,1.35,0.5],0],lapin:[[0.3,0.95,0],[1.4,4.6,0.7],[0.8,3.6,0.3],0.12],chat:[[0.55,0.83,0],[2.0,3.4,2.0],[1.2,2.3,1.2],0],monstre:[[0.34,0.94,-0.05],[1.6,6.0,0.7],[0.95,4.7,0.3],0.16]}[st];
 const shape=sz=>{if(st==='chat'){const q=new THREE.ConeGeometry(1,2,24);q.scale(sz[0],sz[1]/2,sz[2]);return q;}return blob(sz[0],sz[1],sz[2],{lump:0.02,pear:st==='monstre'?0.35:0});};
 for(const s of[-1,1]){const d=V(s*E[0][0],E[0][1],E[0][2]).normalize(),ctr=V(0,24.6,0.6);ray.set(ctr.clone().addScaledVector(d,80),d.clone().negate());const h=ray.intersectObjects(tg,false)[0];
@@ -711,7 +714,7 @@ if(st==='chat')tube([V(0,5.5,-7.2),V(1.8,4.4,-10.2),V(4.2,6.6,-11.8),V(5.0,10.5,
 if(has('r')){const rad=new THREE.Group();rad.add(mk(blob(1.25,1.8,0.7,{lump:0}),mLime));const an=mk(new THREE.CylinderGeometry(0.15,0.15,1.6,8),mDark);an.position.set(0.5,2.4,0);rad.add(an);
 const kn=mk(new THREE.CylinderGeometry(0.28,0.28,0.5,12),mDark);kn.position.set(-0.5,1.95,0);rad.add(kn);const scr=mk(new THREE.BoxGeometry(1.4,0.9,0.12),mScreen);scr.position.set(0,0.5,0.68);rad.add(scr);stick(rad,[outer],-5.4,14.6,0.3);}
 if(has('b')){const b=new THREE.Group();const sh=mk(new THREE.CylinderGeometry(1.15,1.15,0.25,6),mGold);sh.rotation.x=Math.PI/2;b.add(sh);const ct=mk(new THREE.CylinderGeometry(0.5,0.5,0.3,16),SM({color:0x1b2a5a,roughness:0.5}));ct.rotation.x=Math.PI/2;ct.position.z=0.08;b.add(ct);stick(b,[outer],4.4,15.4,-0.05);}
-if(has('m')){add(mk(blob(1.3,1.9,1.7,{lump:0}),mDark),[-10.1,24.0,0.8]);tube([V(-10.4,23.2,2.0),V(-9.3,21.8,5.2),V(-6.5,20.9,8.0),V(-3.6,20.4,9.3),V(-2.0,20.5,9.5)],0.18,mDark);add(mk(blob(0.55,0.5,0.55,{lump:0.06}),mDark),[-2.0,20.5,9.5]);}
+if(has('m')&&st!=='monstre'){add(mk(blob(1.3,1.9,1.7,{lump:0}),mDark),[-10.1,24.0,0.8]);tube([V(-10.4,23.2,2.0),V(-9.3,21.8,5.2),V(-6.5,20.9,8.0),V(-3.6,20.4,9.3),V(-2.0,20.5,9.5)],0.18,mDark);add(mk(blob(0.55,0.5,0.55,{lump:0.06}),mDark),[-2.0,20.5,9.5]);}
 if(has('s')){const[bt,be]=clothTex(shade(c.pc,0.9),true,'manche','uni');own(bt);own(be);add(mk(blob(1.5,2.3,2.4,{lump:0,sq:0.5}),FZ({map:bt,emissive:0xffffff,emissiveMap:be,emissiveIntensity:0.08,roughness:0.85,bumpMap:BMP,bumpScale:0.15})),[9.3,6.8,1.2]);}
 if(has('c')){const pts=[];for(let a=0;a<Math.PI*2-0.01;a+=Math.PI/24){const d=V(Math.sin(a),0,Math.cos(a)),y=17.2-2.8*Math.pow(Math.max(0,Math.cos(a)),1.5);pts.push([V(0,y,0).addScaledVector(d,30),d.clone().negate()]);}
 tube(onSurf(torso,pts,0.22),0.2,mGold,true);stick(mk(blob(0.65,0.8,0.25,{lump:0}),mGold),torso,0,13.9,-0.05);}
