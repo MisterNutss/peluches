@@ -692,10 +692,11 @@ const API=/vercel\.app$/.test(location.hostname)?'':'https://peluches-tau.vercel
 const nom=q.get('nom')||decodeURIComponent((location.pathname.match(/\/p\/([^/?#]+)\/?$/)||[])[1]||'');
 // Lecture directe dans le stockage Blob (rapide, pas de contrôle anti-robot), sinon par le serveur Vercel
 const BLOB='',slug=nom.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40);
-const getJ=u=>fetch(u,{cache:'no-store'}).then(x=>x.ok?x.json():Promise.reject(x.status));
-(nom?(BLOB?getJ(BLOB+'/peluches/'+slug+'.json?t='+Date.now()):Promise.reject()).catch(()=>getJ(API+'/api/peluches?nom='+encodeURIComponent(slug))).then(d=>d&&d.p?PL.unpack(d.p):null).catch(()=>null):PL.unpack(q.get('p'))).then(c=>{
+// why : raison de l'échec, affichée sous le message pour comprendre ce qui bloque (réseau, serveur, lecture)
+let why='';const getJ=(u,k)=>fetch(u,{cache:'no-store'}).then(x=>{if(!x.ok){why+=k+' : réponse '+x.status+'. ';return Promise.reject();}return x.json().catch(()=>{why+=k+' : réponse illisible (page de contrôle ?). ';return Promise.reject();});},e=>{if(e!==undefined)why+=k+' : injoignable. ';return Promise.reject();});
+(nom?(BLOB?getJ(BLOB+'/peluches/'+slug+'.json?t='+Date.now(),'stockage'):Promise.reject()).catch(()=>getJ(API+'/api/peluches?nom='+encodeURIComponent(slug),'serveur')).then(d=>d&&d.p?PL.unpack(d.p).then(c=>{if(!c)why+='lecture du lien impossible. ';return c;}):null).catch(()=>null):PL.unpack(q.get('p'))).then(c=>{
 // Peluche de la bibliothèque introuvable : on le dit au lieu d'afficher une autre peluche
-if(nom&&!c){const m=document.createElement('p');m.textContent='Peluche « '+nom+' » introuvable.';m.style.cssText='position:fixed;inset:auto 0 45% 0;text-align:center;font:600 18px system-ui,sans-serif;color:#888;margin:0';document.body.append(m);return;}
+if(nom&&!c){const m=document.createElement('p');m.textContent='Peluche « '+nom+' » introuvable.'+(why?' ('+why.trim()+')':'');m.style.cssText='position:fixed;inset:auto 0 45% 0;text-align:center;font:600 18px system-ui,sans-serif;color:#888;margin:0';document.body.append(m);return;}
 const cfg=c||PL.clean(PL.PRESETS.pompier);if(cfg.n)document.title=cfg.n;P=PL.build(cfg);scene.add(P.group);});
 const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches,autoSpin=q.get('tourne')!=='non'&&!reduce;
 const START={ry:-0.25,el:0.24,zoom:1.05};let ry=START.ry,el=START.el,zoom=START.zoom,idle=0;
