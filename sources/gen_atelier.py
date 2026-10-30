@@ -334,10 +334,10 @@ stage.addEventListener('dblclick',()=>{ry=-0.25;el=0.24;dirty=true;});
 // Réglages
 const CHOICES={hs:{court:'Courts',banane:'Banane (plaqués en arrière)',meches:'Mi-longs en mèches',herisse:'Hérissés',iroquoise:'Iroquoise',carre:'Carré',long:'Longs',tresse:"Tresse sur l'épaule",couettes:'Couettes',queue:'Queue de cheval',chignon:'Chignon',boucle:'Bouclés',afro:'Afro',dreads:'Dreads',rase:'Rasés',chauve:'Chauve'},
 bd:{aucune:'Aucune',barbe3j:'Barbe de 3 jours',barbe:'Barbe',longue:'Barbe longue',moustache:'Moustache',bouc:'Bouc'},ex:{sourire:'Grand sourire',content:'Petit sourire',rire:'Rire',clin:"Clin d'œil",amour:'Yeux en cœur',etoiles:'Yeux étoiles',langue:'Tire la langue',bisou:'Bisou',surpris:'Surpris',gene:'Gêné',neutre:'Neutre',serieux:'Sérieux',boude:'Boude',triste:'Triste',pleure:'Pleure',dodo:'Endormi'},
-gl:{aucune:'Aucunes',lunettes:'Lunettes de vue',soleil:'Lunettes de soleil',aviateur:'Lunettes aviateur',tete:'Lunettes relevées sur la tête',masque:'Lunettes de protection'},
-hw:{aucun:'Aucun',capuche:'Capuche relevée',casquette:'Casquette',inverse:"Casquette à l'envers",bonnet:'Bonnet',chapeau:'Chapeau',bandeau:'Bandeau',durag:'Durag',pompier:'Casque de pompier',police:'Casquette de police'},
-tp:{tshirt:'T-shirt',chemise:'Chemise',sweat:'Sweat à capuche',zip:'Veste zippée fermée (survêtement)',veste:'Veste ouverte',costume:'Costume',gilet:'Gilet sur manches'},mt:{uni:'Uni',rayures:'Rayures',camo:'Camouflage',carreaux:'Carreaux',taches:'Taches'},
-bt:{pantalon:'Pantalon',jogging:'Jogging',short:'Short',salopette:'Salopette'},sh:{bottes:'Bottes',baskets:'Baskets',chaussures:'Chaussures de ville'},
+gl:{aucune:'Aucunes',lunettes:'Lunettes de vue',soleil:'Lunettes de soleil',aviateur:'Lunettes aviateur',tete:'Lunettes relevées sur la tête',masque:'Lunettes de protection',coeur:'Lunettes cœur',rondes:'Rondes rétro',etoile:'Lunettes étoiles'},
+hw:{aucun:'Aucun',capuche:'Capuche relevée',casquette:'Casquette',inverse:"Casquette à l'envers",bonnet:'Bonnet',chapeau:'Chapeau',bandeau:'Bandeau',durag:'Durag',beret:'Béret',bob:'Bob',cowboy:'Chapeau de cowboy',fleurs:'Couronne de fleurs',pompier:'Casque de pompier',police:'Casquette de police'},
+tp:{tshirt:'T-shirt',chemise:'Chemise',sweat:'Sweat à capuche',zip:'Veste zippée fermée (survêtement)',veste:'Veste ouverte',costume:'Costume',gilet:'Gilet sur manches'},mt:{uni:'Uni',rayures:'Rayures',camo:'Camouflage',carreaux:'Carreaux',taches:'Taches',pois:'Pois',coeurs:'Cœurs',etoiles:'Étoiles'},
+bt:{pantalon:'Pantalon',jogging:'Jogging',short:'Short',salopette:'Salopette',jupe:'Jupe'},sh:{bottes:'Bottes',baskets:'Baskets',chaussures:'Chaussures de ville',chaussons:'Chaussons tout doux',sandales:'Sandales'},
 it:{aucun:'Rien',lance:'Lance à incendie',coeur:'Cœur',telephone:'Téléphone',cafe:'Café',donut:'Donut',trousse:'Trousse de secours',bouquet:'Bouquet de fleurs',billets:'Liasse de billets',manette:'Manette de jeu',ballon:'Ballon de basket',cle:'Clé de voiture',micro:'Micro de chanteur',glace:'Glace',sucette:'Sucette',cadeau:'Cadeau',livre:'Livre',pizza:'Pizza',poisson:'Poisson',baguette:'Baguette',banane:'Banane',poele:'Poêle',papier:'Papier toilette'}};
 CHOICES.hm=CHOICES.mt;
 CHOICES.hp={aucune:'Pas de raie',gauche:"Raie à gauche de l'image",milieu:'Raie au milieu',droite:"Raie à droite de l'image"};
@@ -359,8 +359,8 @@ const FLAG_GROUPS=[['Tête et visage','moaqfxjMACBLDRTE'],['Pour rigoler','PQVNG
 const EMO={ex:{sourire:'😄',content:'🙂',rire:'😆',clin:'😉',amour:'😍',etoiles:'🤩',langue:'😛',bisou:'😘',surpris:'😮',neutre:'😐',gene:'😳',serieux:'😠',triste:'😢',pleure:'😭',boude:'😤',dodo:'😴'},
 po:{assis:'🧸',debout:'🧍',coucou:'👋',salut:'🙋',bravo:'🙌',calin:'🤗',coeur:'🫶',pensif:'🤔',tailleur:'🧘',dab:'🕺',joues:'🥰',danse:'💃',victoire:'✌️',croises:'🙅',bisou:'😘'},
 it:{aucun:'🚫',lance:'🚒',coeur:'❤️',telephone:'📱',cafe:'☕',donut:'🍩',trousse:'🩹',bouquet:'💐',billets:'💵',manette:'🎮',ballon:'🏀',cle:'🔑',micro:'🎤',glace:'🍦',sucette:'🍭',cadeau:'🎁',livre:'📖',pizza:'🍕',poisson:'🐟',baguette:'🥖',banane:'🍌',poele:'🍳',papier:'🧻'},
-hw:{aucun:'🚫',capuche:'🧥',casquette:'🧢',inverse:'🧢',bonnet:'🧶',chapeau:'🎩',bandeau:'🎽',durag:'🖤',pompier:'⛑️',police:'👮'},
-gl:{aucune:'🚫',lunettes:'👓',soleil:'🕶️',aviateur:'😎',tete:'🕶️',masque:'🥽'},
+hw:{aucun:'🚫',capuche:'🧥',casquette:'🧢',inverse:'🧢',bonnet:'🧶',chapeau:'🎩',bandeau:'🎽',durag:'🖤',beret:'🎨',bob:'👒',cowboy:'🤠',fleurs:'🌸',pompier:'⛑️',police:'👮'},
+gl:{aucune:'🚫',lunettes:'👓',soleil:'🕶️',aviateur:'😎',tete:'🕶️',masque:'🥽',coeur:'💖',rondes:'🤓',etoile:'⭐'},
 st:{classique:'🧒',ours:'🐻',lapin:'🐰',chat:'🐱',monstre:'👹',avatar:'🙂'},
 ms:{aucune:'🚫',monstre:'👹',lapin:'🐰',ours:'🐻',chat:'🐱',chien:'🐶',oiseau:'🦜'}};
 const hairOn=c=>!['rase','chauve','iroquoise'].includes(c.hs);
@@ -378,7 +378,7 @@ const SECTIONS=[
 {k:'im',type:'print',l:'Imprimé sur le devant (découpé dans la photo)',wide:1,show:c=>c.tp!=='costume'},{k:'tt',adv:1,type:'text',l:'Texte imprimé (dos)',max:8},{k:'rf',adv:1,type:'check',l:'Bandes réfléchissantes'},]},
 {t:'Bas et chaussures',f:[{k:'bt',type:'choice',l:'Bas'},{k:'pc',type:'color',l:c=>c.bt==='short'?'Couleur du short':'Couleur du bas'},{k:'pb',adv:1,type:'optcolor',l:'Bandes sur les côtés du bas',show:c=>c.bt!=='short'},
 {k:'sh',type:'choice',l:'Chaussures'},{k:'sc',type:'color',l:'Couleur des chaussures'},{k:'gv',adv:1,type:'glove',l:'Gants'}]},
-{t:'Accessoires',f:[{k:'acc',type:'flags',l:'Équipement',wide:1},{k:'ac',type:'color',l:"Couleur d'accent (nœud, cape, sac…)"}]},
+{t:'Accessoires',f:[{k:'acc',type:'flags',l:'Équipement',wide:1},{k:'ac',type:'color',l:"Couleur d'accent (par défaut pour tous les accessoires)"}]},
 {t:'Dans les mains',f:[{k:'it',type:'tiles',wide:1,l:'Objet'}]},
 {t:'Mascotte',f:[{k:'ms',type:'tiles',wide:1,l:'Mascotte (mini-peluche)'},{k:'mc',type:'color',l:'Couleur de la mascotte',show:c=>c.ms!=='aucune'},{k:'mp',type:'choice',l:'Place de la mascotte',show:c=>c.ms!=='aucune'},{k:'mz',type:'range',l:'Taille de la mascotte',min:0.5,max:2,step:0.05,show:c=>c.ms!=='aucune'},{k:'mx',adv:1,type:'range',l:'Mascotte : gauche / droite',min:-1,max:1,step:0.05,fmt:'off',show:c=>c.ms!=='aucune'},{k:'my',adv:1,type:'range',l:'Mascotte : bas / haut',min:-1,max:1,step:0.05,fmt:'off',show:c=>c.ms!=='aucune'},{k:'mf',adv:1,type:'range',l:'Mascotte : arrière / avant',min:-1,max:1,step:0.05,fmt:'off',show:c=>c.ms!=='aucune'},{k:'mr',adv:1,type:'range',l:'Mascotte : rotation',min:-180,max:180,step:5,fmt:'deg',show:c=>c.ms!=='aucune'}]}];
 const F={};let lastGlove='#86ace6';const lastOpt={h2:'#f3dc9a',yc:'#f2f2f2',sl:'#f2f2f2',sb:'#f2f2f2',pb:'#1c1c1e'};
@@ -416,15 +416,17 @@ else if(f.type==='flags')for(const v in FLAGS)$(id+'-'+v).checked=cfg.acc.includ
 const ADJ=[['x','Gauche ↔ Droite',-8,8,0.1,0],['y','Bas ↕ Haut',-8,8,0.1,0],['z','Arrière ↔ Avant',-8,8,0.1,0],['s','Taille',0.3,3,0.05,1],['r','Rotation',-180,180,5,0]];
 {const sel=el2('select',{id:'adj-k'}),grid=el2('div',{className:'fields'});
 for(const[k,l,mi,ma,stp]of ADJ){const row=el2('div',{className:'field'});row.append(el2('div',{className:'row rangehead'},[el2('label',{htmlFor:'adj-'+k,textContent:l}),el2('span',{className:'help',id:'adj-'+k+'-v'})]),el2('input',{type:'range',id:'adj-'+k,min:mi,max:ma,step:stp}));grid.append(row);}
-$('tab-accessoires').append(foldCard('Ajuster un accessoire',[el2('p',{className:'help',textContent:"Choisis un accessoire, puis déplace-le, change sa taille ou tourne-le."}),
-el2('div',{className:'field'},[el2('label',{htmlFor:'adj-k',textContent:'Accessoire'}),sel]),grid,el2('div',{className:'row'},[el2('button',{type:'button',className:'btn',id:'adj-reset',textContent:'Remettre à sa place'})]),el2('p',{className:'help',id:'adj-none',textContent:'Ajoute un accessoire ou un objet dans les mains pour pouvoir le régler ici.'})],false,'adj-card'));}
+$('tab-accessoires').append(foldCard('Ajuster et colorer un accessoire',[el2('p',{className:'help',textContent:"Choisis un accessoire, puis donne-lui sa propre couleur, déplace-le, change sa taille ou tourne-le."}),
+el2('div',{className:'field'},[el2('label',{htmlFor:'adj-k',textContent:'Accessoire'}),sel]),grid,el2('div',{className:'row'},[el2('label',{className:'check'},[el2('input',{type:'checkbox',id:'adj-col-on'}),'Couleur à part']),el2('input',{type:'color',id:'adj-col'})]),el2('div',{className:'row'},[el2('button',{type:'button',className:'btn',id:'adj-reset',textContent:'Remettre à sa place'})]),el2('p',{className:'help',id:'adj-none',textContent:'Ajoute un accessoire ou un objet dans les mains pour pouvoir le régler ici.'})],false,'adj-card'));}
 function adjList(){const l=[...cfg.acc].filter(k=>!'wl'.includes(k)).map(k=>[k,FLAGS[k]]);if(cfg.it&&cfg.it!=='aucun')l.unshift(['_','🤲 Objet dans les mains : '+CHOICES.it[cfg.it]]);return l;}
 function renderAdj(){const sel=$('adj-k');if(!sel)return;const l=adjList(),cur0=sel.value,old=sel.dataset.sig||'';if(old!==l.map(x=>x[0]).join('')){const added=l.map(x=>x[0]).filter(k=>!old.includes(k));sel.textContent='';l.forEach(([k,t])=>sel.append(el2('option',{value:k,textContent:t})));sel.dataset.sig=l.map(x=>x[0]).join('');if(old&&added.length)sel.value=added[added.length-1];else if(l.some(x=>x[0]===cur0))sel.value=cur0;}
 const none=!l.length;$('adj-none').hidden=!none;sel.disabled=none;$('adj-reset').disabled=none;const a=(cfg.aj&&cfg.aj[sel.value])||[0,0,0,1,0];
+{const cl=cfg.acol&&cfg.acol[sel.value];$('adj-col-on').checked=!!cl;$('adj-col-on').disabled=none;$('adj-col').disabled=none||!cl;if(document.activeElement!==$('adj-col'))$('adj-col').value=cl||cfg.ac;}
 ADJ.forEach(([k],i)=>{const inp=$('adj-'+k);inp.disabled=none;if(document.activeElement!==inp)inp.value=a[i];$('adj-'+k+'-v').textContent=k==='s'?'× '+Number(a[i]).toFixed(2).replace('.',','):k==='r'?Math.round(a[i])+'°':(a[i]>0?'+':'')+Number(a[i]).toFixed(1).replace('.',',');});}
-$('adj-card').addEventListener('input',e=>{if(e.target.id==='adj-k'){renderAdj();return;}const k=$('adj-k').value;if(!k)return;const a=ADJ.map(([n])=>Number($('adj-'+n).value));cfg.aj=Object.assign({},cfg.aj||{},{[k]:a});renderAdj();changed();});
+$('adj-card').addEventListener('input',e=>{if(e.target.id==='adj-k'){renderAdj();return;}
+if(e.target.id==='adj-col'||e.target.id==='adj-col-on'){const k=$('adj-k').value;if(!k)return;const n=Object.assign({},cfg.acol||{});if($('adj-col-on').checked)n[k]=$('adj-col').value;else delete n[k];cfg.acol=n;renderAdj();changed();return;}const k=$('adj-k').value;if(!k)return;const a=ADJ.map(([n])=>Number($('adj-'+n).value));cfg.aj=Object.assign({},cfg.aj||{},{[k]:a});renderAdj();changed();});
 $('adj-k').addEventListener('change',renderAdj);
-$('adj-reset').addEventListener('click',()=>{const k=$('adj-k').value;if(!k||!cfg.aj)return;const n=Object.assign({},cfg.aj);delete n[k];cfg.aj=n;renderAdj();changed();});
+$('adj-reset').addEventListener('click',()=>{const k=$('adj-k').value;if(!k)return;const n=Object.assign({},cfg.aj||{}),c2=Object.assign({},cfg.acol||{});delete n[k];delete c2[k];cfg.aj=n;cfg.acol=c2;renderAdj();changed();});
 // Pièces sur mesure ajoutées par Claude : on peut changer leur couleur ou les retirer
 const SHAPE_L={sphere:'Boule',goutte:'Goutte',cone:'Cône',cylindre:'Cylindre',tore:'Anneau',boite:'Bloc'},ANCH_L={tete:'tête',corps:'corps',mains:'mains',dos:'dos',jambes:'jambes'};
 $('tab-accessoires').append(foldCard('Pièces sur mesure',[el2('p',{className:'help',textContent:"Ce que Claude ajoute pour coller à la photo : oreilles, cornes, queue, nœud… Change une couleur ou retire une pièce."}),el2('div',{id:'pz-list',className:'pzlist'})],false));
@@ -520,15 +522,15 @@ function keysText(){return "Regarde d'abord ce qui rend la personne reconnaissab
 +'- "bd" : pilosité du visage, parmi "aucune", "barbe3j" (barbe de quelques jours), "barbe", "longue" (barbe longue), "moustache", "bouc"\n'
 +'- "fr" : 1 si on voit des taches de rousseur, sinon 0\n'
 +'- "cl" : 1 pour de longs cils recourbés (visage féminin ou maquillé), 0 sinon\n'
-+'- "gl" : lunettes, parmi "aucune", "lunettes" (de vue, sur les yeux), "soleil" (de soleil rondes ou rectangulaires, sur les yeux), "aviateur" (aviateur : verres en goutte, fine monture métal), "tete" (lunettes relevées sur le front, la tête ou la capuche), "masque" (lunettes de protection ou de ski sur les yeux)\n'
++'- "gl" : lunettes, parmi "aucune", "lunettes" (de vue, sur les yeux), "soleil" (de soleil rondes ou rectangulaires, sur les yeux), "aviateur" (aviateur : verres en goutte, fine monture métal), "tete" (lunettes relevées sur le front, la tête ou la capuche), "masque" (lunettes de protection ou de ski sur les yeux), "coeur" (lunettes en forme de cœur), "rondes" (grosses lunettes rondes rétro), "etoile" (lunettes en forme d\'étoile)\n'
 +'- "glc" : couleur de la monture, "#rrggbb"\n'
 +'- "lc" : couleur des verres des lunettes de soleil ou aviateur, "#rrggbb" (brun, gris fumé, vert, bleu miroir…)\n'
-+'- "hw" : couvre-chef, parmi "aucun", "capuche" (capuche relevée sur la tête), "casquette", "inverse" (casquette à l\'envers), "bonnet", "chapeau", "bandeau", "durag" (durag, foulard ou bonnet en tissu satiné bien ajusté sur le crâne), "pompier" (casque de pompier ou de chantier), "police" (casquette d\'uniforme à visière)\n'
++'- "hw" : couvre-chef, parmi "aucun", "capuche" (capuche relevée sur la tête), "casquette", "inverse" (casquette à l\'envers), "bonnet", "chapeau", "bandeau", "durag" (durag, foulard ou bonnet en tissu satiné bien ajusté sur le crâne), "beret", "bob" (bob ou chapeau de pêcheur), "cowboy" (chapeau de cowboy), "fleurs" (couronne de fleurs), "pompier" (casque de pompier ou de chantier), "police" (casquette d\'uniforme à visière)\n'
 +'- "hwc" : couleur du couvre-chef ou de la capuche, "#rrggbb"\n'
 +'- "hwt" : texte ou numéro visible sur le couvre-chef, 6 caractères maximum, sinon ""\n'
 +'- "hm" : motif de la capuche, de la casquette ou du chapeau, parmi "uni", "rayures", "camo", "carreaux", "taches" (le motif prend la couleur "ac")\n'
 +'- "tp" : haut, parmi "tshirt", "chemise", "sweat" (sweat ou pull), "zip" (veste zippée fermée, veste de survêtement, polaire zippée), "veste" (veste ouverte sur un autre haut), "costume" (veste de costume, chemise et cravate), "gilet" (gilet sans manches porté sur un autre haut)\n'
-+'- "mt" : motif du haut, parmi "uni", "rayures", "camo", "carreaux", "taches" (taches de vache, de dalmatien… dans la couleur "ac")\n'
++'- "mt" : motif du haut, parmi "uni", "rayures", "camo", "carreaux", "taches" (taches de vache, de dalmatien… dans la couleur "ac"), "pois", "coeurs", "etoiles"\n'
 +'- "tc" : couleur principale du haut (pour gilet, veste ou costume : la pièce du dessus), "#rrggbb"\n'
 +'- "t2" : couleur du vêtement en dessous (les manches pour un gilet, le haut sous une veste, la chemise d\'un costume, les cordons d\'un sweat), "#rrggbb"\n'
 +'- "yc" : couleur des épaules et du haut des manches quand elles sont d\'une autre couleur que le reste du haut (empiècement, veste de survêtement bicolore, maillot), "#rrggbb", sinon ""\n'
@@ -538,12 +540,13 @@ function keysText(){return "Regarde d'abord ce qui rend la personne reconnaissab
 +'- "tt" : texte imprimé sur le haut (par exemple LSPD, EMS, LSFD), 8 caractères maximum, sinon ""\n'
 +'- "rf" : 1 s\'il y a des bandes réfléchissantes, sinon 0\n'
 +'- "ac" : couleur d\'accent pour les rayures, la cravate, le pompon, le bandana, l\'écharpe, le sac à dos ou les bandes du jogging, "#rrggbb"\n'
-+'- "bt" : bas, parmi "pantalon", "jogging", "short", "salopette" (salopette à bretelles et plastron, le haut se voit dessous)\n'
++'- "bt" : bas, parmi "pantalon", "jogging", "short", "salopette" (salopette à bretelles et plastron, le haut se voit dessous), "jupe"\n'
 +'- "pc" : couleur du bas, "#rrggbb"\n'
 +'- "pb" : couleur des bandes sur les côtés du pantalon ou du jogging, "#rrggbb", sinon ""\n'
-+'- "sh" : chaussures, parmi "bottes", "baskets", "chaussures" (de ville)\n'
++'- "sh" : chaussures, parmi "bottes", "baskets", "chaussures" (de ville), "chaussons" (chaussons doux à pompon), "sandales"\n'
 +'- "sc" : couleur des chaussures, "#rrggbb"\n'
 +'- "gv" : couleur des gants, "#rrggbb", ou "" sans gants\n'
++'- "acol" : couleurs propres des accessoires qui n\'ont pas la couleur d\'accent, par exemple {"x":"#c0c0c0","Q":"#ff7eb6","_":"#5aa2ea"} (la clé "_" = l\'objet tenu) ; {} si rien\n'
 +'- "acc" : lettres des accessoires visibles, "" s\'il n\'y en a aucun : r = radio ou talkie, b = badge ou insigne, m = micro-casque ou oreillette, s = sacoche à la ceinture, c = chaîne ou collier, o = boucles d\'oreilles, w = montre, k = sac à dos, e = écharpe, h = casque audio autour du cou, a = bandana ou masque sur le bas du visage, n = sac en bandoulière, u = sac banane, d = plaques militaires, q = nœud dans les cheveux, f = fleur dans les cheveux, v = étui ou holster à la ceinture, y = lampe torche à la ceinture, z = menottes à la ceinture, l = bracelets, p = pins sur le haut, x = couronne, j = serre-tête oreilles de chat, t = nœud papillon, i = ailes d\'ange, g = cape, M = oreilles de lapin, A = antennes, B = cornes de diable, C = auréole, L = corne de licorne, D = casquette à hélice, R = bigoudis, T = cache-œil, E = pansement, P = pomme sur la tête, Q = canard sur la tête, V = cône de chantier sur la tête, N = flèche dans la tête, G = faux nez et moustache, H = bulle de chewing-gum (majuscules et minuscules sont des accessoires différents)\n'
 +'- "it" : objet tenu en main, parmi "aucun", "lance" (lance à incendie), "coeur", "telephone", "cafe", "donut", "trousse" (trousse de secours), "bouquet" (fleurs), "billets" (liasse d\'argent), "manette" (manette de jeu), "ballon" (ballon de basket ou de sport), "cle" (clé de voiture), "micro" (micro de chanteur), "glace", "sucette", "cadeau", "livre", "pizza", "poisson", "baguette", "banane", "poele", "papier" (papier toilette)\n'
 +'- "ms" : petite peluche ou petit animal porté par la personne (sur l\'épaule, accroché au sac ou dans les bras), parmi "aucune", "monstre" (petite peluche monstre à longues oreilles, visage clair et grand sourire plein de dents, comme les figurines de collection à la mode), "lapin" (lapin classique), "ours", "chat", "chien", "oiseau" (oiseau ou perroquet) ; prends la forme la plus proche\n'
