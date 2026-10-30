@@ -34,9 +34,9 @@ const nom=q.get('nom')||decodeURIComponent((location.pathname.match(/\/p\/([^/?#
 const bq=q.get('b')||'',BLOB=/^[a-z0-9]{6,40}$/.test(bq)?'https://'+bq+'.public.blob.vercel-storage.com':'',slug=nom.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40);
 // why : raison de l'échec, affichée sous le message pour comprendre ce qui bloque (réseau, serveur, lecture)
 let why='';const getJ=(u,k)=>fetch(u,{cache:'no-store'}).then(x=>{if(!x.ok){why+=k+' : réponse '+x.status+'. ';return Promise.reject();}return x.json().catch(()=>{why+=k+' : réponse illisible (page de contrôle ?). ';return Promise.reject();});},e=>{if(e!==undefined)why+=k+' : injoignable. ';return Promise.reject();});
-// 1) copie sur GitHub (même site, jamais bloquée), 2) stockage Blob, 3) serveur Vercel
+// 1) stockage Blob (toujours à jour), 2) copie sur GitHub (même site, jamais bloquée, mais en retard de quelques minutes après un enregistrement), 3) serveur Vercel
 const pth=location.pathname,GH=(pth.includes('/p/')?pth.split('/p/')[0]+'/':pth.replace(/[^/]*$/,''))+'p/'+slug+'.json?t='+Date.now();
-(nom?getJ(GH,'github').catch(()=>BLOB?getJ(BLOB+'/peluches/'+slug+'.json?t='+Date.now(),'stockage'):Promise.reject()).catch(()=>getJ(API+'/api/peluches?nom='+encodeURIComponent(slug),'serveur')).then(d=>d&&d.p?PL.unpack(d.p).then(c=>{if(!c)why+='lecture du lien impossible. ';return c;}):null).catch(()=>null):PL.unpack(q.get('p'))).then(c=>{
+(nom?(BLOB?getJ(BLOB+'/peluches/'+slug+'.json?t='+Date.now(),'stockage'):Promise.reject()).catch(()=>getJ(GH,'github')).catch(()=>getJ(API+'/api/peluches?nom='+encodeURIComponent(slug),'serveur')).then(d=>d&&d.p?PL.unpack(d.p).then(c=>{if(!c)why+='lecture du lien impossible. ';return c;}):null).catch(()=>null):PL.unpack(q.get('p'))).then(c=>{
 // Peluche de la bibliothèque introuvable : on le dit au lieu d'afficher une autre peluche
 if(nom&&!c){const m=document.createElement('p');m.textContent='Peluche « '+nom+' » introuvable.'+(why?' ('+why.trim()+')':'');m.style.cssText='position:fixed;inset:auto 0 45% 0;text-align:center;font:600 18px system-ui,sans-serif;color:#888;margin:0';document.body.append(m);return;}
 const cfg=c||PL.clean(PL.PRESETS.pompier);if(cfg.n)document.title=cfg.n;P=PL.build(cfg);scene.add(P.group);});
