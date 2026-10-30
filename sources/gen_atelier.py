@@ -208,7 +208,7 @@ code{font-family:var(--mono);font-size:13px;overflow-wrap:anywhere}
         </div>
         <div class="tabpanel" data-tab="style" id="tab-style" hidden>
                     <section class="card"><h2>Reprendre une peluche</h2><p class="help">Colle le lien d'une peluche déjà faite pour la modifier.</p>
-            <div class="row"><input id="import" type="text" placeholder="https://misternutss.github.io/peluches/?p=…" autocomplete="off" spellcheck="false" aria-label="Lien d'une peluche"><button class="btn" id="import-go" type="button">Ouvrir</button></div><p class="status" id="import-status" aria-live="polite"></p></section>
+            <div class="row"><input id="import" type="text" placeholder="https://peluches-tau.vercel.app/?p=…" autocomplete="off" spellcheck="false" aria-label="Lien d'une peluche"><button class="btn" id="import-go" type="button">Ouvrir</button></div><p class="status" id="import-status" aria-live="polite"></p></section>
         </div>
         <div class="tabpanel" data-tab="visage" id="tab-visage" hidden></div>
         <div class="tabpanel" data-tab="tete" id="tab-tete" hidden></div>
@@ -217,7 +217,7 @@ code{font-family:var(--mono);font-size:13px;overflow-wrap:anywhere}
         <div class="tabpanel" data-tab="lien" id="tab-lien" hidden>
           <section class="card">
             <h2>Lien pour ton item</h2>
-            <div class="field"><label for="base">Adresse de ta page 3D</label><input id="base" type="url" placeholder="https://misternutss.github.io/peluches/" autocomplete="off" spellcheck="false"></div>
+            <div class="field"><label for="base">Adresse de ta page 3D</label><input id="base" type="url" placeholder="https://peluches-tau.vercel.app/" autocomplete="off" spellcheck="false"></div>
             <div class="field"><label for="out">Lien de cette peluche</label><div class="row"><input id="out" type="text" readonly><button class="btn" id="copy" type="button">Copier</button></div></div>
             <p class="help" id="link-help"></p>
             <div class="field"><label for="edit">Lien pour la modifier plus tard (atelier GitHub)</label><div class="row"><input id="edit" type="text" readonly><button class="btn" id="copy-edit" type="button">Copier</button></div></div>
@@ -235,12 +235,12 @@ code{font-family:var(--mono);font-size:13px;overflow-wrap:anywhere}
             <p class="status" id="lib-status" aria-live="polite"></p>
           </section>
           <section class="card setup">
-            <h2>Mettre la page 3D en ligne (une seule fois)</h2>
+            <h2>Ton site</h2>
             <ol>
-              <li>La page 3D est déjà dans ton dépôt <code>peluches</code> (fichier <code>index.html</code>). Pour la mettre à jour à la main : <button class="btn" id="get-viewer" type="button" disabled>Télécharger index.html</button></li>
-              <li>Sur github.com, dans le dépôt, ouvre <b>Settings → Pages</b>, choisis la branche <code>main</code> et le dossier <code>/ (root)</code>, puis <b>Save</b>. Une ou deux minutes après, l'adresse <code>https://misternutss.github.io/peluches/</code> fonctionne.</li>
-              <li>L'atelier est aussi en ligne à <code>https://misternutss.github.io/peluches/atelier.html</code>.</li>
-              <li>Chaque peluche est entièrement décrite dans son lien : chaque nouvelle peluche a son propre lien, rien d'autre à mettre en ligne.</li>
+              <li>Ta page 3D est en ligne sur <code>https://peluches-tau.vercel.app/</code> : chaque envoi sur le dépôt GitHub la met à jour tout seul.</li>
+              <li>L'atelier public est à <code>https://peluches-tau.vercel.app/atelier</code> et la bibliothèque à <code>https://peluches-tau.vercel.app/bibliotheque</code>.</li>
+              <li>Chaque peluche est entièrement décrite dans son lien ; une peluche enregistrée dans la bibliothèque a en plus un lien court <code>/p/son-nom</code>.</li>
+              <li>Pour remettre la page 3D à jour à la main : <button class="btn" id="get-viewer" type="button" disabled>Télécharger index.html</button></li>
             </ol>
             <h2>Dans « Créer une image item »</h2>
             <ol>
@@ -510,11 +510,11 @@ $('analyse').addEventListener('click',()=>{if(ctl){const c0=ctl;ctl=null;c0.abor
 $('who').addEventListener('change',()=>{if(anyPhoto())runAnalysis();});
 
 // Lien
-const baseIn=$('base');baseIn.value=store('peluches-base')||(/(github\.io|vercel\.app)$/.test(location.hostname)?location.origin+location.pathname.replace(/[^/]*$/,''):'https://misternutss.github.io/peluches/');
+const baseIn=$('base');{const v=store('peluches-base');if(v&&/github\.io/.test(v))store('peluches-base','');}baseIn.value=store('peluches-base')||(/(github\.io|vercel\.app)$/.test(location.hostname)?location.origin+location.pathname.replace(/[^/]*$/,''):'https://peluches-tau.vercel.app/');
 baseIn.addEventListener('input',()=>{store('peluches-base',baseIn.value.trim());updateLink();});
 function baseUrl(){const v=baseIn.value.trim();if(!/^https?:\/\//i.test(v))return '';try{const u=new URL(v);if(!/\.[a-z0-9]+$/i.test(u.pathname)&&!u.pathname.endsWith('/'))u.pathname+='/';u.search='';u.hash='';return u.toString();}catch(e){return '';}}
 let linkN=0;function updateLink(){const my=++linkN;PL.pack(cfg).then(code=>{if(my===linkN)showLink(code);});}
-function showLink(code){if($('lib-nom')&&document.activeElement!==$('lib-nom')&&!$('lib-nom').value)$('lib-nom').value=cfg.n||'';const b=baseUrl(),url=(b||'https://misternutss.github.io/peluches/')+'?p='+code;$('out').value=url;$('out2').value=url;$('edit').value=(b||'https://misternutss.github.io/peluches/').replace(/[^/]*$/,'')+'atelier.html?p='+code;$('out').classList.toggle('example',!b);
+function showLink(code){if($('lib-nom')&&document.activeElement!==$('lib-nom')&&!$('lib-nom').value)$('lib-nom').value=cfg.n||'';const b=baseUrl(),url=(b||'https://peluches-tau.vercel.app/')+'?p='+code;$('out').value=url;$('out2').value=url;$('edit').value=(b||'https://peluches-tau.vercel.app/').replace(/[^/]*$/,'')+'atelier?p='+code;$('out').classList.toggle('example',!b);
 $('open').hidden=!b;$('open').href=url;say('link-help',b?'Colle ce lien dans URLS, avec le type Site Web.':"Lien d'exemple : renseigne d'abord l'adresse de ta page 3D (étapes en bas de page).");}
 // Reprendre une peluche depuis son lien (page 3D ou atelier)
 $('import-go').addEventListener('click',()=>{const v=$('import').value.trim();let code=null;try{code=new URL(v).searchParams.get('p');}catch(e){const m=v.match(/[?&]p=(~?[A-Za-z0-9_-]+)/);code=m?m[1]:(/^~?[A-Za-z0-9_-]{8,}$/.test(v)?v:null);}
