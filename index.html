@@ -75,14 +75,27 @@ out.push([v[0],v[1],num(v[2],-3,3,0),num(v[3],-3,3,0),num(v[4],-3,3,0),num(v[5],
 return out;}
 function encode(c){const b=new TextEncoder().encode(JSON.stringify(clean(c)));let s='';b.forEach(x=>{s+=String.fromCharCode(x);});return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
 function decode(str){try{const s=atob(String(str).replace(/-/g,'+').replace(/_/g,'/'));return clean(JSON.parse(new TextDecoder().decode(Uint8Array.from(s,ch=>ch.charCodeAt(0)))));}catch(e){return null;}}
+// Décompression deflate brute en JavaScript : la page 3D n'a pas besoin de DecompressionStream (absent des vieux navigateurs, dont celui de FiveM)
+function inflateRaw(src){let pos=0,bit=0,cnt=0;const out=[];
+const gb=()=>{if(!cnt){bit=src[pos++];cnt=8;}const b=bit&1;bit>>=1;cnt--;return b;},bits=n=>{let v=0;for(let i=0;i<n;i++)v|=gb()<<i;return v;};
+const build=l=>{const count=new Uint16Array(16),offs=new Uint16Array(16),sym=new Uint16Array(l.length);for(const x of l)count[x]++;count[0]=0;for(let i=1;i<16;i++)offs[i]=offs[i-1]+count[i-1];for(let i=0;i<l.length;i++)if(l[i])sym[offs[l[i]]++]=i;return{count,sym};};
+const dec=t=>{let code=0,first=0,index=0;for(let len=1;len<16;len++){code|=gb();const c=t.count[len];if(code-c<first)return t.sym[index+code-first];index+=c;first+=c;first<<=1;code<<=1;}throw new Error('inflate');};
+const LB=[3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258],LE=[0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0];
+const DB=[1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577],DE=[0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13];
+let last;do{last=gb();const type=bits(2);
+if(type===0){cnt=0;const n=src[pos]|src[pos+1]<<8;pos+=4;for(let i=0;i<n;i++)out.push(src[pos++]);continue;}
+let lt,dt;if(type===1){const l=new Array(288).fill(8);l.fill(9,144,256);l.fill(7,256,280);lt=build(l);dt=build(new Array(30).fill(5));}
+else{const hl=bits(5)+257,hd=bits(5)+1,hc=bits(4)+4,ord=[16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15],cl=new Array(19).fill(0);for(let i=0;i<hc;i++)cl[ord[i]]=bits(3);
+const ct=build(cl),L=[];while(L.length<hl+hd){const s=dec(ct);if(s<16)L.push(s);else{const r=s===16?3+bits(2):s===17?3+bits(3):11+bits(7),v=s===16?L[L.length-1]:0;for(let i=0;i<r;i++)L.push(v);}}lt=build(L.slice(0,hl));dt=build(L.slice(hl));}
+for(;;){const s=dec(lt);if(s<256)out.push(s);else if(s===256)break;else{const i=s-257,n=LB[i]+bits(LE[i]),d=dec(dt),dist=DB[d]+bits(DE[d]);for(let k=0;k<n;k++)out.push(out[out.length-dist]);}}
+}while(!last);return new Uint8Array(out);}
 // Lien court : seulement ce qui diffère de la peluche neutre, compressé (deflate). Commence par « ~ » ; les anciens liens restent lisibles.
 const b64u=bytes=>{let s='';bytes.forEach(x=>{s+=String.fromCharCode(x);});return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');};
 async function pack(c){const d=clean(c),o={};for(const k in d)if(JSON.stringify(d[k])!==JSON.stringify(NEUTRAL[k]))o[k]=d[k];
 if(typeof CompressionStream==='undefined')return encode(c);
 const z=new Blob([new TextEncoder().encode(JSON.stringify(o))]).stream().pipeThrough(new CompressionStream('deflate-raw'));return '~'+b64u(new Uint8Array(await new Response(z).arrayBuffer()));}
 async function unpack(str){str=String(str||'');if(str[0]!=='~')return decode(str);
-try{const s=atob(str.slice(1).replace(/-/g,'+').replace(/_/g,'/')),z=new Blob([Uint8Array.from(s,ch=>ch.charCodeAt(0))]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
-return clean(JSON.parse(await new Response(z).text()),NEUTRAL);}catch(e){return null;}}
+try{const s=atob(str.slice(1).replace(/-/g,'+').replace(/_/g,'/'));return clean(JSON.parse(new TextDecoder().decode(inflateRaw(Uint8Array.from(s,ch=>ch.charCodeAt(0))))),NEUTRAL);}catch(e){return null;}}
 
 // Hasard reproductible : une même peluche a toujours les mêmes petites bosses
 let R=Math.random;
@@ -677,7 +690,10 @@ PL.setQuality(0.55);PL.setup(r);const camFill=PL.lights(scene);let P=null;
 // Le lien court /p/nom est servi par la page 404 de GitHub Pages (même page que celle-ci) ; la peluche est lue sur le serveur Vercel
 const API=/vercel\.app$/.test(location.hostname)?'':'https://peluches-tau.vercel.app';
 const nom=q.get('nom')||decodeURIComponent((location.pathname.match(/\/p\/([^/?#]+)\/?$/)||[])[1]||'');
-(nom?fetch(API+'/api/peluches?nom='+encodeURIComponent(nom)).then(x=>x.ok?x.json():null).then(d=>d?PL.unpack(d.p):null).catch(()=>null):PL.unpack(q.get('p'))).then(c=>{
+// Lecture directe dans le stockage Blob (rapide, pas de contrôle anti-robot), sinon par le serveur Vercel
+const BLOB='',slug=nom.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40);
+const getJ=u=>fetch(u,{cache:'no-store'}).then(x=>x.ok?x.json():Promise.reject(x.status));
+(nom?(BLOB?getJ(BLOB+'/peluches/'+slug+'.json?t='+Date.now()):Promise.reject()).catch(()=>getJ(API+'/api/peluches?nom='+encodeURIComponent(slug))).then(d=>d&&d.p?PL.unpack(d.p):null).catch(()=>null):PL.unpack(q.get('p'))).then(c=>{
 // Peluche de la bibliothèque introuvable : on le dit au lieu d'afficher une autre peluche
 if(nom&&!c){const m=document.createElement('p');m.textContent='Peluche « '+nom+' » introuvable.';m.style.cssText='position:fixed;inset:auto 0 45% 0;text-align:center;font:600 18px system-ui,sans-serif;color:#888;margin:0';document.body.append(m);return;}
 const cfg=c||PL.clean(PL.PRESETS.pompier);if(cfg.n)document.title=cfg.n;P=PL.build(cfg);scene.add(P.group);});

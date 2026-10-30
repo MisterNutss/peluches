@@ -29,7 +29,10 @@ PL.setQuality(0.55);PL.setup(r);const camFill=PL.lights(scene);let P=null;
 // Le lien court /p/nom est servi par la page 404 de GitHub Pages (même page que celle-ci) ; la peluche est lue sur le serveur Vercel
 const API=/vercel\.app$/.test(location.hostname)?'':'https://peluches-tau.vercel.app';
 const nom=q.get('nom')||decodeURIComponent((location.pathname.match(/\/p\/([^/?#]+)\/?$/)||[])[1]||'');
-(nom?fetch(API+'/api/peluches?nom='+encodeURIComponent(nom)).then(x=>x.ok?x.json():null).then(d=>d?PL.unpack(d.p):null).catch(()=>null):PL.unpack(q.get('p'))).then(c=>{
+// Lecture directe dans le stockage Blob (rapide, pas de contrôle anti-robot), sinon par le serveur Vercel
+const BLOB='',slug=nom.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40);
+const getJ=u=>fetch(u,{cache:'no-store'}).then(x=>x.ok?x.json():Promise.reject(x.status));
+(nom?(BLOB?getJ(BLOB+'/peluches/'+slug+'.json?t='+Date.now()):Promise.reject()).catch(()=>getJ(API+'/api/peluches?nom='+encodeURIComponent(slug))).then(d=>d&&d.p?PL.unpack(d.p):null).catch(()=>null):PL.unpack(q.get('p'))).then(c=>{
 // Peluche de la bibliothèque introuvable : on le dit au lieu d'afficher une autre peluche
 if(nom&&!c){const m=document.createElement('p');m.textContent='Peluche « '+nom+' » introuvable.';m.style.cssText='position:fixed;inset:auto 0 45% 0;text-align:center;font:600 18px system-ui,sans-serif;color:#888;margin:0';document.body.append(m);return;}
 const cfg=c||PL.clean(PL.PRESETS.pompier);if(cfg.n)document.title=cfg.n;P=PL.build(cfg);scene.add(P.group);});
