@@ -161,6 +161,8 @@ code{font-family:var(--mono);font-size:13px;overflow-wrap:anywhere}
         </div>
         <div class="tabpanel" data-tab="style" id="tab-style" hidden>
           <section class="card"><h2>Modèles de départ</h2><div class="seg" id="presets"></div></section>
+          <section class="card"><h2>Reprendre une peluche</h2><p class="help">Colle le lien d'une peluche déjà faite pour la modifier.</p>
+            <div class="row"><input id="import" type="text" placeholder="https://misternutss.github.io/peluches/?p=…" autocomplete="off" spellcheck="false" aria-label="Lien d'une peluche"><button class="btn" id="import-go" type="button">Ouvrir</button></div><p class="status" id="import-status" aria-live="polite"></p></section>
         </div>
         <div class="tabpanel" data-tab="visage" id="tab-visage" hidden></div>
         <div class="tabpanel" data-tab="tete" id="tab-tete" hidden></div>
@@ -172,6 +174,8 @@ code{font-family:var(--mono);font-size:13px;overflow-wrap:anywhere}
             <div class="field"><label for="base">Adresse de ta page 3D</label><input id="base" type="url" placeholder="https://misternutss.github.io/peluches/" autocomplete="off" spellcheck="false"></div>
             <div class="field"><label for="out">Lien de cette peluche</label><div class="row"><input id="out" type="text" readonly><button class="btn" id="copy" type="button">Copier</button></div></div>
             <p class="help" id="link-help"></p>
+            <div class="field"><label for="edit">Lien pour la modifier plus tard (atelier GitHub)</label><div class="row"><input id="edit" type="text" readonly><button class="btn" id="copy-edit" type="button">Copier</button></div></div>
+            <p class="help">Envoie ce lien à quelqu'un : la peluche s'ouvre dans l'atelier, prête à être modifiée, sans compte Claude.</p>
             <div class="row"><a class="btn" id="open" target="_blank" rel="noopener" hidden>Ouvrir la page</a><button class="btn" id="icon" type="button" disabled>Télécharger l'icône PNG</button></div>
             <p class="status" id="dl-status" aria-live="polite"></p>
           </section>
@@ -836,7 +840,7 @@ const reduceMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion
 const stage=$('stage'),scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(22,1,0.1,500);
 const r=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});r.setClearColor(0x000000,0);r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;stage.prepend(r.domElement);
 PL.setup(r);const camFill=PL.lights(scene);PL.HOOKS.onTex=()=>{dirty=true;};
-let cfg=PL.clean(PL.PRESETS.pompier),cur=null,ry=-0.25,el=0.24,dirty=true,drag=false,lx=0,ly=0;
+let cfg=(()=>{try{const p=new URLSearchParams(location.search).get('p');return(p&&PL.decode(p))||PL.clean(PL.PRESETS.pompier);}catch(e){return PL.clean(PL.PRESETS.pompier);}})(),cur=null,ry=-0.25,el=0.24,dirty=true,drag=false,lx=0,ly=0;
 function fitSize(){const w=stage.clientWidth||480,h=stage.clientHeight||480;r.setPixelRatio(Math.min(2,window.devicePixelRatio||1));r.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();dirty=true;}
 fitSize();if(window.ResizeObserver)new ResizeObserver(fitSize).observe(stage);window.addEventListener('resize',fitSize);
 function rebuild(){if(cur){scene.remove(cur.group);cur.dispose();}cur=PL.build(cfg);scene.add(cur.group);dirty=true;}
@@ -1088,8 +1092,13 @@ $('who').addEventListener('change',()=>{if(anyPhoto())runAnalysis();});
 const baseIn=$('base');baseIn.value=store('peluches-base')||(/github\.io$/.test(location.hostname)?location.origin+location.pathname.replace(/[^/]*$/,''):'https://misternutss.github.io/peluches/');
 baseIn.addEventListener('input',()=>{store('peluches-base',baseIn.value.trim());updateLink();});
 function baseUrl(){const v=baseIn.value.trim();if(!/^https?:\/\//i.test(v))return '';try{const u=new URL(v);if(!/\.[a-z0-9]+$/i.test(u.pathname)&&!u.pathname.endsWith('/'))u.pathname+='/';u.search='';u.hash='';return u.toString();}catch(e){return '';}}
-function updateLink(){const b=baseUrl(),url=(b||'https://misternutss.github.io/peluches/')+'?p='+PL.encode(cfg);$('out').value=url;$('out2').value=url;$('out').classList.toggle('example',!b);
+function updateLink(){const b=baseUrl(),code=PL.encode(cfg),url=(b||'https://misternutss.github.io/peluches/')+'?p='+code;$('out').value=url;$('out2').value=url;$('edit').value=(b||'https://misternutss.github.io/peluches/').replace(/[^/]*$/,'')+'atelier.html?p='+code;$('out').classList.toggle('example',!b);
 $('open').hidden=!b;$('open').href=url;say('link-help',b?'Colle ce lien dans URLS, avec le type Site Web.':"Lien d'exemple : renseigne d'abord l'adresse de ta page 3D (étapes en bas de page).");}
+// Reprendre une peluche depuis son lien (page 3D ou atelier)
+$('import-go').addEventListener('click',()=>{const v=$('import').value.trim();let code=null;try{code=new URL(v).searchParams.get('p');}catch(e){const m=v.match(/[?&]p=([A-Za-z0-9_-]+)/);code=m?m[1]:(/^[A-Za-z0-9_-]{20,}$/.test(v)?v:null);}
+const c=code&&PL.decode(code);if(!c){say('import-status',"Ce lien ne contient pas de peluche. Copie le lien complet, avec ?p=…");return;}cfg=c;syncForm();rebuild();updateLink();say('import-status','Peluche ouverte : tu peux la modifier.');});
+$('copy-edit').addEventListener('click',()=>{const t=$('edit').value,done=()=>{$('copy-edit').textContent='Copié';setTimeout(()=>{$('copy-edit').textContent='Copier';},1500);},sel=()=>{$('edit').focus();$('edit').select();};
+try{navigator.clipboard.writeText(t).then(done,sel);}catch(e){sel();}});
 $('copy2').addEventListener('click',()=>{const t=$('out2').value,done=()=>{$('copy2').textContent='Lien copié';setTimeout(()=>{$('copy2').textContent='Copier le lien';},1500);},sel=()=>{$('out2').focus();$('out2').select();};
 try{navigator.clipboard.writeText(t).then(done,sel);}catch(e){sel();}});
 $('copy').addEventListener('click',()=>{const t=$('out').value,done=()=>{$('copy').textContent='Copié';setTimeout(()=>{$('copy').textContent='Copier';},1500);},sel=()=>{$('out').focus();$('out').select();};
