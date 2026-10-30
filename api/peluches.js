@@ -68,9 +68,10 @@ export default async function handler(req, res) {
       if (typeof b.p !== 'string' || !/^~?[A-Za-z0-9_-]{4,40000}$/.test(b.p)) return res.status(400).json({ erreur: 'Peluche invalide.' });
       const opts = { access: 'public', addRandomSuffix: false, allowOverwrite: true, cacheControlMaxAge: 60, ...AUTH };
       await put(`peluches/${slug}.json`, JSON.stringify({ nom: String(b.nom).trim().slice(0, 40), p: b.p, date: new Date().toISOString() }), { ...opts, contentType: 'application/json' });
+      let image = null;
       if (typeof b.image === 'string' && b.image.startsWith('data:image/png;base64,') && b.image.length < 2000000)
-        await put(`peluches/${slug}.png`, Buffer.from(b.image.split(',')[1], 'base64'), { ...opts, contentType: 'image/png' });
-      return res.status(200).json({ ok: true, slug });
+        image = (await put(`peluches/${slug}.png`, Buffer.from(b.image.split(',')[1], 'base64'), { ...opts, contentType: 'image/png' })).url + '?v=' + Date.now();
+      return res.status(200).json({ ok: true, slug, image });
     }
     res.setHeader('Allow', 'GET, POST, DELETE');
     return res.status(405).json({ erreur: 'Méthode non permise.' });

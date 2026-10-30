@@ -183,6 +183,7 @@ code{font-family:var(--mono);font-size:13px;overflow-wrap:anywhere}
             <div class="field"><label for="lib-code">Code secret</label><input id="lib-code" type="password" autocomplete="off"></div></div>
             <div class="row"><button class="cta" id="lib-save" type="button">Enregistrer dans la bibliothèque</button><a class="btn" href="bibliotheque">Ouvrir la bibliothèque</a></div>
             <div class="field" id="lib-link" hidden><label for="lib-out">Lien court de cette peluche</label><div class="row"><input id="lib-out" type="text" readonly><button class="btn" id="lib-copy" type="button">Copier</button></div></div>
+            <div class="field" id="lib-ico" hidden><label for="lib-ico-out">Icône pour « Icône URL personnalisé »</label><div class="row"><input id="lib-ico-out" type="text" readonly><button class="btn" id="lib-ico-copy" type="button">Copier</button></div></div>
             <p class="status" id="lib-status" aria-live="polite"></p>
           </section>
           <section class="card setup">
@@ -1159,11 +1160,12 @@ if(/^https?:$/.test(location.protocol))fetch('/api/peluches?nom=__test__').then(
 $('lib-code').value=store('peluches-code')||'';
 $('lib-save').addEventListener('click',async()=>{const nom=$('lib-nom').value.trim()||cfg.n,code=$('lib-code').value;if(!nom){say('lib-status','Donne un nom à la peluche.');return;}if(!code){say('lib-status','Entre le code secret.');return;}
 $('lib-save').disabled=true;say('lib-status','Enregistrement…');
-try{const p=await PL.pack(cfg),image=cur?renderIcon(256).toDataURL('image/png'):'';
+try{const p=await PL.pack(cfg),image=cur?renderIcon(512).toDataURL('image/png'):'';
 const x=await fetch('/api/peluches',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({nom,p,image,code})}),d=await x.json().catch(()=>({}));
 if(!x.ok){say('lib-status',d.erreur||"L'enregistrement a échoué.");return;}
-store('peluches-code',code);$('lib-out').value=VIEW+'p/'+d.slug;$('lib-link').hidden=false;say('lib-status','Peluche enregistrée dans la bibliothèque.');}
+store('peluches-code',code);$('lib-out').value=VIEW+'p/'+d.slug;$('lib-link').hidden=false;if(d.image){$('lib-ico-out').value=d.image;$('lib-ico').hidden=false;}say('lib-status','Peluche enregistrée dans la bibliothèque.');}
 catch(e){say('lib-status',"L'enregistrement a échoué. Vérifie ta connexion.");}finally{$('lib-save').disabled=false;}});
+$('lib-ico-copy').addEventListener('click',()=>{const t=$('lib-ico-out').value;try{navigator.clipboard.writeText(t).then(()=>{$('lib-ico-copy').textContent='Copié';setTimeout(()=>{$('lib-ico-copy').textContent='Copier';},1500);});}catch(e){$('lib-ico-out').select();}});
 $('lib-copy').addEventListener('click',()=>{const t=$('lib-out').value;try{navigator.clipboard.writeText(t).then(()=>{$('lib-copy').textContent='Copié';setTimeout(()=>{$('lib-copy').textContent='Copier';},1500);});}catch(e){$('lib-out').select();}});
 </script>
 
