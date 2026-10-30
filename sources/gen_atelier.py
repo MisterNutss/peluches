@@ -201,8 +201,6 @@ code{font-family:var(--mono);font-size:13px;overflow-wrap:anywhere}
             <label class="check"><input type="checkbox" id="review" checked> Vérifier la ressemblance et corriger tout seul (plus lent, plus fidèle)</label>
             <button class="cta" id="analyse" type="button" disabled hidden>Créer la peluche avec la photo</button>
             <p class="status" id="ai-status" aria-live="polite">Ajoute une photo de face : la peluche se crée toute seule.</p>
-            <div class="field" id="key-box" hidden><label for="api-key">Clé API Claude, pour la création automatique sur ce site</label><div class="row"><input id="api-key" type="password" placeholder="sk-ant-…" autocomplete="off" spellcheck="false"><button class="btn" id="key-save" type="button">Enregistrer</button></div>
-            <p class="help">Facultatif. La clé reste dans ce navigateur et ne part que vers api.anthropic.com. Elle se crée sur platform.claude.com (facturée à l'usage, à part de l'abonnement Claude). Sans clé, règle la peluche à la main.</p></div>
           </section>
         </div>
         <div class="tabpanel" data-tab="style" id="tab-style" hidden>
@@ -466,7 +464,7 @@ function keysText(){return "Regarde d'abord ce qui rend la personne reconnaissab
 +"N'utilise jamais les pièces sur mesure pour une mascotte, une coiffure, des lunettes ou un vêtement : il y a des clés pour ça. Une pièce isolée qui ne ressemble à rien est pire que pas de pièce : en cas de doute, mets [].\n"
 +"Une combinaison ou un pyjama d'animal se fait avec tp sweat et hw capuche de la même couleur, le même motif sur mt et hm, puis les oreilles, cornes ou queue en pièces sur mesure.\n"
 +"Exemple de forme (sans pièce sur mesure) : "+JSON.stringify(Object.assign({},PL.PRESETS.police,{hm:'uni',pz:[],cl:0,ms:'aucune',mc:'#8ec5f0',mp:'droite',mz:1,lc:'#3a2a1e',imp:null}));}
-function readyMsg(){if(!(sample&&imagesOK))return $('key-box')&&!$('key-box').hidden?"Pour la création automatique, enregistre une clé API Claude ci-dessous. Sinon règle la peluche à la main : le bouton Pipette prend une couleur sur la photo.":"La création automatique n'est pas disponible ici. Règle la peluche à la main : le bouton Pipette prend une couleur sur la photo.";return anyPhoto()?'Peluche prête. Tu peux relancer la création ou corriger les réglages.':'Ajoute une photo de face : la peluche se crée toute seule.';}
+function readyMsg(){if(!(sample&&imagesOK))return "Règle la peluche à la main : le bouton Pipette prend une couleur sur la photo. Pour reprendre une peluche déjà faite, colle son lien dans l'onglet « Style et pose ».";return anyPhoto()?'Peluche prête. Tu peux relancer la création ou corriger les réglages.':'Ajoute une photo de face : la peluche se crée toute seule.';}
 function reviewPrompt(w,slots,nr){const cur=Object.assign({},cfg);delete cur.im;delete cur.imt;delete cur.ia;
 return intro(w,slots)+"Les "+nr+" dernières images ne sont pas des photos : c'est le rendu actuel de la peluche ("+(nr>1?'de face, puis de dos':'de face')+"), fabriquée avec ce réglage :\n"+JSON.stringify(cur)+"\n"
 +"Compare la peluche aux photos comme un client exigeant, en commençant par la coiffure (longueur, volume, raie, frange, texture, attache, côtés), puis couleurs des cheveux, de la peau et des yeux, barbe, lunettes, couvre-chef, haut et motif, couleurs des vêtements, accessoires, mascotte, objets. "
@@ -490,28 +488,15 @@ else say('ai-status','Peluche créée depuis '+(use.length>1?'les photos':'la ph
 catch(e){if(ctl!==my)return;const code=e&&e.code;
 if(['not_granted','sampling_disabled','not_declared','capability_disabled','capability_removed','images_unavailable'].includes(code)){sample=null;say('ai-status',"La création automatique n'est pas autorisée ici. Règle la peluche à la main : le bouton Pipette prend une couleur sur la photo.");}
 else say('ai-status',({cancelled:'Création arrêtée.',rate_limited:'Trop de demandes pour le moment. Réessaie dans un moment.',image_rejected:"Une des images n'est pas acceptée. Essaie des captures en PNG ou JPEG.",
-refused:"Claude n'a pas pu décrire cette photo. Essaie une autre image.",bad_key:'La clé API est refusée. Vérifie-la dans la case « Clé API Claude ».',network:'Pas de connexion avec Claude. Réessaie dans un moment.',invalid_json:'La réponse était incomplète. Clique sur « Relancer la création ».',session_expired:'Reconnecte-toi à Claude, puis relance la création.'})[code]||'La création a échoué. Clique sur « Relancer la création ».');}
+refused:"Claude n'a pas pu décrire cette photo. Essaie une autre image.",invalid_json:'La réponse était incomplète. Clique sur « Relancer la création ».',session_expired:'Reconnecte-toi à Claude, puis relance la création.'})[code]||'La création a échoué. Clique sur « Relancer la création ».');}
 finally{if(ctl===my){ctl=null;updateAnalyse();}}}
 const getSample=window.claude&&window.claude.use?window.claude.use('sample'):Promise.resolve(null);
-// Hors de claude.ai (page GitHub) : création automatique avec une clé API Claude enregistrée dans ce navigateur
-function keySample(){const key=store('peluches-cle');if(!key)return null;
-const b64=blob=>new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result).split(',')[1]);fr.onerror=rej;fr.readAsDataURL(blob);});
-const fail=code=>Object.assign(new Error(code),{code});
-return{limits:async()=>({images:{maxCount:5}}),json:async(text,o)=>{const content=[];for(const im of(o.images||[]))content.push({type:'image',source:{type:'base64',media_type:im.type||'image/jpeg',data:await b64(im)}});content.push({type:'text',text});
-let r;try{r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',signal:o.signal,headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2026-10-21','anthropic-beta':'server-side-fallback-2026-07-01','anthropic-dangerous-direct-browser-access':'true'},
-body:JSON.stringify({model:'claude-opus-5-5',max_tokens:16000,output_config:{effort:'medium'},fallbacks:'default',system:'Tu réponds uniquement avec un objet JSON valide, sans texte autour.',messages:[{role:'user',content}]})});}
-catch(e){throw fail(e&&e.name==='AbortError'?'cancelled':'network');}
-if(r.status===401||r.status===403)throw fail('bad_key');if(r.status===429)throw fail('rate_limited');if(!r.ok)throw fail('failed');
-const d=await r.json();if(d.stop_reason==='refusal')throw fail('refused');const t=(d.content||[]).filter(x=>x.type==='text').map(x=>x.text).join('');
-const a=t.indexOf('{'),z=t.lastIndexOf('}');try{return JSON.parse(t.slice(a,z+1));}catch(e){throw fail('invalid_json');}}};}
-$('key-save').addEventListener('click',()=>{const v=$('api-key').value.trim();store('peluches-cle',v);$('api-key').value='';sample=keySample();imagesOK=!!sample;maxImages=5;updateAnalyse();
-say('ai-status',sample?'Clé enregistrée. '+readyMsg():'Clé retirée. Règle la peluche à la main.');if(sample&&anyPhoto())runAnalysis();});
-getSample.then(async s=>{if(!s){$('key-box').hidden=false;s=keySample();if(store('peluches-cle'))$('api-key').placeholder='Clé enregistrée (laisse vide puis Enregistrer pour la retirer)';}sample=s;if(s){try{const lim=await s.limits();imagesOK=!!(lim&&lim.images);if(imagesOK)maxImages=lim.images.maxCount||1;}catch(e){imagesOK=false;}}updateAnalyse();if(!pick)say('ai-status',readyMsg());if(anyPhoto())runAnalysis();},()=>{updateAnalyse();say('ai-status',readyMsg());});
+getSample.then(async s=>{sample=s;if(s){try{const lim=await s.limits();imagesOK=!!(lim&&lim.images);if(imagesOK)maxImages=lim.images.maxCount||1;}catch(e){imagesOK=false;}}updateAnalyse();if(!pick)say('ai-status',readyMsg());if(anyPhoto())runAnalysis();},()=>{updateAnalyse();say('ai-status',readyMsg());});
 $('analyse').addEventListener('click',()=>{if(ctl){const c0=ctl;ctl=null;c0.abort();updateAnalyse();say('ai-status','Création arrêtée.');return;}runAnalysis();});
 $('who').addEventListener('change',()=>{if(anyPhoto())runAnalysis();});
 
 // Lien
-const baseIn=$('base');baseIn.value=store('peluches-base')||(/github\.io$/.test(location.hostname)?location.origin+location.pathname.replace(/[^/]*$/,''):'https://misternutss.github.io/peluches/');
+const baseIn=$('base');baseIn.value=store('peluches-base')||(/(github\.io|vercel\.app)$/.test(location.hostname)?location.origin+location.pathname.replace(/[^/]*$/,''):'https://misternutss.github.io/peluches/');
 baseIn.addEventListener('input',()=>{store('peluches-base',baseIn.value.trim());updateLink();});
 function baseUrl(){const v=baseIn.value.trim();if(!/^https?:\/\//i.test(v))return '';try{const u=new URL(v);if(!/\.[a-z0-9]+$/i.test(u.pathname)&&!u.pathname.endsWith('/'))u.pathname+='/';u.search='';u.hash='';return u.toString();}catch(e){return '';}}
 function updateLink(){const b=baseUrl(),code=PL.encode(cfg),url=(b||'https://misternutss.github.io/peluches/')+'?p='+code;$('out').value=url;$('out2').value=url;$('edit').value=(b||'https://misternutss.github.io/peluches/').replace(/[^/]*$/,'')+'atelier.html?p='+code;$('out').classList.toggle('example',!b);

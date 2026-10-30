@@ -2,8 +2,8 @@
 
 Peluches 3D sans fond pour des items « Site Web » FiveM.
 
-- `index.html` : la page 3D transparente. Chaque peluche est décrite dans son lien (`?p=...`), donc chaque peluche a son propre lien. C'est cette page que GitHub Pages publie : https://misternutss.github.io/peluches/
-- `atelier.html` : l'atelier sur GitHub Pages (https://misternutss.github.io/peluches/atelier.html). Réglages à la main, pipette, imprimé ; la création automatique depuis les photos y demande une clé API Claude (enregistrée dans le navigateur).
+- `index.html` : la page 3D transparente. Chaque peluche est décrite dans son lien (`?p=...`), donc chaque peluche a son propre lien. C'est cette page que le site publie.
+- `atelier.html` : l'atelier public, pour modifier une peluche à la main (réglages, pipette, imprimé). Un lien `atelier.html?p=...` ouvre directement une peluche.
 - `atelier-peluches.html` : le même atelier, publié comme page claude.ai : la création automatique depuis les photos y utilise le compte Claude de la personne connectée.
 - `sources/` : le code d'origine.
   - `plush_model.js` : le modèle 3D de la peluche, partagé par l'atelier et la page 3D. Les cheveux sont faits de vraies mèches, réglées par longueur, volume, raie, frange, texture, attache et côtés.
