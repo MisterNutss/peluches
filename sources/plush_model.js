@@ -7,9 +7,9 @@ const ENUM={st:['classique','ours','lapin','chat','monstre','avatar'],po:['assis
 bd:['aucune','barbe3j','barbe','longue','moustache','bouc'],gl:['aucune','lunettes','soleil','aviateur','tete','masque'],
 hw:['aucun','capuche','casquette','inverse','bonnet','chapeau','bandeau','durag','pompier','police'],tp:['tshirt','chemise','sweat','zip','veste','costume','gilet'],
 mt:['uni','rayures','camo','carreaux','taches'],hm:['uni','rayures','camo','carreaux','taches'],bt:['pantalon','jogging','short','salopette'],sh:['bottes','baskets','chaussures'],ex:['sourire','content','neutre','serieux','rire','clin','amour','surpris','triste','boude','dodo','etoiles','langue','bisou','pleure','gene'],
-it:['aucun','lance','coeur','telephone','cafe','donut','trousse','bouquet','billets','manette','ballon','cle','micro','glace','sucette','cadeau','livre','pizza'],
+it:['aucun','lance','coeur','telephone','cafe','donut','trousse','bouquet','billets','manette','ballon','cle','micro','glace','sucette','cadeau','livre','pizza','poisson','baguette','banane','poele','papier'],
 hp:['aucune','gauche','milieu','droite'],hf:['aucune','courte','droite','balayee','rideau','longue','arriere'],hx:['lisse','ondule','boucle','crepu','pique','dreads'],ht:['aucune','queue','haute','couettes','chignon','tresse','demi'],hd:['normaux','courts','rases'],ms:['aucune','monstre','lapin','ours','chat','chien','oiseau'],mp:['droite','gauche','tete','mains']};
-const ACC='rbmscowkehanudqfvyzlpxjtig';
+const ACC='rbmscowkehanudqfvyzlpxjtigABCDLMNPQVTEGHR';
 // Proportions par style : h = taille de la tête, b = corps [largeur, hauteur, profondeur], a = bras [épaisseur, longueur], l = jambes [largeur, hauteur, longueur]
 // Ourson : ventre rond, membres épais. Lapin : corps allongé, longues pattes. Chaton : tête un peu plus grosse.
 // h peut être [largeur, hauteur, profondeur] pour une tête ovale.
@@ -573,7 +573,7 @@ g.position.copy(p).addScaledVector(n,E[1][1]*0.55);g.quaternion.setFromUnitVecto
 
 // Accessoires de tête, posés sur ce qui est le plus à l'extérieur (cheveux, capuche, chapeau)
 const headTg=tops.concat((st==='monstre'?[hairCap,head]:[hairCap,hairS,head]).filter(Boolean));
-function onHead(d,g,lift){d=d.clone().normalize();const ctr=V(0,24.6,0.6);ray.set(ctr.clone().addScaledVector(d,80),d.clone().negate());const h=ray.intersectObjects(headTg,false)[0];
+function onHead(d,g,lift,k){if(k)g.scale.setScalar(k);d=d.clone().normalize();const ctr=V(0,24.6,0.6);ray.set(ctr.clone().addScaledVector(d,80),d.clone().negate());const h=ray.intersectObjects(headTg,false)[0];
 const p=h?h.point.clone():ctr.clone().addScaledVector(d,10);g.position.copy(p).addScaledVector(d,lift||0.3);g.quaternion.setFromUnitVectors(V(0,0,1),d);g.userData.part='head';G.add(g);g.updateMatrixWorld(true);return g;}
 if(has('q')){// Nœud dans les cheveux : deux boucles et un nœud central
 const g=new THREE.Group();for(const s of[-1,1]){const l=mk(blob(1.6,1.1,0.55,{lump:0}),mAcc);l.position.set(s*1.45,0,0);l.rotation.z=s*0.25;g.add(l);}g.add(mk(blob(0.65,0.75,0.6,{lump:0}),mAcc));onHead(V(0.55,0.8,0.35),g,0.35);}
@@ -581,10 +581,49 @@ if(has('x')){// Couronne dorée sur le dessus de la tête
 const g=new THREE.Group(),cr=new THREE.Group();cr.add(mk(new THREE.CylinderGeometry(3.2,3.4,1.4,32,1,true),SM({color:0xe8b830,metalness:0.7,roughness:0.3,side:THREE.DoubleSide})));
 for(let i=0;i<6;i++){const a=i/6*Math.PI*2,pk=mk(new THREE.ConeGeometry(0.55,1.5,8),SM({color:0xe8b830,metalness:0.7,roughness:0.3}));pk.position.set(Math.cos(a)*3.25,1.35,Math.sin(a)*3.25);cr.add(pk);
 const gm=mk(new THREE.SphereGeometry(0.32,10,8),SM({color:['#ff4f7b','#5aa2ea','#4fbf8b'][i%3],roughness:0.2}));gm.position.set(Math.cos(a)*3.4,0,Math.sin(a)*3.4);cr.add(gm);}
-cr.rotation.x=Math.PI/2;g.add(cr);onHead(V(0,1,0.12),g,0.1);}
+cr.rotation.x=Math.PI/2;g.add(cr);g.scale.setScalar(1.12);onHead(V(0,1,0.12),g,0.9+(strandy?HH.hv*1.2:0));}
 if(has('j')){// Serre-tête oreilles de chat
 const mIn=SM({color:0xffb6c8,roughness:0.6});for(const sx of[-1,1]){const g=new THREE.Group(),ear=mk(new THREE.ConeGeometry(1.5,2.6,4),mAcc);ear.rotation.x=Math.PI/2;ear.rotation.z=Math.PI/4;ear.position.z=0.9;g.add(ear);
 const inn=mk(new THREE.ConeGeometry(0.9,1.7,4),mIn);inn.rotation.x=Math.PI/2;inn.rotation.z=Math.PI/4;inn.position.set(0,-0.15,0.85);inn.scale.z=0.5;g.add(inn);onHead(V(sx*0.5,0.85,0.15),g,0);}}
+// Petits accessoires de tête : on les construit debout (axe y) puis onHead les oriente vers l'extérieur
+const upright=(...ms)=>{const g=new THREE.Group(),u=new THREE.Group();ms.forEach(x=>u.add(x));u.rotation.x=Math.PI/2;g.add(u);return g;};
+const at=(m,x,y,z,rx,ry,rz)=>{m.position.set(x||0,y||0,z||0);if(rx||ry||rz)m.rotation.set(rx||0,ry||0,rz||0);return m;};
+const hairUp=strandy&&!hats?0.5+HH.hv*1.0:0.2;
+if(has('A')){// Antennes à boules
+const mA=SM({color:0x2b2b30,roughness:0.5});for(const sx of[-1,1])onHead(V(sx*0.3,0.95,0.15),upright(at(mk(new THREE.CylinderGeometry(0.12,0.12,4,8),mA),0,2),at(mk(new THREE.SphereGeometry(0.6,14,10),mAcc),0,4.2)),hairUp);}
+if(has('B')){// Cornes de diable
+const mR=SM({color:0xd7263d,roughness:0.35});for(const sx of[-1,1])onHead(V(sx*0.42,0.85,0.28),upright(at(mk(new THREE.ConeGeometry(0.7,2.4,14),mR),0,1.1,0,0,0,-sx*0.25)),hairUp*0.6,1.5);}
+if(has('C')){// Auréole dorée qui flotte au-dessus de la tête
+const ha=mk(new THREE.TorusGeometry(3.2,0.32,10,40),SM({color:0xffd75e,emissive:0xffc31a,emissiveIntensity:0.35,metalness:0.4,roughness:0.3}));const g=new THREE.Group();g.add(ha);onHead(V(0,1,0.05),g,3.4+hairUp);}
+if(has('D')){// Casquette à hélice
+const mC=SM({color:c.ac,roughness:0.6}),bl=SM({color:0xffd166,roughness:0.5}),g2=new THREE.Group();g2.add(at(mk(new THREE.BoxGeometry(5,0.12,0.9),bl),0,1.9),at(mk(new THREE.BoxGeometry(0.9,0.12,5),SM({color:0x5aa2ea,roughness:0.5})),0,1.95));
+onHead(V(0,1,0.1),upright(at(mk(blob(2.2,1.0,2.2,{lump:0,t0:0,t1:1.6}),mC),0,0),at(mk(new THREE.CylinderGeometry(0.15,0.15,1.6,8),mDark),0,1.1),g2),hairUp*0.5,1.6);}
+if(has('L')){// Corne de licorne sur le front
+const hn=mk(new THREE.ConeGeometry(0.85,4.2,24,12),SM({color:0xfff2c8,roughness:0.3,metalness:0.2}));const sp=mk(new THREE.TorusGeometry(0.62,0.1,6,24),SM({color:0xffb6e1,roughness:0.3}));
+onHead(V(0,0.8,0.6),upright(at(hn,0,1.9),at(sp,0,0.8,0,Math.PI/2),at(sp.clone(),0,1.9,0,Math.PI/2,0,0)),hairUp+0.6,1.35);}
+if(has('M')){// Serre-tête oreilles de lapin
+const mIn=SM({color:0xffb6c8,roughness:0.6});for(const sx of[-1,1])onHead(V(sx*0.25,0.97,0.05),upright(at(mk(blob(0.95,3.4,0.45,{lump:0.01}),mAcc),0,3.0,0,0,0,-sx*0.15),at(mk(blob(0.55,2.6,0.2,{lump:0}),mIn),-sx*0.05,3.0,0.32,0,0,-sx*0.15)),hairUp*0.5);}
+if(has('N')){// Flèche qui traverse la tête (blague) : pointe d'un côté, plumes de l'autre
+const mW=SM({color:0x8b5a2b,roughness:0.7});for(const sx of[-1,1])add(mk(new THREE.CylinderGeometry(0.42,0.42,6.5,10),mW),[sx*12.4,29.5,0.6],[0,0,Math.PI/2+sx*0.12]);
+add(mk(new THREE.ConeGeometry(1.1,2.6,4),SM({color:0xb8bec6,metalness:0.6,roughness:0.3})),[16.6,28.9,0.6],[0,0,-Math.PI/2-0.12]);for(const k of[-1,1])add(mk(blob(1.9,0.85,0.1,{lump:0}),SM({color:0xd7263d,roughness:0.6})),[-15.0,30.0,0.6+k*0.6],[k*0.6,0,0.1]);}
+if(has('P')){// Pomme posée sur la tête
+onHead(V(0,1,0.05),upright(at(mk(new THREE.SphereGeometry(1.6,22,16),SM({color:0xd7263d,roughness:0.35})),0,1.5),at(mk(new THREE.CylinderGeometry(0.1,0.12,0.9,6),SM({color:0x6b4423})),0,3.2),at(mk(blob(0.7,0.3,0.12,{lump:0}),SM({color:0x5aa357,roughness:0.6})),0.55,3.3,0,0,0,0.4)),hairUp,1.7);}
+if(has('Q')){// Canard en plastique sur la tête
+const mY=SM({color:0xffd42a,roughness:0.35});onHead(V(0,1,0.05),upright(at(mk(blob(1.9,1.3,1.5,{lump:0}),mY),0,1.2),at(mk(new THREE.SphereGeometry(1.05,18,14),mY),0,2.9,0.6),at(mk(blob(0.55,0.25,0.55,{lump:0}),SM({color:0xff8c1a,roughness:0.4})),0,2.8,1.6),
+at(mk(new THREE.SphereGeometry(0.16,8,6),mDark),-0.45,3.2,1.4),at(mk(new THREE.SphereGeometry(0.16,8,6),mDark),0.45,3.2,1.4)),hairUp,1.8);}
+if(has('V')){// Cône de chantier sur la tête
+const mO=SM({color:0xff7a1a,roughness:0.5}),mWh=SM({color:0xffffff,roughness:0.4});onHead(V(0,1,0.05),upright(at(mk(new THREE.ConeGeometry(2.6,6.2,28),mO),0,3.1),at(mk(new THREE.CylinderGeometry(1.42,1.72,0.9,28),mWh),0,2.6),at(mk(new THREE.BoxGeometry(5.6,0.4,5.6),mO),0,0.2)),hairUp*0.6,1.45);}
+if(has('R')){// Bigoudis dans les cheveux
+const cols=['#ff9ec7','#7fc8f8','#ffd166','#9be3c0'];for(let i=0;i<6;i++){const a=-1.0+i*0.4;onHead(V(Math.sin(a)*0.75,0.8,Math.cos(a)*0.2-0.1),upright(at(mk(new THREE.CylinderGeometry(0.7,0.7,2.2,14),SM({color:cols[i%4],roughness:0.5})),0,0.3,0,0,0,Math.PI/2)),hairUp*0.6);}}
+if(has('T')){// Cache-œil de pirate (œil gauche de l'image) et son lacet
+stick(mk(blob(1.9,1.7,0.35,{lump:0}),SM({color:0x111114,roughness:0.5})),[head],-3.85,23.7,-0.35);const sg=mk(new THREE.TorusGeometry(10.3,0.16,8,80),SM({color:0x111114,roughness:0.5}));sg.position.set(0,25.4,0.6);sg.rotation.set(Math.PI/2,0.35,0);sg.scale.set(1,0.93,1);add(sg);}
+if(has('E')){// Pansement croisé sur le front
+const mPa=SM({color:0xf3cfa5,roughness:0.8});for(const r of[0.6,-0.6]){const p=stick(mk(new THREE.BoxGeometry(2.8,0.8,0.12),mPa),[head],5.6,21.0,-0.45);p.rotateZ(r);}}
+if(has('G')){// Lunettes à gros nez et moustache (déguisement)
+const mF=SM({color:0x111114,roughness:0.4});for(const sx of[-1,1]){const fr=mk(new THREE.TorusGeometry(1.9,0.28,10,36),mF);stick(fr,[head],sx*3.75,24.2,-0.3);}
+stick(mk(blob(1.1,1.0,1.2,{lump:0}),SM({color:0xf5a7a0,roughness:0.5})),[head],0,22.6,-0.6);stick(mk(blob(2.2,0.55,0.5,{lump:0.04,tip:0}),SM({color:0x2a1d18,roughness:0.8})),[head],0,21.6,-0.2);}
+if(has('H')){// Bulle de chewing-gum
+const bu=add(mk(new THREE.SphereGeometry(2.0,24,18),SM({color:0xff8cc6,roughness:0.15,transparent:true,opacity:0.85})),[0.4,20.9,11.4]);bu.userData.part='head';}
 if(has('f')){// Fleur dans les cheveux : cinq pétales blancs, cœur jaune
 const g=new THREE.Group(),mPe=FZ({color:0xfdf6f0,map:FAB,roughness:0.8});for(let i=0;i<5;i++){const a=i/5*Math.PI*2,pe=mk(blob(0.85,0.55,0.25,{lump:0}),mPe);pe.position.set(Math.cos(a)*0.85,Math.sin(a)*0.85,0);pe.rotation.z=a;g.add(pe);}
 g.add(mk(blob(0.5,0.5,0.35,{lump:0}),SM({color:0xf2c418,roughness:0.6})));onHead(V(-0.6,0.62,0.45),g,0.25);}
@@ -674,6 +713,16 @@ const mC=SM({color:c.ac,roughness:0.7}),mPg=SM({color:0xfbf8f0,roughness:0.9});f
 if(showIt==='pizza'){// Part de pizza
 const sh=new THREE.Shape();sh.moveTo(0,-2.2);sh.lineTo(-1.9,1.6);sh.quadraticCurveTo(0,2.3,1.9,1.6);sh.closePath();const pz=add(mk(new THREE.ExtrudeGeometry(sh,{depth:0.35,bevelEnabled:true,bevelThickness:0.1,bevelSize:0.1,bevelSegments:1}),SM({color:0xf2c14e,roughness:0.7})),[0,9.0,10.3]);
 add(mk(new THREE.TorusGeometry(1.95,0.32,8,20,Math.PI*0.42),SM({color:0xc98a3c,roughness:0.8})),[0,8.4,10.5],[0,0,Math.PI*0.29]);[[-0.4,0.6],[0.6,0.9],[0.1,-0.6],[-0.8,1.3]].forEach(([x,y])=>add(mk(new THREE.CylinderGeometry(0.32,0.32,0.12,14),SM({color:0xc0392b,roughness:0.6})),[x,9.0+y,10.75],[Math.PI/2,0,0]));}
+if(showIt==='poisson'){// Gros poisson
+const mPo=SM({color:0x7fa7c9,roughness:0.4,metalness:0.2});add(mk(blob(3.0,1.3,0.8,{lump:0}),mPo),[0,9.0,10.5]);add(mk(new THREE.ConeGeometry(1.1,1.6,4),mPo),[3.6,9.0,10.5],[0,0,Math.PI/2]);add(mk(new THREE.SphereGeometry(0.25,10,8),mDark),[-2.1,9.4,11.1]);}
+if(showIt==='baguette'){// Baguette de pain
+const b=add(mk(blob(4.2,0.75,0.75,{lump:0.02}),SM({color:0xd99a4e,roughness:0.8})),[0,9.2,10.4],[0,0,0.25]);for(let i=-2;i<=2;i++){const cu=mk(blob(0.5,0.12,0.6,{lump:0}),SM({color:0xf0c789,roughness:0.9}));cu.position.set(i*1.4,0.62,0);cu.rotation.z=0.5;b.add(cu);}}
+if(showIt==='banane'){// Banane
+const pts=[];for(let i=0;i<=12;i++){const a=-0.9+i*0.15;pts.push(V(Math.sin(a)*3.2,9.8-Math.cos(a)*1.6,10.5));}tube(pts,0.62,SM({color:0xffd84d,roughness:0.5}));add(mk(new THREE.CylinderGeometry(0.2,0.25,0.6,8),SM({color:0x6b4423})),[2.6,8.7,10.5],[0,0,0.9]);}
+if(showIt==='poele'){// Poêle à frire
+const mP2=SM({color:0x2a2a2e,roughness:0.4,metalness:0.4});add(mk(new THREE.CylinderGeometry(2.4,2.0,0.5,32),mP2),[0,9.6,10.8],[Math.PI/2-0.3,0,0]);add(mk(new THREE.CylinderGeometry(0.3,0.3,3.2,10),SM({color:0x5a3a22,roughness:0.6})),[0,6.6,10.0],[-0.3,0,0]);}
+if(showIt==='papier'){// Rouleau de papier toilette
+add(mk(new THREE.CylinderGeometry(1.5,1.5,2.4,28),SM({color:0xfbfbf8,roughness:0.9})),[0,9.0,10.5]);add(mk(new THREE.CylinderGeometry(0.5,0.5,2.45,16),SM({color:0xc9a27a,roughness:0.9})),[0,9.0,10.5]);add(mk(new THREE.BoxGeometry(1.3,2.2,0.06),SM({color:0xfbfbf8,roughness:0.9})),[0.7,7.4,12.0],[0.1,0,0]);}
 if(showIt==='micro'){// Micro de chanteur
 add(mk(new THREE.CylinderGeometry(0.45,0.3,3.2,16),mDark),[0,8.4,10.6],[0.35,0,0]);add(mk(new THREE.SphereGeometry(0.9,18,14),SM({color:0xb8bec6,roughness:0.35,metalness:0.6})),[0,10.2,11.2]);}
 if(showIt==='trousse'){add(mk(blob(2.7,1.9,1.1,{lump:0,sq:0.35}),SM({color:0xd23a3a,roughness:0.6})),[0,8.4,10.6]);const mW=SM({color:0xffffff,roughness:0.5});
