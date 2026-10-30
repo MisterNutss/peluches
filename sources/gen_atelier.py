@@ -275,8 +275,8 @@ stage.addEventListener('dblclick',()=>{ry=-0.25;el=0.24;dirty=true;});
 const CHOICES={hs:{court:'Courts',banane:'Banane (plaqués en arrière)',meches:'Mi-longs en mèches',herisse:'Hérissés',iroquoise:'Iroquoise',carre:'Carré',long:'Longs',tresse:"Tresse sur l'épaule",couettes:'Couettes',queue:'Queue de cheval',chignon:'Chignon',boucle:'Bouclés',afro:'Afro',dreads:'Dreads',rase:'Rasés',chauve:'Chauve'},
 bd:{aucune:'Aucune',barbe3j:'Barbe de 3 jours',barbe:'Barbe',longue:'Barbe longue',moustache:'Moustache',bouc:'Bouc'},ex:{sourire:'Grand sourire',content:'Petit sourire',neutre:'Neutre',serieux:'Sérieux'},
 gl:{aucune:'Aucunes',lunettes:'Lunettes de vue',soleil:'Lunettes de soleil',aviateur:'Lunettes aviateur',tete:'Lunettes relevées sur la tête',masque:'Lunettes de protection'},
-hw:{aucun:'Aucun',capuche:'Capuche relevée',casquette:'Casquette',inverse:"Casquette à l'envers",bonnet:'Bonnet',chapeau:'Chapeau',bandeau:'Bandeau',pompier:'Casque de pompier',police:'Casquette de police'},
-tp:{tshirt:'T-shirt',chemise:'Chemise',sweat:'Sweat à capuche',veste:'Veste ouverte',costume:'Costume',gilet:'Gilet sur manches'},mt:{uni:'Uni',rayures:'Rayures',camo:'Camouflage',carreaux:'Carreaux',taches:'Taches'},
+hw:{aucun:'Aucun',capuche:'Capuche relevée',casquette:'Casquette',inverse:"Casquette à l'envers",bonnet:'Bonnet',chapeau:'Chapeau',bandeau:'Bandeau',durag:'Durag',pompier:'Casque de pompier',police:'Casquette de police'},
+tp:{tshirt:'T-shirt',chemise:'Chemise',sweat:'Sweat à capuche',zip:'Veste zippée fermée (survêtement)',veste:'Veste ouverte',costume:'Costume',gilet:'Gilet sur manches'},mt:{uni:'Uni',rayures:'Rayures',camo:'Camouflage',carreaux:'Carreaux',taches:'Taches'},
 bt:{pantalon:'Pantalon',jogging:'Jogging',short:'Short',salopette:'Salopette'},sh:{bottes:'Bottes',baskets:'Baskets',chaussures:'Chaussures de ville'},
 it:{aucun:'Rien',lance:'Lance à incendie',coeur:'Cœur',telephone:'Téléphone',cafe:'Café',donut:'Donut',trousse:'Trousse de secours'}};
 CHOICES.hm=CHOICES.mt;
@@ -302,11 +302,12 @@ const SECTIONS=[
 {k:'gl',type:'choice',l:'Lunettes'},{k:'glc',type:'color',l:'Monture',show:c=>c.gl!=='aucune'},{k:'lc',type:'color',l:'Couleur des verres',show:c=>['soleil','aviateur','tete'].includes(c.gl)}]},
 {t:'Tenue',f:[{k:'tp',type:'choice',l:'Haut'},{k:'mt',type:'choice',l:'Motif'},{k:'tc',type:'color',l:c=>({gilet:'Gilet',veste:'Veste',costume:'Veste de costume'})[c.tp]||'Couleur du haut'},
 {k:'t2',type:'color',l:c=>({gilet:'Manches',veste:'Haut en dessous',costume:'Chemise',sweat:'Cordons'})[c.tp]||'Dessous',show:c=>['gilet','veste','costume','sweat'].includes(c.tp)},
-{k:'im',type:'print',l:'Imprimé sur le devant (découpé dans la photo)',wide:1,show:c=>c.tp!=='costume'},{k:'tt',type:'text',l:'Texte imprimé (dos)',max:8},{k:'rf',type:'check',l:'Bandes réfléchissantes'},{k:'bt',type:'choice',l:'Bas'},{k:'pc',type:'color',l:c=>c.bt==='short'?'Couleur du short':'Couleur du bas'},
+{k:'yc',type:'optcolor',l:"Épaules d'une autre couleur",show:c=>!['veste','costume','gilet'].includes(c.tp)},{k:'sl',type:'optcolor',l:"Manches d'une autre couleur",show:c=>c.tp!=='gilet'},{k:'sb',type:'optcolor',l:'Bandes sur les manches',show:c=>c.tp!=='tshirt'},
+{k:'im',type:'print',l:'Imprimé sur le devant (découpé dans la photo)',wide:1,show:c=>c.tp!=='costume'},{k:'tt',type:'text',l:'Texte imprimé (dos)',max:8},{k:'rf',type:'check',l:'Bandes réfléchissantes'},{k:'bt',type:'choice',l:'Bas'},{k:'pc',type:'color',l:c=>c.bt==='short'?'Couleur du short':'Couleur du bas'},{k:'pb',type:'optcolor',l:'Bandes sur les côtés du bas',show:c=>c.bt!=='short'},
 {k:'sh',type:'choice',l:'Chaussures'},{k:'sc',type:'color',l:'Couleur des chaussures'},{k:'gv',type:'glove',l:'Gants'}]},
 {t:'Accessoires',f:[{k:'acc',type:'flags',l:'Équipement',wide:1},{k:'it',type:'choice',l:'Dans les mains'},{k:'ac',type:'color',l:"Couleur d'accent"},
 {k:'ms',type:'choice',l:'Mascotte (mini-peluche)'},{k:'mc',type:'color',l:'Couleur de la mascotte',show:c=>c.ms!=='aucune'},{k:'mp',type:'choice',l:'Place de la mascotte',show:c=>c.ms!=='aucune'},{k:'mz',type:'range',l:'Taille de la mascotte',min:0.5,max:2,step:0.05,show:c=>c.ms!=='aucune'},{k:'mx',type:'range',l:'Mascotte : gauche / droite',min:-1,max:1,step:0.05,fmt:'off',show:c=>c.ms!=='aucune'},{k:'my',type:'range',l:'Mascotte : bas / haut',min:-1,max:1,step:0.05,fmt:'off',show:c=>c.ms!=='aucune'},{k:'mf',type:'range',l:'Mascotte : arrière / avant',min:-1,max:1,step:0.05,fmt:'off',show:c=>c.ms!=='aucune'},{k:'mr',type:'range',l:'Mascotte : rotation',min:-180,max:180,step:5,fmt:'deg',show:c=>c.ms!=='aucune'}]}];
-const F={};let lastGlove='#86ace6';const lastOpt={h2:'#f3dc9a'};
+const F={};let lastGlove='#86ace6';const lastOpt={h2:'#f3dc9a',yc:'#f2f2f2',sl:'#f2f2f2',sb:'#f2f2f2',pb:'#1c1c1e'};
 function el2(tag,props,kids){const n=document.createElement(tag);Object.assign(n,props||{});(kids||[]).forEach(k=>n.append(k));return n;}
 function colorRow(k,id){return el2('div',{className:'colorrow'},[el2('input',{type:'color',id}),el2('button',{type:'button',className:'pip',textContent:'Pipette',title:'Prendre la couleur sur la photo'})]);}
 const TAB_OF={'Style, pose et nom':'style',Visage:'visage',Cheveux:'tete','Tête':'tete',Tenue:'tenue',Accessoires:'accessoires'};
@@ -409,6 +410,7 @@ const WHO={seule:'la personne des photos',gauche:'la personne à gauche sur les 
 function intro(w,slots){return "Tu reçois "+slots.length+" photo(s) de la même personne, souvent un personnage du jeu GTA en roleplay, dans cet ordre : "+slots.map((s,i)=>'image '+(i+1)+' = vue de '+SLOT_L[s]).join(', ')+". Décris "+WHO[w]+" pour fabriquer une peluche qui lui ressemble le plus possible.\n";}
 function prompt(w,slots){return intro(w,slots)+keysText();}
 function keysText(){return "Regarde d'abord ce qui rend la personne reconnaissable (coiffure et frange, couvre-chef ou capuche, forme des lunettes, barbe, imprimé du haut, veste, motif, accessoires, animal ou mascotte) et reprends tout ce qui se voit. Sers-toi des vues de côté et de dos pour l'arrière de la coiffure, la capuche et le texte au dos. "
++"Chaque tenue est unique : ne reprends jamais une tenue type. Décris les vêtements tels qu'ils sont sur les photos, avec leurs zones de couleur (épaules, manches, bandes, côtés du pantalon), leur fermeture et leur motif. "
 +"Prends les vraies couleurs des photos en compensant l'éclairage si la scène est sombre ou colorée, jamais des couleurs génériques.\n"
 +"Réponds uniquement avec un objet JSON qui a exactement ces clés :\n"
 +'- "n" : nom court pour la peluche (métier ou surnom visible), 24 caractères maximum\n'
@@ -432,20 +434,24 @@ function keysText(){return "Regarde d'abord ce qui rend la personne reconnaissab
 +'- "gl" : lunettes, parmi "aucune", "lunettes" (de vue, sur les yeux), "soleil" (de soleil rondes ou rectangulaires, sur les yeux), "aviateur" (aviateur : verres en goutte, fine monture métal), "tete" (lunettes relevées sur le front, la tête ou la capuche), "masque" (lunettes de protection ou de ski sur les yeux)\n'
 +'- "glc" : couleur de la monture, "#rrggbb"\n'
 +'- "lc" : couleur des verres des lunettes de soleil ou aviateur, "#rrggbb" (brun, gris fumé, vert, bleu miroir…)\n'
-+'- "hw" : couvre-chef, parmi "aucun", "capuche" (capuche relevée sur la tête), "casquette", "inverse" (casquette à l\'envers), "bonnet", "chapeau", "bandeau", "pompier" (casque de pompier ou de chantier), "police" (casquette d\'uniforme à visière)\n'
++'- "hw" : couvre-chef, parmi "aucun", "capuche" (capuche relevée sur la tête), "casquette", "inverse" (casquette à l\'envers), "bonnet", "chapeau", "bandeau", "durag" (durag, foulard ou bonnet en tissu satiné bien ajusté sur le crâne), "pompier" (casque de pompier ou de chantier), "police" (casquette d\'uniforme à visière)\n'
 +'- "hwc" : couleur du couvre-chef ou de la capuche, "#rrggbb"\n'
 +'- "hwt" : texte ou numéro visible sur le couvre-chef, 6 caractères maximum, sinon ""\n'
 +'- "hm" : motif de la capuche, de la casquette ou du chapeau, parmi "uni", "rayures", "camo", "carreaux", "taches" (le motif prend la couleur "ac")\n'
-+'- "tp" : haut, parmi "tshirt", "chemise", "sweat" (sweat ou pull), "veste" (veste ouverte sur un autre haut), "costume" (veste de costume, chemise et cravate), "gilet" (gilet sans manches porté sur un autre haut)\n'
++'- "tp" : haut, parmi "tshirt", "chemise", "sweat" (sweat ou pull), "zip" (veste zippée fermée, veste de survêtement, polaire zippée), "veste" (veste ouverte sur un autre haut), "costume" (veste de costume, chemise et cravate), "gilet" (gilet sans manches porté sur un autre haut)\n'
 +'- "mt" : motif du haut, parmi "uni", "rayures", "camo", "carreaux", "taches" (taches de vache, de dalmatien… dans la couleur "ac")\n'
 +'- "tc" : couleur principale du haut (pour gilet, veste ou costume : la pièce du dessus), "#rrggbb"\n'
 +'- "t2" : couleur du vêtement en dessous (les manches pour un gilet, le haut sous une veste, la chemise d\'un costume, les cordons d\'un sweat), "#rrggbb"\n'
++'- "yc" : couleur des épaules et du haut des manches quand elles sont d\'une autre couleur que le reste du haut (empiècement, veste de survêtement bicolore, maillot), "#rrggbb", sinon ""\n'
++'- "sl" : couleur des manches si elles sont d\'une autre couleur que le corps du haut, "#rrggbb", sinon ""\n'
++'- "sb" : couleur des bandes le long des manches (survêtement à bandes), "#rrggbb", sinon ""\n'
 +'- "imp" : si le haut porte un grand dessin, logo ou imprimé sur le devant, sa boîte [x, y, largeur, hauteur] dans l\'image 1, en fractions de 0 à 1 (x et y = coin en haut à gauche), bien serrée autour du dessin ; sinon null\n'
 +'- "tt" : texte imprimé sur le haut (par exemple LSPD, EMS, LSFD), 8 caractères maximum, sinon ""\n'
 +'- "rf" : 1 s\'il y a des bandes réfléchissantes, sinon 0\n'
 +'- "ac" : couleur d\'accent pour les rayures, la cravate, le pompon, le bandana, l\'écharpe, le sac à dos ou les bandes du jogging, "#rrggbb"\n'
 +'- "bt" : bas, parmi "pantalon", "jogging", "short", "salopette" (salopette à bretelles et plastron, le haut se voit dessous)\n'
 +'- "pc" : couleur du bas, "#rrggbb"\n'
++'- "pb" : couleur des bandes sur les côtés du pantalon ou du jogging, "#rrggbb", sinon ""\n'
 +'- "sh" : chaussures, parmi "bottes", "baskets", "chaussures" (de ville)\n'
 +'- "sc" : couleur des chaussures, "#rrggbb"\n'
 +'- "gv" : couleur des gants, "#rrggbb", ou "" sans gants\n'
@@ -463,11 +469,11 @@ function keysText(){return "Regarde d'abord ce qui rend la personne reconnaissab
 +'  Exemple pour une capuche de vache : oreilles {"forme":"sphere","ancre":"tete","pos":[0.9,0.45,0],"taille":[0.2,0.34,0.08],"rot":[0,0,0],"couleur":"#f2b5a0","colle":true} et la même avec x = -0.9 ; cornes {"forme":"cone","ancre":"tete","pos":[0.35,1,0.1],"taille":[0.08,0.26,0.08],"rot":[0,0,0],"couleur":"#e8c27a","colle":true} et la même avec x = -0.35.\n'
 +"N'utilise jamais les pièces sur mesure pour une mascotte, une coiffure, des lunettes ou un vêtement : il y a des clés pour ça. Une pièce isolée qui ne ressemble à rien est pire que pas de pièce : en cas de doute, mets [].\n"
 +"Une combinaison ou un pyjama d'animal se fait avec tp sweat et hw capuche de la même couleur, le même motif sur mt et hm, puis les oreilles, cornes ou queue en pièces sur mesure.\n"
-+"Exemple de forme (sans pièce sur mesure) : "+JSON.stringify(Object.assign({},PL.PRESETS.police,{hm:'uni',pz:[],cl:0,ms:'aucune',mc:'#8ec5f0',mp:'droite',mz:1,lc:'#3a2a1e',imp:null}));}
++"Exemple de FORME seulement (les valeurs sont à remplacer par ce que montrent les photos, ne les recopie pas) : "+JSON.stringify({n:'Surnom',sk:'#d9a07c',hc:'#2a1c14',h2:'',hs:'court',hl:1.2,hv:0.4,hx:'lisse',hp:'aucune',hf:'courte',ht:'aucune',hd:'courts',ec:'#5a3b22',ex:'neutre',bd:'barbe',fr:0,cl:0,gl:'aucune',glc:'#2b2b2b',lc:'#3a2a1e',hw:'aucun',hwc:'#1c1c1e',hwt:'',hm:'uni',tp:'zip',mt:'uni',tc:'#1c1c1e',t2:'#f2f2f2',yc:'#f2f2f2',sl:'',sb:'',imp:null,tt:'',rf:0,ac:'#f2f2f2',bt:'jogging',pc:'#f2f2f2',pb:'#1c1c1e',sh:'baskets',sc:'#f2f2f2',gv:'',acc:'',it:'aucun',ms:'aucune',mc:'#8ec5f0',mp:'droite',mz:1,pz:[]});}
 function readyMsg(){if(!(sample&&imagesOK))return "Règle la peluche à la main : le bouton Pipette prend une couleur sur la photo. Pour reprendre une peluche déjà faite, colle son lien dans l'onglet « Style et pose ».";return anyPhoto()?'Peluche prête. Tu peux relancer la création ou corriger les réglages.':'Ajoute une photo de face : la peluche se crée toute seule.';}
 function reviewPrompt(w,slots,nr){const cur=Object.assign({},cfg);delete cur.im;delete cur.imt;delete cur.ia;
 return intro(w,slots)+"Les "+nr+" dernières images ne sont pas des photos : c'est le rendu actuel de la peluche ("+(nr>1?'de face, puis de dos':'de face')+"), fabriquée avec ce réglage :\n"+JSON.stringify(cur)+"\n"
-+"Compare la peluche aux photos comme un client exigeant, en commençant par la coiffure (longueur, volume, raie, frange, texture, attache, côtés), puis couleurs des cheveux, de la peau et des yeux, barbe, lunettes, couvre-chef, haut et motif, couleurs des vêtements, accessoires, mascotte, objets. "
++"Compare la peluche aux photos comme un client exigeant, en commençant par la coiffure (longueur, volume, raie, frange, texture, attache, côtés) et les vêtements (type de haut, zones de couleur des épaules et des manches, bandes, bas et ses bandes), puis couleurs des cheveux, de la peau et des yeux, barbe, lunettes, couvre-chef, haut et motif, couleurs des vêtements, accessoires, mascotte, objets. "
 +"Corrige tout ce qui ne ressemble pas et garde ce qui est juste. Renvoie le réglage complet corrigé.\n"+keysText();}
 function updateAnalyse(){const b=$('analyse');b.hidden=!(sample&&imagesOK&&anyPhoto());b.disabled=false;b.textContent=ctl?'Arrêter':'Relancer la création';}
 // Rendu de la peluche sur fond gris neutre, pour que Claude la compare aux photos
