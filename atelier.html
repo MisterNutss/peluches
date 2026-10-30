@@ -228,10 +228,10 @@ const PL=(()=>{
 const V=(x,y,z)=>new THREE.Vector3(x,y,z),FWD=V(0,0,-1),BACK=V(0,0,1),X=V(1,0,0),NX=V(-1,0,0),Y=V(0,1,0);
 
 // Réglages possibles (clés courtes pour que le lien reste court)
-const ENUM={st:['classique','ours','lapin','chat','monstre','avatar'],po:['assis','debout','coucou','bravo','calin','coeur','pensif','tailleur','dab'],ey:['kawaii','realiste'],hs:['court','banane','meches','herisse','iroquoise','carre','long','tresse','couettes','queue','chignon','boucle','afro','dreads','rase','chauve'],
+const ENUM={st:['classique','ours','lapin','chat','monstre','avatar'],po:['assis','debout','coucou','bravo','calin','coeur','pensif','tailleur','dab','joues','danse','victoire'],ey:['kawaii','realiste'],hs:['court','banane','meches','herisse','iroquoise','carre','long','tresse','couettes','queue','chignon','boucle','afro','dreads','rase','chauve'],
 bd:['aucune','barbe3j','barbe','longue','moustache','bouc'],gl:['aucune','lunettes','soleil','aviateur','tete','masque'],
 hw:['aucun','capuche','casquette','inverse','bonnet','chapeau','bandeau','durag','pompier','police'],tp:['tshirt','chemise','sweat','zip','veste','costume','gilet'],
-mt:['uni','rayures','camo','carreaux','taches'],hm:['uni','rayures','camo','carreaux','taches'],bt:['pantalon','jogging','short','salopette'],sh:['bottes','baskets','chaussures'],ex:['sourire','content','neutre','serieux'],
+mt:['uni','rayures','camo','carreaux','taches'],hm:['uni','rayures','camo','carreaux','taches'],bt:['pantalon','jogging','short','salopette'],sh:['bottes','baskets','chaussures'],ex:['sourire','content','neutre','serieux','rire','clin','amour','surpris','triste','boude','dodo'],
 it:['aucun','lance','coeur','telephone','cafe','donut','trousse','bouquet','billets','manette','ballon','cle','micro'],
 hp:['aucune','gauche','milieu','droite'],hf:['aucune','courte','droite','balayee','rideau','longue','arriere'],hx:['lisse','ondule','boucle','crepu','pique','dreads'],ht:['aucune','queue','haute','couettes','chignon','tresse','demi'],hd:['normaux','courts','rases'],ms:['aucune','monstre','lapin','ours','chat','chien','oiseau'],mp:['droite','gauche','tete','mains']};
 const ACC='rbmscowkehanudqfvyzlp';
@@ -420,9 +420,9 @@ const mLime=SM({color:0x9fd63a,roughness:0.5}),mScreen=SM({color:0x1d2a1a,roughn
 const has=k=>c.acc.includes(k),hats=!['aucun','bandeau'].includes(c.hw),hood=c.hw==='capuche'&&st!=='monstre';
 // Poses : direction de chaque bras depuis l'épaule, vers la main. 'hold' = bras vers l'avant (tient l'objet), 'down' = le long du corps
 const POSE={assis:{l:'sit',a:['hold','hold']},debout:{l:'stand',a:['hold','hold']},coucou:{l:'stand',a:['down','wave']},bravo:{l:'stand',a:['up','up']},calin:{l:'stand',a:['open','open']},
-coeur:{l:'sit',a:['heart','heart']},pensif:{l:'sit',a:['chin','lap']},tailleur:{l:'cross',a:['hold','hold']},dab:{l:'stand',a:['dabB','dabA']}}[c.po]||{l:'sit',a:['hold','hold']};
+coeur:{l:'sit',a:['heart','heart']},pensif:{l:'sit',a:['chin','lap']},tailleur:{l:'cross',a:['hold','hold']},dab:{l:'stand',a:['dabB','dabA']},joues:{l:'sit',a:['cheek','cheek']},danse:{l:'stand',a:['up','down']},victoire:{l:'stand',a:['wave','up']}}[c.po]||{l:'sit',a:['hold','hold']};
 const holding=POSE.a[0]==='hold',showIt=holding?c.it:(c.po==='coeur'?'coeur':'aucun'),mpE=(c.mp==='mains'&&!holding)?'droite':c.mp;
-const ARM={wave:[0.5,0.82,0.28],up:[0.42,0.88,0.2],open:[0.85,0.05,0.52],heart:[-0.45,0.05,0.89],chin:[-0.55,0.45,0.72],lap:[-0.3,-0.6,0.74],dabA:[0.75,0.62,0.2],dabB:[-0.8,0.45,0.4]};
+const ARM={cheek:[-0.1,0.69,0.72],wave:[0.5,0.82,0.28],up:[0.42,0.88,0.2],open:[0.85,0.05,0.52],heart:[-0.45,0.05,0.89],chin:[-0.55,0.45,0.72],lap:[-0.3,-0.6,0.74],dabA:[0.75,0.62,0.2],dabB:[-0.8,0.45,0.4]};
 
 // Corps et haut
 add(mk(blob(8.6,9.2,7.6,{pear:0.1}),st==='monstre'?mFur:mP),[0,9.2,0]);
@@ -637,16 +637,24 @@ if(!hairS.geometry.index.count)hairS=under;}
 if((animal||['rase','chauve'].includes(hs))&&!hats){const pts=[];for(let a=0.55;a>=-1.9;a-=0.12)pts.push([V(0,24.6+Math.cos(a)*40,0.6+Math.sin(a)*40),V(0,-Math.cos(a),-Math.sin(a))]);seam(onSurf([hairCap,head].filter(Boolean),pts,0.05),shade(animal?fur:skinC,0.55));}
 
 // Visage et expression
-const blushes=[],browTilt={sourire:-0.1,content:-0.1,neutre:0,serieux:0.32}[c.ex],kawaii=(c.ey!=='realiste'||st==='monstre')&&st!=='avatar';
+const blushes=[],browTilt={sourire:-0.1,content:-0.1,neutre:0,serieux:0.32,rire:-0.15,clin:-0.1,amour:-0.1,surpris:-0.12,triste:-0.38,boude:0.42,dodo:0}[c.ex],kawaii=(c.ey!=='realiste'||st==='monstre')&&st!=='avatar';
 const[bc2,bg4]=cv(128),bgr=bg4.createRadialGradient(64,64,4,64,64,62),bcol=hex(mix(skinC,'#f0607a',0.62));bgr.addColorStop(0,bcol+'d0');bgr.addColorStop(1,bcol+'00');bg4.fillStyle=bgr;bg4.fillRect(0,0,128,128);
 const mBlushSoft=SM({map:own(new THREE.CanvasTexture(bc2)),transparent:true,depthWrite:false,roughness:1,polygonOffset:true,polygonOffsetFactor:-2});
 const mKw=SM({color:mix('#0c0a10',eyeBase,0.22),roughness:0.07,metalness:0.15}),mKwC=SM({color:mix(eyeBase,'#ffffff',0.18),roughness:0.25,transparent:true,opacity:0.92,side:THREE.DoubleSide});
 for(const s of[-1,1]){
+const shut=c.ex==='rire'||c.ex==='dodo'||(c.ex==='clin'&&s>0);
+if(kawaii&&(shut||c.ex==='amour')){const e=new THREE.Group();
+if(shut){const arc=new THREE.Mesh(new THREE.TorusGeometry(1.15,0.27,10,28,Math.PI),mKw);if(c.ex==='dodo'){arc.rotation.z=Math.PI;arc.position.y=0.4;}else arc.position.y=-0.4;arc.scale.set(1,0.8,1);e.add(arc);}
+else{const mH=SM({color:0xff4f7b,roughness:0.25});for(const k of[-1,1]){const lobe=mk(blob(0.72,0.72,0.4,{lump:0}),mH);lobe.position.set(k*0.6,0.45,0);e.add(lobe);}const tip=mk(blob(1.15,1.2,0.4,{lump:0,tip:0.85}),mH);tip.position.y=-0.15;e.add(tip);const sh=new THREE.Mesh(new THREE.SphereGeometry(0.25,10,8),mShine);sh.scale.z=0.3;sh.position.set(-0.55,0.6,0.38);e.add(sh);}
+if(!shut)e.scale.setScalar(1.45);stick(e,[head],s*3.85,23.6,shut?-0.12:-0.05);if(st!=='monstre'){const br=stick(mk(blob(0.95,0.24,0.2,{lump:0}),mBrow),[head],s*3.9,26.4,0.08);br.rotateZ(s*browTilt);}
+if(!['barbe','longue'].includes(c.bd))stick(new THREE.Mesh(new THREE.CircleGeometry(2.1,32),mBlushSoft),[head],s*6.0,21.5,-0.3);continue;}
 if(kawaii){const e=new THREE.Group();e.add(mk(blob(1.5,1.75,0.55,{lump:0}),mKw));const cr=new THREE.Mesh(new THREE.RingGeometry(0.5,1.3,36,1,Math.PI*1.12,Math.PI*0.76),mKwC);cr.scale.set(1,1.12,1);cr.position.z=0.56;e.add(cr);
 const k1=new THREE.Mesh(new THREE.SphereGeometry(0.5,16,12),mShine);k1.scale.set(1,1.15,0.3);k1.position.set(-0.5,0.62,0.52);e.add(k1);const k2=new THREE.Mesh(new THREE.SphereGeometry(0.22,12,10),mShine);k2.scale.z=0.3;k2.position.set(0.55,-0.55,0.54);e.add(k2);
 if(c.cl){const fl=new THREE.Mesh(blob(0.45,0.13,0.12,{lump:0}),mLash);fl.position.set(s*1.5,1.3,0.2);fl.rotation.z=s*0.55;e.add(fl);}
-if(st==='monstre'){const lid=mk(blob(1.66,0.62,0.66,{lump:0}),mSkin);lid.position.set(0,1.42,0.06);lid.rotation.z=s*0.12;e.add(lid);}stick(e,[head],s*3.85,23.6,0.3);
-if(st!=='monstre'){const br=stick(mk(blob(0.95,0.24,0.2,{lump:0}),mBrow),[head],s*3.9,c.ex==='serieux'?26.0:26.4,0.08);br.rotateZ(s*browTilt);}
+if(st==='monstre'){const lid=mk(blob(1.66,0.62,0.66,{lump:0}),mSkin);lid.position.set(0,1.42,0.06);lid.rotation.z=s*0.12;e.add(lid);}if(c.ex==='surpris')e.scale.set(1.12,1.15,1);stick(e,[head],s*3.85,23.6,0.3);
+if(st!=='monstre'){const br=stick(mk(blob(0.95,0.24,0.2,{lump:0}),mBrow),[head],s*3.9,c.ex==='serieux'||c.ex==='boude'?26.0:c.ex==='surpris'?27.0:26.4,0.08);br.rotateZ(s*browTilt);}
+// Larme sous l'œil droit de l'image quand la peluche est triste
+if(c.ex==='triste'&&s>0)stick(mk(blob(0.42,0.6,0.25,{lump:0,tip:-0.6}),SM({color:0x9fd2ff,roughness:0.1,transparent:true,opacity:0.85})),[head],s*4.9,21.4,-0.1);
 if(!['barbe','longue'].includes(c.bd))stick(new THREE.Mesh(new THREE.CircleGeometry(2.1,32),mBlushSoft),[head],s*6.0,21.5,-0.3);continue;}
 if(st==='avatar'){// Avatar : petits yeux ovales noirs et sourcils fins
 const e=new THREE.Group();e.add(mk(blob(0.62,0.85,0.25,{lump:0}),SM({color:0x141414,roughness:0.15})));const hl=new THREE.Mesh(new THREE.SphereGeometry(0.17,10,8),mShine);hl.position.set(0.18,0.32,0.22);e.add(hl);stick(e,[head],s*3.0,24.0,0.08);
@@ -666,14 +674,18 @@ if(animal){muzzle=stick(mk(blob(3.2,2.3,1.3,{lump:0}),mFurL),[head],0,21.6,0.7);
 if(st==='chat')for(const s of[-1,1])for(const k of[-1,0,1])add(mk(new THREE.CylinderGeometry(0.06,0.06,3.4,6),mDark),[s*3.7,21.4+k*0.55,9.7],[0,0,Math.PI/2+s*k*0.15]);}
 else stick(mk(blob(st==='avatar'?0.45:0.55,st==='avatar'?0.32:0.4,0.35,{lump:0}),mNose),[head],0,22.5,0.15);
 const mouthT=muzzle?[muzzle,head]:[head];
+// Bouche de chaque expression (les nouvelles expressions reprennent une bouche de base ou ont la leur)
+const mx={rire:'sourire',amour:'sourire',clin:'content'}[c.ex]||c.ex;
 if(st==='monstre'){// Grand sourire plein de dents
 const mo=new THREE.Group(),cav=new THREE.Mesh(new THREE.CircleGeometry(1,32,Math.PI,Math.PI),mMouth);cav.scale.set(2.3,1.15,1);mo.add(cav);
 for(let i=0;i<9;i++){const t=mk(new THREE.ConeGeometry(0.27,0.62,8),mWhite);t.rotation.z=Math.PI;t.position.set(-1.9+i*0.475,-0.3,0.06);mo.add(t);}stick(mo,[head],0,21.3,0.02);}
-else if(c.ex==='sourire'){const mo=new THREE.Group();mo.add(new THREE.Mesh(new THREE.CircleGeometry(1.0,28,Math.PI,Math.PI),mMouth));const tg=new THREE.Mesh(blob(0.55,0.3,0.08,{lump:0}),mTongue);tg.position.set(0,-0.62,0.04);mo.add(tg);
+else if(mx==='sourire'){const mo=new THREE.Group();mo.add(new THREE.Mesh(new THREE.CircleGeometry(1.0,28,Math.PI,Math.PI),mMouth));const tg=new THREE.Mesh(blob(0.55,0.3,0.08,{lump:0}),mTongue);tg.position.set(0,-0.62,0.04);mo.add(tg);
 const lip=new THREE.Mesh(new THREE.TorusGeometry(1.0,0.07,6,28,Math.PI),mMouth);lip.rotation.z=Math.PI;mo.add(lip);stick(mo,mouthT,0,21.15-(muzzle?0.5:0),0.03);}
 const my=muzzle?-0.5:0,human=st!=='monstre';
-if(human&&c.ex==='content'){const mo=new THREE.Group(),arc=new THREE.Mesh(new THREE.TorusGeometry(0.85,0.13,8,28,Math.PI*0.8),mMouth);arc.rotation.z=Math.PI*1.1;mo.add(arc);stick(mo,mouthT,0,21.6+my,-0.02);}
-if(human&&c.ex==='neutre')stick(mk(blob(0.75,0.13,0.1,{lump:0}),mMouth),mouthT,0,21.0+my,-0.02);
+if(human&&mx==='content'){const mo=new THREE.Group(),arc=new THREE.Mesh(new THREE.TorusGeometry(0.85,0.13,8,28,Math.PI*0.8),mMouth);arc.rotation.z=Math.PI*1.1;mo.add(arc);stick(mo,mouthT,0,21.6+my,-0.02);}
+if(human&&mx==='neutre')stick(mk(blob(0.75,0.13,0.1,{lump:0}),mMouth),mouthT,0,21.0+my,-0.02);
+if(human&&(mx==='surpris'||mx==='dodo')){const o=new THREE.Mesh(new THREE.CircleGeometry(mx==='dodo'?0.32:0.5,24),mMouth);o.scale.y=1.2;stick(o,mouthT,0,21.0+my,-0.02);}
+if(human&&(mx==='triste'||mx==='boude')){const mo=new THREE.Group(),arc=new THREE.Mesh(new THREE.TorusGeometry(mx==='boude'?0.55:0.8,0.12,8,24,Math.PI*0.75),mMouth);arc.rotation.z=Math.PI*0.125;mo.add(arc);stick(mo,mouthT,0,(mx==='boude'?20.8:20.4)+my,-0.02);}
 if(human&&c.ex==='serieux'){const mo=new THREE.Group(),arc=new THREE.Mesh(new THREE.TorusGeometry(0.7,0.12,8,24,Math.PI*0.7),mMouth);arc.rotation.z=Math.PI*0.15;mo.add(arc);stick(mo,mouthT,0,20.6+my,-0.02);}
 // Barbe : coque autour du bas du visage ; un masque de transparence trace un bord net qui remonte vers les oreilles et dégage la bouche
 const BT0=1.5,BT1=2.8,BP0=0.1,BPL=2.94;
@@ -943,7 +955,7 @@ return{build,clean,encode,decode,pack,unpack,setQuality,lights,setup,aim,hair,HA
 <script>
 const $=id=>document.getElementById(id);
 function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}catch(e){}return null;}
-const say=(id,t)=>{$(id).textContent=t;if(id==='ai-status'&&$('stage-status'))$('stage-status').textContent=t;};
+var busy=false;const say=(id,t)=>{$(id).textContent=t;if(id==='ai-status'&&$('stage-status'))$('stage-status').textContent=busy?t:'';};
 
 // Aperçu 3D
 const reduceMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;let spin=false;
@@ -970,7 +982,7 @@ stage.addEventListener('dblclick',()=>{ry=-0.25;el=0.24;dirty=true;});
 
 // Réglages
 const CHOICES={hs:{court:'Courts',banane:'Banane (plaqués en arrière)',meches:'Mi-longs en mèches',herisse:'Hérissés',iroquoise:'Iroquoise',carre:'Carré',long:'Longs',tresse:"Tresse sur l'épaule",couettes:'Couettes',queue:'Queue de cheval',chignon:'Chignon',boucle:'Bouclés',afro:'Afro',dreads:'Dreads',rase:'Rasés',chauve:'Chauve'},
-bd:{aucune:'Aucune',barbe3j:'Barbe de 3 jours',barbe:'Barbe',longue:'Barbe longue',moustache:'Moustache',bouc:'Bouc'},ex:{sourire:'Grand sourire',content:'Petit sourire',neutre:'Neutre',serieux:'Sérieux'},
+bd:{aucune:'Aucune',barbe3j:'Barbe de 3 jours',barbe:'Barbe',longue:'Barbe longue',moustache:'Moustache',bouc:'Bouc'},ex:{sourire:'Grand sourire',content:'Petit sourire',rire:'Rire (yeux fermés)',clin:"Clin d'œil",amour:'Yeux en cœur',surpris:'Surpris',neutre:'Neutre',serieux:'Sérieux',triste:'Triste',boude:'Boude',dodo:'Endormi'},
 gl:{aucune:'Aucunes',lunettes:'Lunettes de vue',soleil:'Lunettes de soleil',aviateur:'Lunettes aviateur',tete:'Lunettes relevées sur la tête',masque:'Lunettes de protection'},
 hw:{aucun:'Aucun',capuche:'Capuche relevée',casquette:'Casquette',inverse:"Casquette à l'envers",bonnet:'Bonnet',chapeau:'Chapeau',bandeau:'Bandeau',durag:'Durag',pompier:'Casque de pompier',police:'Casquette de police'},
 tp:{tshirt:'T-shirt',chemise:'Chemise',sweat:'Sweat à capuche',zip:'Veste zippée fermée (survêtement)',veste:'Veste ouverte',costume:'Costume',gilet:'Gilet sur manches'},mt:{uni:'Uni',rayures:'Rayures',camo:'Camouflage',carreaux:'Carreaux',taches:'Taches'},
@@ -983,7 +995,7 @@ CHOICES.hx={lisse:'Lisses',ondule:'Ondulés',boucle:'Bouclés',crepu:'Crépus (a
 CHOICES.ht={aucune:'Détachés',queue:'Queue de cheval basse',haute:'Queue de cheval haute',couettes:'Deux couettes',chignon:'Chignon',tresse:"Tresse sur l'épaule",demi:'Demi-queue (dessus attaché)'};
 CHOICES.hd={normaux:'Comme le reste',courts:'Courts (dégradé)',rases:'Rasés'};
 CHOICES.ms={aucune:'Aucune',monstre:'Petit monstre (oreilles et dents)',lapin:'Lapin',ours:'Ours',chat:'Chat',chien:'Chien',oiseau:'Oiseau / perroquet'};
-CHOICES.po={assis:'Assise',debout:'Debout',coucou:'Coucou',bravo:'Bras levés',calin:'Câlin',coeur:'Cœur',pensif:'Pensive',tailleur:'En tailleur',dab:'Dab'};
+CHOICES.po={assis:'Assise',debout:'Debout',coucou:'Coucou',bravo:'Bras levés',calin:'Câlin',coeur:'Cœur',pensif:'Pensive',tailleur:'En tailleur',dab:'Dab',joues:'Mains sur les joues',danse:'Danse',victoire:'Victoire'};
 CHOICES.ey={kawaii:'Mignons (peluche)',realiste:'Réalistes'};
 CHOICES.st={classique:'Classique',ours:'Ourson',lapin:'Lapin',chat:'Chaton',monstre:'Petit monstre',avatar:'Avatar'};
 CHOICES.mp={droite:"Sur l'épaule, à droite de l'image",gauche:"Sur l'épaule, à gauche de l'image",tete:'Sur la tête',mains:'Dans les mains'};
@@ -1125,7 +1137,7 @@ function keysText(){return "Regarde d'abord ce qui rend la personne reconnaissab
 +'- "ht" : attache, parmi "aucune" (détachés), "queue" (queue de cheval basse), "haute" (queue de cheval haute), "couettes", "chignon", "tresse" (une tresse devant l\'épaule), "demi" (le dessus attaché derrière, le reste détaché)\n'
 +'- "hd" : côtés et nuque, parmi "normaux", "courts" (dégradé), "rases" (undercut, côtés rasés)\n'
 +'- "ec" : couleur des yeux, "#rrggbb" ("#5a3b22" si on ne les voit pas)\n'
-+'- "ex" : expression, parmi "sourire" (grand sourire), "content" (petit sourire), "neutre", "serieux"\n'
++'- "ex" : expression, parmi "sourire" (grand sourire), "content" (petit sourire), "rire" (rire, yeux fermés), "clin" (clin d\'œil), "amour" (yeux en cœur), "surpris", "neutre", "serieux", "triste", "boude" (fâché, boudeur), "dodo" (endormi)\n'
 +'- "bd" : pilosité du visage, parmi "aucune", "barbe3j" (barbe de quelques jours), "barbe", "longue" (barbe longue), "moustache", "bouc"\n'
 +'- "fr" : 1 si on voit des taches de rousseur, sinon 0\n'
 +'- "cl" : 1 pour de longs cils recourbés (visage féminin ou maquillé), 0 sinon\n'
@@ -1181,7 +1193,7 @@ function applyAnswer(data,keep,first0,first){const prev=first?null:(cfg.im?{im:c
 if(Array.isArray(data.imp)&&data.imp.length===4)cropPrint(shots[first0].cn,data.imp.map(Number));else if(prev&&data.imp!==null)Object.assign(cfg,prev);syncForm();rebuild();updateLink();}
 async function runAnalysis(){const slots=photoList();if(!slots.length||!sample||!imagesOK)return;clearTimeout(anaT);if(ctl)ctl.abort();const my=new AbortController();ctl=my;updateAnalyse();
 const w=$('who').value,keep={st:cfg.st,po:cfg.po,ey:cfg.ey,fc:''},use=slots.slice(0,Math.max(1,maxImages)),imgs=use.map(s=>shots[s].blob);
-try{say('ai-status','Claude regarde '+(use.length>1?'les photos':'la photo')+'… Ça prend souvent 10 à 40 secondes.');
+busy=true;try{say('ai-status','Claude regarde '+(use.length>1?'les photos':'la photo')+'… Ça prend souvent 10 à 40 secondes.');
 let data=await sample.json(prompt(w,use),{images:imgs,signal:my.signal});if(ctl!==my)return;applyAnswer(data,keep,use[0],true);
 const nr=Math.min(maxImages-use.length,shots.dos.blob?2:1);
 if($('review').checked&&nr>=1){say('ai-status','Peluche créée. Claude la compare maintenant aux photos pour corriger ce qui ne ressemble pas…');
@@ -1193,7 +1205,7 @@ catch(e){if(ctl!==my)return;const code=e&&e.code;
 if(['not_granted','sampling_disabled','not_declared','capability_disabled','capability_removed','images_unavailable'].includes(code)){sample=null;say('ai-status',"La création automatique n'est pas autorisée ici. Règle la peluche à la main : le bouton Pipette prend une couleur sur la photo.");}
 else say('ai-status',({cancelled:'Création arrêtée.',rate_limited:'Trop de demandes pour le moment. Réessaie dans un moment.',image_rejected:"Une des images n'est pas acceptée. Essaie des captures en PNG ou JPEG.",
 refused:"Claude n'a pas pu décrire cette photo. Essaie une autre image.",invalid_json:'La réponse était incomplète. Clique sur « Relancer la création ».',session_expired:'Reconnecte-toi à Claude, puis relance la création.'})[code]||'La création a échoué. Clique sur « Relancer la création ».');}
-finally{if(ctl===my){ctl=null;updateAnalyse();}}}
+finally{busy=false;if($('stage-status'))$('stage-status').textContent='';if(ctl===my){ctl=null;updateAnalyse();}}}
 const getSample=window.claude&&window.claude.use?window.claude.use('sample'):Promise.resolve(null);
 getSample.then(async s=>{sample=s;if(s){try{const lim=await s.limits();imagesOK=!!(lim&&lim.images);if(imagesOK)maxImages=lim.images.maxCount||1;}catch(e){imagesOK=false;}}updateAnalyse();if(!pick)say('ai-status',readyMsg());if(anyPhoto())runAnalysis();},()=>{updateAnalyse();say('ai-status',readyMsg());});
 $('analyse').addEventListener('click',()=>{if(ctl){const c0=ctl;ctl=null;c0.abort();updateAnalyse();say('ai-status','Création arrêtée.');return;}runAnalysis();});

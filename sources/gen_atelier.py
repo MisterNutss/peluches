@@ -287,7 +287,7 @@ __MODEL__
 <script>
 const $=id=>document.getElementById(id);
 function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}catch(e){}return null;}
-const say=(id,t)=>{$(id).textContent=t;if(id==='ai-status'&&$('stage-status'))$('stage-status').textContent=t;};
+var busy=false;const say=(id,t)=>{$(id).textContent=t;if(id==='ai-status'&&$('stage-status'))$('stage-status').textContent=busy?t:'';};
 
 // Aperçu 3D
 const reduceMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;let spin=false;
@@ -314,7 +314,7 @@ stage.addEventListener('dblclick',()=>{ry=-0.25;el=0.24;dirty=true;});
 
 // Réglages
 const CHOICES={hs:{court:'Courts',banane:'Banane (plaqués en arrière)',meches:'Mi-longs en mèches',herisse:'Hérissés',iroquoise:'Iroquoise',carre:'Carré',long:'Longs',tresse:"Tresse sur l'épaule",couettes:'Couettes',queue:'Queue de cheval',chignon:'Chignon',boucle:'Bouclés',afro:'Afro',dreads:'Dreads',rase:'Rasés',chauve:'Chauve'},
-bd:{aucune:'Aucune',barbe3j:'Barbe de 3 jours',barbe:'Barbe',longue:'Barbe longue',moustache:'Moustache',bouc:'Bouc'},ex:{sourire:'Grand sourire',content:'Petit sourire',neutre:'Neutre',serieux:'Sérieux'},
+bd:{aucune:'Aucune',barbe3j:'Barbe de 3 jours',barbe:'Barbe',longue:'Barbe longue',moustache:'Moustache',bouc:'Bouc'},ex:{sourire:'Grand sourire',content:'Petit sourire',rire:'Rire (yeux fermés)',clin:"Clin d'œil",amour:'Yeux en cœur',surpris:'Surpris',neutre:'Neutre',serieux:'Sérieux',triste:'Triste',boude:'Boude',dodo:'Endormi'},
 gl:{aucune:'Aucunes',lunettes:'Lunettes de vue',soleil:'Lunettes de soleil',aviateur:'Lunettes aviateur',tete:'Lunettes relevées sur la tête',masque:'Lunettes de protection'},
 hw:{aucun:'Aucun',capuche:'Capuche relevée',casquette:'Casquette',inverse:"Casquette à l'envers",bonnet:'Bonnet',chapeau:'Chapeau',bandeau:'Bandeau',durag:'Durag',pompier:'Casque de pompier',police:'Casquette de police'},
 tp:{tshirt:'T-shirt',chemise:'Chemise',sweat:'Sweat à capuche',zip:'Veste zippée fermée (survêtement)',veste:'Veste ouverte',costume:'Costume',gilet:'Gilet sur manches'},mt:{uni:'Uni',rayures:'Rayures',camo:'Camouflage',carreaux:'Carreaux',taches:'Taches'},
@@ -327,7 +327,7 @@ CHOICES.hx={lisse:'Lisses',ondule:'Ondulés',boucle:'Bouclés',crepu:'Crépus (a
 CHOICES.ht={aucune:'Détachés',queue:'Queue de cheval basse',haute:'Queue de cheval haute',couettes:'Deux couettes',chignon:'Chignon',tresse:"Tresse sur l'épaule",demi:'Demi-queue (dessus attaché)'};
 CHOICES.hd={normaux:'Comme le reste',courts:'Courts (dégradé)',rases:'Rasés'};
 CHOICES.ms={aucune:'Aucune',monstre:'Petit monstre (oreilles et dents)',lapin:'Lapin',ours:'Ours',chat:'Chat',chien:'Chien',oiseau:'Oiseau / perroquet'};
-CHOICES.po={assis:'Assise',debout:'Debout',coucou:'Coucou',bravo:'Bras levés',calin:'Câlin',coeur:'Cœur',pensif:'Pensive',tailleur:'En tailleur',dab:'Dab'};
+CHOICES.po={assis:'Assise',debout:'Debout',coucou:'Coucou',bravo:'Bras levés',calin:'Câlin',coeur:'Cœur',pensif:'Pensive',tailleur:'En tailleur',dab:'Dab',joues:'Mains sur les joues',danse:'Danse',victoire:'Victoire'};
 CHOICES.ey={kawaii:'Mignons (peluche)',realiste:'Réalistes'};
 CHOICES.st={classique:'Classique',ours:'Ourson',lapin:'Lapin',chat:'Chaton',monstre:'Petit monstre',avatar:'Avatar'};
 CHOICES.mp={droite:"Sur l'épaule, à droite de l'image",gauche:"Sur l'épaule, à gauche de l'image",tete:'Sur la tête',mains:'Dans les mains'};
@@ -469,7 +469,7 @@ function keysText(){return "Regarde d'abord ce qui rend la personne reconnaissab
 +'- "ht" : attache, parmi "aucune" (détachés), "queue" (queue de cheval basse), "haute" (queue de cheval haute), "couettes", "chignon", "tresse" (une tresse devant l\'épaule), "demi" (le dessus attaché derrière, le reste détaché)\n'
 +'- "hd" : côtés et nuque, parmi "normaux", "courts" (dégradé), "rases" (undercut, côtés rasés)\n'
 +'- "ec" : couleur des yeux, "#rrggbb" ("#5a3b22" si on ne les voit pas)\n'
-+'- "ex" : expression, parmi "sourire" (grand sourire), "content" (petit sourire), "neutre", "serieux"\n'
++'- "ex" : expression, parmi "sourire" (grand sourire), "content" (petit sourire), "rire" (rire, yeux fermés), "clin" (clin d\'œil), "amour" (yeux en cœur), "surpris", "neutre", "serieux", "triste", "boude" (fâché, boudeur), "dodo" (endormi)\n'
 +'- "bd" : pilosité du visage, parmi "aucune", "barbe3j" (barbe de quelques jours), "barbe", "longue" (barbe longue), "moustache", "bouc"\n'
 +'- "fr" : 1 si on voit des taches de rousseur, sinon 0\n'
 +'- "cl" : 1 pour de longs cils recourbés (visage féminin ou maquillé), 0 sinon\n'
@@ -525,7 +525,7 @@ function applyAnswer(data,keep,first0,first){const prev=first?null:(cfg.im?{im:c
 if(Array.isArray(data.imp)&&data.imp.length===4)cropPrint(shots[first0].cn,data.imp.map(Number));else if(prev&&data.imp!==null)Object.assign(cfg,prev);syncForm();rebuild();updateLink();}
 async function runAnalysis(){const slots=photoList();if(!slots.length||!sample||!imagesOK)return;clearTimeout(anaT);if(ctl)ctl.abort();const my=new AbortController();ctl=my;updateAnalyse();
 const w=$('who').value,keep={st:cfg.st,po:cfg.po,ey:cfg.ey,fc:''},use=slots.slice(0,Math.max(1,maxImages)),imgs=use.map(s=>shots[s].blob);
-try{say('ai-status','Claude regarde '+(use.length>1?'les photos':'la photo')+'… Ça prend souvent 10 à 40 secondes.');
+busy=true;try{say('ai-status','Claude regarde '+(use.length>1?'les photos':'la photo')+'… Ça prend souvent 10 à 40 secondes.');
 let data=await sample.json(prompt(w,use),{images:imgs,signal:my.signal});if(ctl!==my)return;applyAnswer(data,keep,use[0],true);
 const nr=Math.min(maxImages-use.length,shots.dos.blob?2:1);
 if($('review').checked&&nr>=1){say('ai-status','Peluche créée. Claude la compare maintenant aux photos pour corriger ce qui ne ressemble pas…');
@@ -537,7 +537,7 @@ catch(e){if(ctl!==my)return;const code=e&&e.code;
 if(['not_granted','sampling_disabled','not_declared','capability_disabled','capability_removed','images_unavailable'].includes(code)){sample=null;say('ai-status',"La création automatique n'est pas autorisée ici. Règle la peluche à la main : le bouton Pipette prend une couleur sur la photo.");}
 else say('ai-status',({cancelled:'Création arrêtée.',rate_limited:'Trop de demandes pour le moment. Réessaie dans un moment.',image_rejected:"Une des images n'est pas acceptée. Essaie des captures en PNG ou JPEG.",
 refused:"Claude n'a pas pu décrire cette photo. Essaie une autre image.",invalid_json:'La réponse était incomplète. Clique sur « Relancer la création ».',session_expired:'Reconnecte-toi à Claude, puis relance la création.'})[code]||'La création a échoué. Clique sur « Relancer la création ».');}
-finally{if(ctl===my){ctl=null;updateAnalyse();}}}
+finally{busy=false;if($('stage-status'))$('stage-status').textContent='';if(ctl===my){ctl=null;updateAnalyse();}}}
 const getSample=window.claude&&window.claude.use?window.claude.use('sample'):Promise.resolve(null);
 getSample.then(async s=>{sample=s;if(s){try{const lim=await s.limits();imagesOK=!!(lim&&lim.images);if(imagesOK)maxImages=lim.images.maxCount||1;}catch(e){imagesOK=false;}}updateAnalyse();if(!pick)say('ai-status',readyMsg());if(anyPhoto())runAnalysis();},()=>{updateAnalyse();say('ai-status',readyMsg());});
 $('analyse').addEventListener('click',()=>{if(ctl){const c0=ctl;ctl=null;c0.abort();updateAnalyse();say('ai-status','Création arrêtée.');return;}runAnalysis();});
