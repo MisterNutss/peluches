@@ -16,11 +16,11 @@ const V=(x,y,z)=>new THREE.Vector3(x,y,z),FWD=V(0,0,-1),BACK=V(0,0,1),X=V(1,0,0)
 // Réglages possibles (clés courtes pour que le lien reste court)
 const ENUM={st:['classique','ours','lapin','chat','monstre','avatar'],po:['assis','debout','coucou','bravo','calin','coeur','pensif','tailleur','dab','joues','danse','victoire','croises','bisou','salut'],ey:['kawaii','realiste'],hs:['court','banane','meches','herisse','iroquoise','carre','long','tresse','couettes','queue','chignon','boucle','afro','dreads','rase','chauve'],
 bd:['aucune','barbe3j','barbe','longue','moustache','bouc'],gl:['aucune','lunettes','soleil','aviateur','tete','masque','coeur','rondes','etoile'],
-hw:['aucun','capuche','casquette','inverse','bonnet','chapeau','bandeau','durag','pompier','police','beret','bob','cowboy','fleurs'],tp:['tshirt','chemise','sweat','zip','veste','costume','gilet','debardeur','dosnu'],
+hw:['aucun','capuche','casquette','inverse','bonnet','chapeau','bandeau','durag','pompier','police','beret','bob','cowboy','fleurs'],tp:['tshirt','chemise','sweat','zip','veste','costume','gilet','debardeur','dosnu','bandeau'],
 mt:['uni','rayures','camo','carreaux','taches','pois','coeurs','etoiles'],hm:['uni','rayures','camo','carreaux','taches','pois','coeurs','etoiles'],bt:['pantalon','jogging','short','salopette','jupe'],sh:['bottes','baskets','chaussures','chaussons','sandales'],ex:['sourire','content','neutre','serieux','rire','clin','amour','surpris','triste','boude','dodo','etoiles','langue','bisou','pleure','gene'],
 it:['aucun','lance','coeur','telephone','cafe','donut','trousse','bouquet','billets','manette','ballon','cle','micro','glace','sucette','cadeau','livre','pizza','poisson','baguette','banane','poele','papier','biberon','bonbon','coussin'],
-bg:['aucun','blake','billy','duo','coeurs','etoiles','arcenciel','nuages','bonbon','damier','spot','perso'],bf:['arrondi','rond','carre'],cos:['aucun','ours','lapin','chat','renard','grenouille','dino','licorne','panda','cochon','poussin','requin','vache'],hp:['aucune','gauche','milieu','droite'],hf:['aucune','courte','droite','balayee','rideau','longue','arriere'],hx:['lisse','ondule','boucle','crepu','pique','dreads'],ht:['aucune','queue','haute','couettes','chignon','tresse','demi'],hd:['normaux','courts','rases'],ms:['aucune','monstre','lapin','ours','chat','chien','oiseau'],mp:['droite','gauche','tete','mains']};
-const ACC='rbmscowkehanudqfvyzlpxjtigABCDLMNPQVTEGHRSUKWYIO';
+bg:['aucun','blake','billy','duo','coeurs','etoiles','arcenciel','nuages','bonbon','damier','spot','perso'],bf:['arrondi','rond','carre'],cos:['aucun','ours','lapin','chat','renard','grenouille','dino','licorne','panda','cochon','poussin','requin','vache'],hp:['aucune','gauche','milieu','droite'],hf:['aucune','courte','droite','balayee','rideau','longue','arriere'],hx:['lisse','ondule','boucle','crepu','pique','dreads'],ht:['aucune','queue','haute','couettes','chignon','tresse','demi','macarons'],hd:['normaux','courts','rases'],ms:['aucune','monstre','lapin','ours','chat','chien','oiseau'],mp:['droite','gauche','tete','mains']};
+const ACC='rbmscowkehanudqfvyzlpxjtigABCDLMNPQVTEGHRSUKWYIOXJ';
 // Proportions par style : h = taille de la tête, b = corps [largeur, hauteur, profondeur], a = bras [épaisseur, longueur], l = jambes [largeur, hauteur, longueur]
 // Ourson : ventre rond, membres épais. Lapin : corps allongé, longues pattes. Chaton : tête un peu plus grosse.
 // h peut être [largeur, hauteur, profondeur] pour une tête ovale.
@@ -44,7 +44,7 @@ queue:{hl:4,hv:0.3,hf:'aucune',ht:'queue'},chignon:{hl:3,hv:0.3,hf:'aucune',ht:'
 dreads:{hl:3.6,hv:0.4,hf:'aucune',hx:'dreads'},rase:{hl:0.3,hv:0},chauve:{hl:0,hv:0}};
 const HDEF={hl:1,hv:0.4,hp:'aucune',hf:'courte',hx:'lisse',ht:'aucune',hd:'normaux'};
 function hair(c){const b=Object.assign({},HDEF,HSDEF[c.hs]||{});for(const k of HAIRK)if(c[k]!==undefined&&c[k]!==null)b[k]=c[k];b.h2=c.h2||'';return b;}
-const NEUTRAL=Object.assign({},PRESETS.civil,{n:'',hs:'court',fr:0,cl:0,ms:'aucune',mc:'#8ec5f0',mp:'droite',mz:1,ex:'content',gl:'aucune',hw:'aucun',hwt:'',tp:'tshirt',mt:'uni',tt:'',bt:'pantalon',sh:'baskets',gv:'',acc:'',it:'aucun',imf:0,bg:'aucun',bf:'arrondi',bgc:'#ffd6e8'});
+const NEUTRAL=Object.assign({},PRESETS.civil,{n:'',hs:'court',fr:0,cl:0,ms:'aucune',mc:'#8ec5f0',mp:'droite',mz:1,ex:'content',gl:'aucune',hw:'aucun',hwt:'',tp:'tshirt',mt:'uni',tt:'',bt:'pantalon',sh:'baskets',gv:'',acc:'',it:'aucun',imf:0,ta:0,bg:'aucun',bf:'arrondi',bgc:'#ffd6e8'});
 
 function clean(o,base){const d=Object.assign({},base||PRESETS.pompier);if(!o||typeof o!=='object')return d;
 for(const k in ENUM)if(ENUM[k].includes(o[k]))d[k]=o[k];
@@ -60,6 +60,7 @@ for(const k of['fr','rf','cl'])if(k in o)d[k]=o[k]&&o[k]!=='0'?1:0;
 if('mz' in o){const v=Number(o.mz);if(Number.isFinite(v))d.mz=Math.round(Math.min(2,Math.max(0.5,v))*100)/100;}
 for(const[k,lo,hi]of[['mx',-1,1],['my',-1,1],['mf',-1,1],['mr',-180,180]])if(k in o){const v=Number(o[k]);if(Number.isFinite(v))d[k]=Math.round(Math.min(hi,Math.max(lo,v))*100)/100;}
 // Imprimé découpé dans la photo : petite image en base64 (webp, png ou jpeg) et son rapport largeur/hauteur
+if('ta' in o)d.ta=o.ta&&o.ta!=='0'?1:0;
 if('imf' in o)d.imf=o.imf&&o.imf!=='0'?1:0;
 if('im' in o)d.im=typeof o.im==='string'&&/^[A-Za-z0-9+/=]{40,16000}$/.test(o.im)?o.im:'';
 if(['webp','png','jpeg'].includes(o.imt))d.imt=o.imt;
@@ -240,17 +241,17 @@ const ARM={cross:[-0.8,-0.1,0.6],kiss:[-0.45,0.58,0.68],cheek:[-0.1,0.69,0.72],w
 // Corps et haut
 add(mk(blob(8.6,9.2,7.6,{pear:0.1}),st==='monstre'?mFur:mP),[0,9.2,0]);
 const layered=['gilet','veste','costume'].includes(c.tp);
-const halter=c.tp==='dosnu',bare=halter||c.tp==='debardeur';
+const halter=c.tp==='dosnu'||c.tp==='bandeau',bare=halter||c.tp==='debardeur';
 // Dos nu : épaules et haut du buste en peau, le haut commence sous la poitrine
-if(halter)add(mk(blob(8.95,9.6,7.94,{pear:0.1,lump:0,t0:0,t1:1.05}),mBodySkin),[0,9.2,0]);
-const shirt=add(mk(blob(9.0,9.65,7.98,{pear:0.1,lump:0,t0:halter?0.9:0,t1:1.86}),clothMat(layered?c.t2:c.tc,!layered&&c.rf,'torse',layered?'uni':c.mt,layered?null:c.yc)),[0,9.2,0]);
+if(halter)add(mk(blob(8.95,9.6,7.94,{pear:0.1,lump:0,t0:0,t1:1.35}),mBodySkin),[0,9.2,0]);
+const shirt=add(mk(blob(9.0,9.65,7.98,{pear:0.1,lump:0,t0:halter?1.18:0,t1:1.86}),clothMat(layered?c.t2:c.tc,!layered&&c.rf,'torse',layered?'uni':c.mt,layered?null:c.yc)),[0,9.2,0]);
 let outer=shirt;
 if(c.tp==='gilet'){outer=add(mk(blob(9.15,9.78,8.1,{pear:0.1,lump:0,t0:0.62,t1:1.86}),clothMat(c.tc,c.rf,'torse',c.mt)),[0,9.2,0]);tor(9.05,0.35,FZ({color:shade(c.tc,0.85),map:FAB,roughness:0.9}),6.4,0.883);}
 if(c.tp==='veste'||c.tp==='costume'){const gap=c.tp==='costume'?0.9:0.55;outer=add(mk(blob(9.18,9.8,8.12,{pear:0.1,lump:0,t0:0.12,t1:1.86,p0:Math.PI/2+gap/2,pl:Math.PI*2-gap}),clothMat(c.tc,c.rf,'torse',c.mt)),[0,9.2,0]);
 if(c.tp==='veste')for(const s of[-1,1])for(const y of[15.0,12.6,10.2,7.8])stick(mk(blob(0.34,0.34,0.18,{lump:0}),mSilver),[outer],s*3.3,y,-0.05);}
 const collar=c.tp==='gilet'?shade(c.t2,0.9):layered?col(c.t2):shade(c.tc,0.85),mCol=FZ({color:collar,map:FAB,roughness:0.9});
 const colT=halter?tor(4.75,0.45,FZ({color:shade(c.tc,0.8),map:FAB,roughness:0.9}),17.3,0.88):tor(4.9,bare?0.7:0.95,mCol,17.1,0.88),colB=add(mk(blob(4.6,1.8,4.1,{lump:0}),halter?mBodySkin:mCol),[0,16.4,0.2]),torso=[...new Set([outer,shirt,colT,colB])];
-if(halter){const mH=clothMat(c.tc,false,'torse',c.mt,c.yc);for(const s of[-1,1])tube([V(s*3.4,14.6,6.6),V(s*3.0,15.9,5.6),V(s*2.6,17.0,4.2),V(s*2.2,17.4,3.3)],0.75,mH);tor(7.12,0.42,mH,9.2+9.65*Math.cos(0.9),0.887);}
+if(halter){const mH=clothMat(c.tc,false,'torse',c.mt,c.yc);if(c.tp==='dosnu')for(const s of[-1,1])tube([V(s*3.6,12.8,7.4),V(s*3.4,14.6,6.6),V(s*3.0,15.9,5.6),V(s*2.6,17.0,4.2),V(s*2.2,17.4,3.3)],0.75,mH);tor(9.0*Math.sin(1.18)+0.05,0.42,mH,9.2+9.65*Math.cos(1.18),0.887);}
 const ovr=c.bt==='salopette';
 if(!ovr){const belt=tor(8.45,0.55,FZ({color:shade(c.pc,0.45),map:FAB,roughness:0.75}),5.85,0.875);stick(mk(blob(1.0,0.7,0.3,{lump:0}),mSilver),[belt],0,5.85,-0.1);}
 else{// Salopette : ceinture du même tissu, plastron avec poche, bretelles qui passent sur les épaules et se croisent dans le dos, boutons métal
@@ -280,8 +281,8 @@ if(c.tp==='chemise')add(mk(conform([shirt],V(4.4,12.4,0),X,Y,4.4,1.5,10,FWD,0.12
 if(c.tp!=='costume'&&!has('k'))add(mk(conform([outer],V(0,12.4,0),NX,Y,11,3.8,16,BACK,0.14),decal(textTex(c.tt,tc))));}
 
 // Coutures du haut : côtés et milieu du dos
-{const topCol=shade(layered?c.tc:c.tc,0.55);for(const sx of[-1,1]){const pts=[];for(let y=7.4;y<=16.2;y+=0.6)pts.push([V(sx*30,y,0.4),V(-sx,0,0)]);seam(onSurf(torso,pts,0.06),topCol);}
-const bk=[];for(let y=7.4;y<=16.6;y+=0.6)bk.push([V(0,y,-30),V(0,0,1)]);if(!has('k'))seam(onSurf(torso,bk,0.06),topCol);}
+{const topCol=shade(layered?c.tc:c.tc,0.55);for(const sx of[-1,1]){const pts=[];for(let y=7.4;y<=(halter?12.4:16.2);y+=0.6)pts.push([V(sx*30,y,0.4),V(-sx,0,0)]);seam(onSurf(torso,pts,0.06),topCol);}
+const bk=[];for(let y=7.4;y<=(halter?12.4:16.6);y+=0.6)bk.push([V(0,y,-30),V(0,0,1)]);if(!has('k'))seam(onSurf(torso,bk,0.06),topCol);}
 
 // Imprimé du haut découpé dans la photo, collé sur la poitrine (sur le gilet s'il y en a un)
 if(c.im&&c.tp!=='costume'){const img=new Image(),tx=own(new THREE.Texture(img));tx.anisotropy=4;img.onload=()=>{tx.needsUpdate=true;if(HOOKS.onTex)HOOKS.onTex();};img.src='data:image/'+c.imt+';base64,'+c.im;
@@ -289,11 +290,21 @@ if(c.imf){tx.wrapS=tx.wrapT=THREE.RepeatWrapping;tx.repeat.set(5,4);const mI=FZ(
 else{const S0=7.4,W=c.ia>=1?S0:S0*c.ia,H=Math.min(8.5,c.ia>=1?S0/c.ia:S0);add(mk(conform([c.tp==='gilet'?outer:shirt],V(0,11.6,0),X,Y,W,H,16,FWD,0.13),SM({map:tx,transparent:true,roughness:0.85,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3})));}}
 
 // Bras, mains, montre
-const longS=!['tshirt','debardeur','dosnu'].includes(c.tp),mSl=longS?clothMat(c.sl||(c.tp==='gilet'?c.t2:c.tc),c.rf,'manche',c.tp==='gilet'?'uni':c.mt,c.yc):null,mCap=longS?null:clothMat(c.sl||c.tc,c.rf,'manche',c.mt,c.yc),mSb=c.sb?FZ({color:c.sb,map:FAB,roughness:0.8}):null;
+const longS=!['tshirt','debardeur','dosnu','bandeau'].includes(c.tp),mSl=longS?clothMat(c.sl||(c.tp==='gilet'?c.t2:c.tc),c.rf,'manche',c.tp==='gilet'?'uni':c.mt,c.yc):null,mCap=longS?null:clothMat(c.sl||c.tc,c.rf,'manche',c.mt,c.yc),mSb=c.sb?FZ({color:c.sb,map:FAB,roughness:0.8}):null;
 const mHand=c.gv?SM({color:c.gv,roughness:0.45}):mBodySkin;
 // Bras selon la pose ; debout sans rien à tenir, les bras tombent le long du corps
 const empty=showIt==='aucun'&&mpE!=='mains';
-for(const s of[-1,1]){let kind=POSE.a[s<0?0:1];if(kind==='hold'&&POSE.l==='stand'&&empty)kind='down';const a=mk(blob(2.8,5.1,2.8),longS?mSl:mBodySkin);
+// Tatouages : dessins au trait (spirales, fleurs, cœurs, étoiles, vagues) sur la peau des bras
+const mTat=c.ta&&!furry?(()=>{const[cn,g]=cv(512);g.fillStyle=skinC;g.fillRect(0,0,512,512);const T=rnd(77);g.strokeStyle='rgba(34,30,38,0.9)';g.lineCap=g.lineJoin='round';
+for(let i=0;i<60;i++){const x=T()*512,y=T()*512,r=14+T()*24,k=i%5;g.lineWidth=2.6+T()*1.6;g.beginPath();
+if(k===0)for(let a=0;a<14;a+=0.2)g.lineTo(x+Math.cos(a)*r*a/14,y+Math.sin(a)*r*a/14);
+else if(k===1)for(let p=0;p<6;p++){const a=p/6*6.28;g.moveTo(x,y);g.quadraticCurveTo(x+Math.cos(a-0.5)*r,y+Math.sin(a-0.5)*r,x+Math.cos(a)*r,y+Math.sin(a)*r);g.quadraticCurveTo(x+Math.cos(a+0.5)*r,y+Math.sin(a+0.5)*r,x,y);}
+else if(k===2){g.moveTo(x,y+r*0.5);g.bezierCurveTo(x-r*1.2,y-r*0.4,x-r*0.5,y-r*1.2,x,y-r*0.5);g.bezierCurveTo(x+r*0.5,y-r*1.2,x+r*1.2,y-r*0.4,x,y+r*0.5);}
+else if(k===3)for(let p=0;p<=10;p++){const a=p*Math.PI/5-Math.PI/2,q=p%2?r*0.42:r;g.lineTo(x+Math.cos(a)*q,y+Math.sin(a)*q);}
+else{g.moveTo(x-r*1.5,y);for(let p=0;p<=12;p++)g.lineTo(x-r*1.5+p*r*0.25,y+Math.sin(p*1.1)*r*0.3);}
+g.stroke();}
+const t=own(new THREE.CanvasTexture(cn));t.encoding=THREE.sRGBEncoding;t.anisotropy=4;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1.5,1.5);return FZ({map:t,bumpMap:BMP,bumpScale:0.08,roughness:1});})():null;
+for(const s of[-1,1]){let kind=POSE.a[s<0?0:1];if(kind==='hold'&&POSE.l==='stand'&&empty)kind='down';const a=mk(blob(2.8,5.1,2.8),longS?mSl:mTat||mBodySkin);
 if(kind==='hold')add(a,[s*6.3,11.3,6.4],[-1.15,0,-s*0.5]);else if(kind==='down')add(a,[s*10.0,10.2,0.6],[0.1,0,s*0.2]);
 else{const d=V(s*ARM[kind][0],ARM[kind][1],ARM[kind][2]).normalize();a.position.copy(V(s*7.0,15.0,1.2)).addScaledVector(d,4.4);a.quaternion.setFromUnitVectors(V(0,-1,0),d);add(a);}
 a.userData.part='arm';
@@ -411,7 +422,7 @@ return P;}
 // Longueur des mèches et hauteur où s'arrêtent les pointes
 const Lh=lerpT([[0,1.6],[1,5.2],[2,9],[3,14],[4,21],[5,32]],hl)*(hx==='boucle'?0.8:1),yEnd=hl<1.6?-99:lerpT([[1.6,24],[2,21.5],[3,17.4],[4,12.8],[5,5.5]],hl);
 const blunt=H.hf==='droite'||hs==='carre',sw=H.hp==='droite'?-1:1,px={gauche:-0.3,milieu:0,droite:0.3,aucune:0}[H.hp];
-const TIES={queue:[V(0,25.2,-9.7)],haute:[V(0,31.6,-7.4)],couettes:[V(-9.2,26.2,-2.6),V(9.2,26.2,-2.6)],chignon:[V(0,31.2,-6.6)],tresse:[V(-8.6,22.6,1.2)],demi:[V(0,28.6,-9.3)]}[H.ht]||null;
+const TIES={queue:[V(0,25.2,-9.7)],haute:[V(0,31.6,-7.4)],couettes:[V(-9.2,26.2,-2.6),V(9.2,26.2,-2.6)],chignon:[V(0,31.2,-6.6)],tresse:[V(-8.6,22.6,1.2)],demi:[V(0,28.6,-9.3)],macarons:[V(-5.4,32.6,-1.6),V(5.4,32.6,-1.6)]}[H.ht]||null;
 const fringeZone=u=>u.z>0.42&&u.y>0.38&&Math.abs(u.x)<0.62;
 const N=H.fur?Math.round(1100*(QUAL<1?0.75:1)):hx==='dreads'?150:hx==='pique'?190:hx==='boucle'?420:hl<1.5?400:260,wid=hx==='dreads'?0.62:hx==='boucle'?0.8:hx==='pique'?1.45:hl<1.5?1.2:1.85,thk=hx==='dreads'||hx==='boucle'?wid:0.42;
 if(hx==='crepu'){// Afro ou cheveux crépus : volume rond fait de petites bouclettes serrées, sans cacher le visage
@@ -422,7 +433,7 @@ for(let i=0;i<340;i++){const t=R()*1.98,p2=t>0.9?2.5+R()*4.4:R()*Math.PI*2,pt=V(
 const sz=0.8+R()*0.45;add(mk(blob(sz,sz,sz,{lump:0.05}),R()<0.6?mCurl:mCurl2),[pt.x,pt.y,pt.z]);}return;}
 // Racines réparties régulièrement sur le cuir chevelu, avec un peu de hasard
 const roots=[];for(let i=0;i<N;i++){const y=1-(i+0.5)/N*2,rr=Math.sqrt(1-y*y),a=i*2.39996+(R()-0.5)*0.35,u=V(Math.cos(a)*rr,y,Math.sin(a)*rr);if(scalp(u))roots.push(u);}
-const isTied=u=>TIES&&(H.ht!=='demi'||u.y>0.3);
+const isTied=u=>TIES&&(H.ht==='macarons'?u.y>0.45&&!(fringeZone(u)&&H.hf!=='aucune'):H.ht!=='demi'||u.y>0.3);
 PART='head';
 for(const u of roots){const P0=fromQ(u.clone().multiplyScalar(1.02)),n=enorm(u),layer=0.012+0.05*(u.y+1)/2+R()*0.012,side=u.y<0.25&&Math.abs(u.z)<0.75;
 if(H.fur&&cutY!==null&&P0.y>cutY-0.6)continue;
@@ -450,8 +461,8 @@ const t0=d.clone().addScaledVector(n,-d.dot(n));if(t0.lengthSq()<1e-6)t0.set(0,-
 const P=grow(P0,t0,o);ribbon(P,wid*(0.85+R()*0.3)*(fringeZone(u)?1.2:1)*(u.y>0.6?1.15:1),thk,tintOf(),bl||blunt&&!fringeZone(u),hx==='dreads'||hx==='boucle');}
 // Attaches : élastique, puis queue, couettes, chignon ou tresse
 if(TIES&&!hood2)for(const tie of TIES){const n=enorm(q(tie)),ring=mk(new THREE.TorusGeometry(1.15,0.45,10,24),mAcc);ring.position.copy(tie).addScaledVector(n,0.3);ring.lookAt(tie.clone().addScaledVector(n,3));add(ring);
-if(H.ht==='chignon'){for(let j=0;j<7;j++){const P=[],rad=2.9-j*0.32,ax=n.clone(),u1=V(0,0,0).crossVectors(ax,V(1,0,0)).normalize(),u2=V(0,0,0).crossVectors(ax,u1),c0=tie.clone().addScaledVector(ax,1.2+j*0.42),a0=R()*6.28;
-for(let a=0;a<Math.PI*2.3;a+=0.3)P.push(c0.clone().addScaledVector(u1,Math.cos(a+a0)*rad).addScaledVector(u2,Math.sin(a+a0)*rad));ribbon(P,1.25,0.6,tintOf(),true,false);}continue;}
+if(H.ht==='chignon'||H.ht==='macarons'){const mc=H.ht==='macarons'?0.85:1;for(let j=0;j<(mc<1?10:7);j++){const P=[],rad=mc<1?2.9*Math.sin(Math.PI*(j+1)/11)+0.3:(2.9-j*0.32),ax=n.clone(),u1=V(0,0,0).crossVectors(ax,V(1,0,0)).normalize(),u2=V(0,0,0).crossVectors(ax,u1),c0=tie.clone().addScaledVector(ax,mc<1?0.6+j*0.5:1.2+j*0.42),a0=R()*6.28;
+for(let a=0;a<Math.PI*2.3;a+=0.3)P.push(c0.clone().addScaledVector(u1,Math.cos(a+a0)*rad).addScaledVector(u2,Math.sin(a+a0)*rad));ribbon(P,mc<1?1.75:1.25,0.6,tintOf(),true,false);}continue;}
 if(H.ht==='tresse'){const L=Math.max(5,(hl-1.2)*4.2),steps=Math.round(L/1.25);for(let i=0;i<steps;i++){const k=i%2?1:-1,sz=1.35-i*0.03;add(mk(blob(sz,1.0,1.05,{lump:0.02}),mHair),[-7.0+i*0.15+k*0.35,21.4-i*1.25,4.8+i*0.12],[0,0,k*0.5]);}
 const yb=21.4-steps*1.25;add(mk(blob(0.8,0.6,0.8,{lump:0}),mAcc),[-7.0+steps*0.15,yb+0.6,4.8+steps*0.12]);add(mk(blob(0.9,1.5,0.8,{lump:0.03,tip:0.8}),mHair),[-7.0+steps*0.15,yb-0.9,4.9+steps*0.12]);continue;}
 const L=Math.max(4,(hl-(H.ht==='demi'?0.5:1))*5.2)*(H.ht==='couettes'?0.85:1);
@@ -694,6 +705,14 @@ if(has('T')){const a0=G.children.length,ap=useCol('T');// Cache-œil de pirate (
 stick(mk(blob(1.9,1.7,0.35,{lump:0}),SM({color:0x111114,roughness:0.5})),[head],-3.85,23.7,-0.35);const sg=mk(new THREE.TorusGeometry(10.3,0.16,8,80),SM({color:0x111114,roughness:0.5}));sg.position.set(0,25.4,0.6);sg.rotation.set(Math.PI/2,0.35,0);sg.scale.set(1,0.93,1);add(sg);recolor('T',a0,ap);adjust('T',a0);}
 if(has('E')){const a0=G.children.length,ap=useCol('E');// Pansement croisé sur le front
 const mPa=SM({color:0xf3cfa5,roughness:0.8});for(const r of[0.6,-0.6]){const p=stick(mk(new THREE.BoxGeometry(2.8,0.8,0.12),mPa),[head],5.6,21.0,-0.45);p.rotateZ(r);}recolor('E',a0,ap);adjust('E',a0);}
+if(has('X')){const a0=G.children.length,ap=useCol('X');// Harnais croisé : bande sous la poitrine, deux sangles qui se croisent jusqu'au cou, boucles
+const mB=SM({color:0x161618,roughness:0.75}),mK=SM({color:0x2c2c30,roughness:0.45}),zf=(x,y)=>7.98*Math.sqrt(Math.max(0.02,1-((y-9.2)/9.65)**2-(x/9.0)**2))+0.45;
+tor(8.85,0.5,mB,11.2,0.887);tor(4.8,0.5,mB,17.4,0.88);
+for(const s of[-1,1]){const P=[[s*4.8,11.4],[s*2.4,13.0],[0,14.4],[-s*1.9,15.8],[-s*2.5,16.8]].map(([x,y])=>V(x,y,zf(x,y)));P.push(V(-s*2.6,17.5,3.9));tube(P,0.42,mB);
+add(mk(new THREE.BoxGeometry(1.2,0.9,0.45),mK),[-s*1.55,15.3,zf(-s*1.55,15.3)+0.25],[0,0,s*0.6]);}
+recolor('X',a0,ap);adjust('X',a0);}
+if(has('J')){const a0=G.children.length,ap=useCol('J');// Piercings : anneau au nez et petit diamant sur la narine
+const mSv=SM({color:0xd9dde3,roughness:0.2,metalness:0.9});stick(mk(new THREE.TorusGeometry(0.45,0.11,8,24),mSv),[head],0,21.95,-0.35);stick(mk(new THREE.SphereGeometry(0.2,12,10),mSv),[head],0.8,22.55,-0.15);recolor('J',a0,ap);adjust('J',a0);}
 if(has('G')){const a0=G.children.length,ap=useCol('G');// Lunettes à gros nez et moustache (déguisement)
 const mF=SM({color:0x111114,roughness:0.4});for(const sx of[-1,1]){const fr=mk(new THREE.TorusGeometry(1.9,0.28,10,36),mF);stick(fr,[head],sx*3.75,24.2,-0.3);}
 stick(mk(blob(1.1,1.0,1.2,{lump:0}),SM({color:0xf5a7a0,roughness:0.5})),[head],0,22.6,-0.6);stick(mk(blob(2.2,0.55,0.5,{lump:0.04,tip:0}),SM({color:0x2a1d18,roughness:0.8})),[head],0,21.6,-0.2);recolor('G',a0,ap);adjust('G',a0);}
