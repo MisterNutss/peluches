@@ -233,7 +233,7 @@ add(mk(blob(8.6,9.2,7.6,{pear:0.1}),st==='monstre'?mFur:mP),[0,9.2,0]);
 const layered=['gilet','veste','costume'].includes(c.tp);
 const halter=c.tp==='dosnu'||c.tp==='bandeau',bare=halter||c.tp==='debardeur',crop=!!c.cr&&c.tp!=='costume',T1=crop?1.42:1.86;
 // Haut court : ventre en peau entre le bas du haut et la ceinture
-if(crop)add(mk(blob(8.8,9.45,7.8,{pear:0.1,lump:0,t0:1.25,t1:1.97}),mBodySkin),[0,9.2,0]);
+if(crop)add(mk(blob(8.96,9.61,7.95,{pear:0.1,lump:0,t0:1.25,t1:1.97}),mBodySkin),[0,9.2,0]);
 // Dos nu : épaules et haut du buste en peau, le haut commence sous la poitrine
 if(halter)add(mk(blob(8.95,9.6,7.94,{pear:0.1,lump:0,t0:0,t1:1.35}),mBodySkin),[0,9.2,0]);
 const shirt=add(mk(blob(9.0,9.65,7.98,{pear:0.1,lump:0,t0:halter?1.18:0,t1:T1}),clothMat(layered?c.t2:c.tc,!layered&&c.rf,'torse',layered?'uni':c.mt,layered?null:c.yc)),[0,9.2,0]);
