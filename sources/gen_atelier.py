@@ -39,7 +39,10 @@ const pth=location.pathname,GH=(pth.includes('/p/')?pth.split('/p/')[0]+'/':pth.
 (nom?(BLOB?getJ(BLOB+'/peluches/'+slug+'.json?t='+Date.now(),'stockage'):Promise.reject()).catch(()=>getJ(GH,'github')).catch(()=>getJ(API+'/api/peluches?nom='+encodeURIComponent(slug),'serveur')).then(d=>d&&d.p?PL.unpack(d.p).then(c=>{if(!c)why+='lecture du lien impossible. ';return c;}):null).catch(()=>null):PL.unpack(q.get('p'))).then(c=>{
 // Peluche de la bibliothèque introuvable : on le dit au lieu d'afficher une autre peluche
 if(nom&&!c){const m=document.createElement('p');m.textContent='Peluche « '+nom+' » introuvable.'+(why?' ('+why.trim()+')':'');m.style.cssText='position:fixed;inset:auto 0 45% 0;text-align:center;font:600 18px system-ui,sans-serif;color:#888;margin:0';document.body.append(m);return;}
-const cfg=c||PL.clean(PL.PRESETS.pompier);if(cfg.n)document.title=cfg.n;P=PL.build(cfg);scene.add(P.group);});
+const cfg=c||PL.clean(PL.PRESETS.pompier);if(cfg.n)document.title=cfg.n;P=PL.build(cfg);scene.add(P.group);
+// Fond choisi dans l'atelier (sinon transparent), avec sa forme : arrondi, rond ou carré
+if(cfg.bg&&cfg.bg!=='aucun'){const b={k:cfg.bg,f:cfg.bf||'arrondi',c:cfg.bgc||'#ffd6e8'},cv=document.createElement('canvas');cv.width=cv.height=1024;PL.paintBg(cv.getContext('2d'),1024,b);
+const d=document.createElement('div');d.style.cssText='position:fixed;inset:0;z-index:-1;background:url('+cv.toDataURL('image/jpeg',0.9)+') center/cover;border-radius:'+(b.f==='rond'?'50%':b.f==='arrondi'?'9vmin':'0');document.body.prepend(d);}});
 const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches,autoSpin=q.get('tourne')!=='non'&&!reduce;
 const START={ry:-0.25,el:0.24,zoom:1.05};let ry=START.ry,el=START.el,zoom=START.zoom,idle=0;
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
@@ -263,7 +266,7 @@ code{font-family:var(--mono);font-size:13px;overflow-wrap:anywhere}
             <p class="help" id="link-help"></p>
             <div class="field"><label for="edit">Lien pour la modifier plus tard (atelier GitHub)</label><div class="row"><input id="edit" type="text" readonly><button class="btn" id="copy-edit" type="button">Copier</button></div></div>
             <p class="help">Envoie ce lien à quelqu'un : la peluche s'ouvre dans l'atelier, prête à être modifiée, sans compte Claude.</p>
-            <div class="field"><span class="lbl">Fond de l'image (icône)</span><div class="tiles" id="ibg" role="group"></div></div>
+            <div class="field"><span class="lbl">Fond (icône et page 3D)</span><div class="tiles" id="ibg" role="group"></div></div>
             <div class="fields"><div class="field"><span class="help">Forme</span><div class="seg small" id="ishape"></div></div>
             <div class="field" id="ibgc-f"><label for="ibgc">Couleur du fond</label><input id="ibgc" type="color" value="#ffd6e8"></div></div>
             <canvas id="ibg-prev" width="256" height="256" style="width:128px;height:128px;border-radius:12px;background:repeating-conic-gradient(var(--stage-a) 0 25%,var(--stage-b) 0 50%) 0 0/16px 16px" aria-label="Aperçu de l'icône"></canvas>
@@ -325,7 +328,7 @@ let hist=[],hi=-1,restoring=false;
 function record(){const t=JSON.stringify(cfg);if(hist[hi]===t)return;hist=hist.slice(0,hi+1);hist.push(t);if(hist.length>80)hist.shift();hi=hist.length-1;updUndo();}
 function updUndo(){$('undo').disabled=hi<=0;$('redo').disabled=hi>=hist.length-1;}
 function goHist(d){const n=hi+d;if(n<0||n>=hist.length)return;hi=n;cfg=JSON.parse(hist[hi]);restoring=true;syncForm();rebuild();updateLink();restoring=false;updUndo();}
-function rebuild(){if(cur){scene.remove(cur.group);cur.dispose();}cur=PL.build(cfg);scene.add(cur.group);dirty=true;if(!restoring)record();}
+function rebuild(){if(cur){scene.remove(cur.group);cur.dispose();}cur=PL.build(cfg);scene.add(cur.group);dirty=true;if(!restoring)record();if(curTab==='lien'&&window.ibgSync)setTimeout(ibgSync,0);}
 let rbT=0;function changed(){updateLink();clearTimeout(rbT);rbT=setTimeout(rebuild,140);}
 stage.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;drag=true;lx=e.clientX;ly=e.clientY;stage.classList.add('drag');});
 window.addEventListener('pointermove',e=>{if(!drag)return;ry+=(e.clientX-lx)*0.01;el=Math.min(0.8,Math.max(-0.15,el+(e.clientY-ly)*0.006));lx=e.clientX;ly=e.clientY;dirty=true;});
@@ -579,7 +582,7 @@ function updateAnalyse(){const b=$('analyse');b.hidden=!(sample&&imagesOK&&anyPh
 // Rendu de la peluche sur fond gris neutre, pour que Claude la compare aux photos
 async function renderView(rot,S){await new Promise(res=>setTimeout(res,250));const pr=r.getPixelRatio(),keep=cur.group.rotation.y;r.setPixelRatio(1);r.setSize(S,S,false);cam.aspect=1;cam.updateProjectionMatrix();cur.group.rotation.y=rot;PL.aim(cam,cur.fit,0.12,1.05,camFill);r.render(scene,cam);
 const o=document.createElement('canvas');o.width=o.height=S;const g=o.getContext('2d');g.fillStyle='#8a929c';g.fillRect(0,0,S,S);g.drawImage(r.domElement,0,0);cur.group.rotation.y=keep;r.setPixelRatio(pr);fitSize();return new Promise(res=>o.toBlob(res,'image/jpeg',0.9));}
-function applyAnswer(data,keep,first0,first){const prev=first?null:(cfg.im?{im:cfg.im,imt:cfg.imt,ia:cfg.ia}:null);cfg=PL.clean(Object.assign({},data,keep),PL.NEUTRAL);
+function applyAnswer(data,keep,first0,first){const prev=first?null:(cfg.im?{im:cfg.im,imt:cfg.imt,ia:cfg.ia}:null);cfg=PL.clean(Object.assign({},data,keep,{bg:cfg.bg,bf:cfg.bf,bgc:cfg.bgc}),PL.NEUTRAL);
 if(Array.isArray(data.imp)&&data.imp.length===4)cropPrint(shots[first0].cn,data.imp.map(Number));else if(prev&&data.imp!==null)Object.assign(cfg,prev);syncForm();rebuild();updateLink();}
 async function runAnalysis(){const slots=photoList();if(!slots.length||!sample||!imagesOK)return;clearTimeout(anaT);if(ctl)ctl.abort();const my=new AbortController();ctl=my;updateAnalyse();
 const w=$('who').value,keep={st:cfg.st,po:cfg.po,ey:cfg.ey,fc:''},use=slots.slice(0,Math.max(1,maxImages)),imgs=use.map(s=>shots[s].blob);
@@ -633,36 +636,20 @@ const bg=IBG.k!=='aucun',w=x1-x0+1,h=y1-y0+1,k=out*(bg?(IBG.f==='rond'?0.74:0.82
 if(bg){og.save();iconShape(og,out);og.clip();paintBg(og,out);og.restore();}
 og.drawImage(c,x0,y0,w,h,(out-w*k)/2,(out-h*k)/2+(bg?out*0.02:0),w*k,h*k);return o;}
 // Fond de l'icône : transparent par défaut, ou un fond pipou (réglage retenu sur cet appareil)
-const IBG={k:store('ibg-k')||'aucun',f:store('ibg-f')||'arrondi',c:store('ibg-c')||'#ffd6e8'};
+// Le fond fait partie de la peluche : il suit son lien et s'affiche aussi sur la page 3D
+const IBG={get k(){return cfg.bg||'aucun';},set k(v){cfg.bg=v;},get f(){return cfg.bf||'arrondi';},set f(v){cfg.bf=v;},get c(){return cfg.bgc||'#ffd6e8';},set c(v){cfg.bgc=v;}};
+const iconShape=(g,S)=>PL.bgShape(g,S,IBG),paintBg=(g,S)=>PL.paintBg(g,S,IBG);
 const BGS={aucun:'Transparent',blake:'Blake',billy:'Billy',duo:'Blake & Billy',coeurs:'Cœurs',etoiles:'Nuit étoilée',arcenciel:'Arc-en-ciel',nuages:'Ciel et nuages',bonbon:'Bonbons',damier:'Damier',spot:'Projecteur',perso:'Ma couleur'};
-function iconShape(g,S){g.beginPath();if(IBG.f==='rond')g.arc(S/2,S/2,S/2,0,7);else if(IBG.f==='arrondi'){const r=S*0.18;g.moveTo(r,0);g.arcTo(S,0,S,S,r);g.arcTo(S,S,0,S,r);g.arcTo(0,S,0,0,r);g.arcTo(0,0,S,0,r);}else g.rect(0,0,S,S);}
-function heart(g,x,y,z,col){g.save();g.translate(x,y);g.scale(z,z);g.beginPath();g.moveTo(0,0.35);g.bezierCurveTo(-1.1,-0.35,-0.5,-1.15,0,-0.55);g.bezierCurveTo(0.5,-1.15,1.1,-0.35,0,0.35);g.fillStyle=col;g.fill();g.restore();}
-function star(g,x,y,z,col){g.save();g.translate(x,y);g.scale(z,z);g.beginPath();for(let i=0;i<10;i++){const a=i*Math.PI/5-Math.PI/2,r=i%2?0.42:1;g.lineTo(Math.cos(a)*r,Math.sin(a)*r);}g.fillStyle=col;g.fill();g.restore();}
-function cloud(g,x,y,z){g.fillStyle='rgba(255,255,255,.9)';for(const[a,b,r]of[[0,0,1],[-1.1,0.3,0.7],[1.1,0.3,0.75],[0.5,-0.4,0.75]]){g.beginPath();g.arc(x+a*z,y+b*z,r*z,0,7);g.fill();}}
-function grad(g,S,stops,radial){const G=radial?g.createRadialGradient(S/2,S*0.42,S*0.05,S/2,S/2,S*0.75):g.createLinearGradient(0,0,S,S);stops.forEach((c,i)=>G.addColorStop(i/(stops.length-1),c));g.fillStyle=G;g.fillRect(0,0,S,S);}
-function rnd(seed){return()=>(seed=(seed*16807)%2147483647)/2147483647;}
-function paintBg(g,S){const k=IBG.k,R=rnd(7),u=S/100;
-if(k==='blake')grad(g,S,['#eef6ff','#a9d1fa','#6fb0ef'],1);
-else if(k==='billy')grad(g,S,['#effbf4','#a6e6c4','#5fc795'],1);
-else if(k==='duo'){grad(g,S,['#a9d1fa','#cfe6ff','#c9f0dc','#8fdcb6']);for(let i=0;i<14;i++)heart(g,R()*S,R()*S,(3+R()*4)*u,'rgba(255,255,255,.55)');}
-else if(k==='coeurs'){grad(g,S,['#fff0f6','#ffc7de'],1);for(let i=0;i<18;i++)heart(g,R()*S,R()*S,(3+R()*5)*u,i%3?'rgba(255,120,170,.35)':'rgba(255,255,255,.8)');}
-else if(k==='etoiles'){grad(g,S,['#3b3f8f','#1d2150','#11142e'],1);for(let i=0;i<60;i++){g.fillStyle='rgba(255,255,255,'+(0.4+R()*0.6)+')';g.beginPath();g.arc(R()*S,R()*S,(0.3+R()*0.7)*u,0,7);g.fill();}for(let i=0;i<6;i++)star(g,R()*S,R()*S,(2+R()*2.5)*u,'#ffe28a');g.fillStyle='#fff4c2';g.beginPath();g.arc(S*0.8,S*0.18,8*u,0,7);g.fill();g.fillStyle='#252a66';g.beginPath();g.arc(S*0.84,S*0.15,7*u,0,7);g.fill();}
-else if(k==='arcenciel'){const G=g.createLinearGradient(0,0,0,S);['#ffc4d6','#ffdcb8','#fff3b0','#c8f2c8','#bfe0ff','#dcc8ff'].forEach((c,i,a)=>G.addColorStop(i/(a.length-1),c));g.fillStyle=G;g.fillRect(0,0,S,S);}
-else if(k==='nuages'){grad(g,S,['#bfe3ff','#8ccaf7'],1);cloud(g,S*0.2,S*0.22,8*u);cloud(g,S*0.82,S*0.35,6*u);cloud(g,S*0.15,S*0.8,7*u);cloud(g,S*0.85,S*0.86,9*u);}
-else if(k==='bonbon'){g.fillStyle='#fff3f8';g.fillRect(0,0,S,S);g.save();g.translate(S/2,S/2);g.rotate(-Math.PI/4);for(let i=-12;i<12;i++){g.fillStyle=['#ffc4dd','#c9e6ff','#c8f2d9','#fff1b3'][(i+12)%4];g.fillRect(i*10*u,-S,5*u,2*S);}g.restore();}
-else if(k==='damier'){const n=8,c=S/n;for(let y=0;y<n;y++)for(let x=0;x<n;x++){g.fillStyle=(x+y)%2?'#cfe6ff':'#d6f5e5';g.fillRect(x*c,y*c,c,c);}}
-else if(k==='spot'){g.fillStyle='#2b2140';g.fillRect(0,0,S,S);const G=g.createRadialGradient(S/2,S*0.55,0,S/2,S*0.55,S*0.6);G.addColorStop(0,'rgba(255,240,200,.95)');G.addColorStop(1,'rgba(255,240,200,0)');g.fillStyle=G;g.fillRect(0,0,S,S);}
-else{const c=IBG.c,G=g.createRadialGradient(S/2,S*0.42,S*0.05,S/2,S/2,S*0.75);G.addColorStop(0,'#ffffff');G.addColorStop(0.35,c);G.addColorStop(1,c);g.fillStyle=G;g.fillRect(0,0,S,S);}}
 {const t=$('ibg');for(const[v,n]of Object.entries(BGS)){const sw=document.createElement('canvas');sw.width=sw.height=48;sw.className='em';sw.style.cssText='width:28px;height:28px;border-radius:8px;background:repeating-conic-gradient(#ddd 0 25%,#fff 0 50%) 0 0/8px 8px';
 const b=document.createElement('button');b.type='button';b.className='tile';b.dataset.v=v;const l=document.createElement('span');l.textContent=n;b.append(sw,l);t.append(b);}
 const sh=$('ishape');for(const[v,n]of Object.entries({arrondi:'Arrondi',rond:'Rond',carre:'Carré'})){const b=document.createElement('button');b.type='button';b.className='btn';b.textContent=n;b.dataset.v=v;sh.append(b);}
 const swatches=()=>{const keep=IBG.k;t.querySelectorAll('canvas').forEach(cv=>{IBG.k=cv.parentNode.dataset.v;const g=cv.getContext('2d');g.clearRect(0,0,48,48);if(IBG.k!=='aucun'){g.save();g.beginPath();g.rect(0,0,48,48);g.clip();paintBg(g,48);g.restore();}});IBG.k=keep;};
 window.ibgSync=()=>{t.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===IBG.k)));sh.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===IBG.f)));$('ibgc').value=IBG.c;$('ibgc-f').hidden=IBG.k!=='perso';$('ishape').parentNode.hidden=IBG.k==='aucun';
 if(cur){const p=$('ibg-prev'),g=p.getContext('2d');g.clearRect(0,0,256,256);g.drawImage(renderIcon(256),0,0);}};
-const set=(a,v)=>{IBG[a]=v;store('ibg-'+a,v);ibgSync();};
+const set=(a,v)=>{IBG[a]=v;changed();};
 t.addEventListener('click',e=>{const b=e.target.closest('button');if(b)set('k',b.dataset.v);});
 sh.addEventListener('click',e=>{const b=e.target.closest('button');if(b)set('f',b.dataset.v);});
-$('ibgc').addEventListener('input',e=>{IBG.c=e.target.value;store('ibg-c',IBG.c);swatches();ibgSync();});
+$('ibgc').addEventListener('input',e=>{IBG.c=e.target.value;swatches();changed();});
 swatches();}
 $('icon').addEventListener('click',async()=>{if(!dl||!cur)return;$('icon').disabled=true;say('dl-status','Création de l\'icône…');const blob=await new Promise(res=>renderIcon(512).toBlob(res,'image/png'));await save(slug(cfg.n)+'.png',blob,'dl-status');$('icon').disabled=!dl;});
 $('get-viewer').addEventListener('click',async()=>{if(!dl)return;await save('index.html',VIEWER_HEAD+$('pl-src').textContent.trim()+'\n'+VIEWER_TAIL,'setup-status');});
