@@ -253,7 +253,7 @@ const V=(x,y,z)=>new THREE.Vector3(x,y,z),FWD=V(0,0,-1),BACK=V(0,0,1),X=V(1,0,0)
 // Réglages possibles (clés courtes pour que le lien reste court)
 const ENUM={st:['classique','ours','lapin','chat','monstre','avatar'],po:['assis','debout','coucou','bravo','calin','coeur','pensif','tailleur','dab','joues','danse','victoire','croises','bisou','salut'],ey:['kawaii','realiste'],hs:['court','banane','meches','herisse','iroquoise','carre','long','tresse','couettes','queue','chignon','boucle','afro','dreads','rase','chauve'],
 bd:['aucune','barbe3j','barbe','longue','moustache','bouc'],gl:['aucune','lunettes','soleil','aviateur','tete','masque','coeur','rondes','etoile'],
-hw:['aucun','capuche','casquette','inverse','bonnet','chapeau','bandeau','durag','pompier','police','beret','bob','cowboy','fleurs'],tp:['tshirt','chemise','sweat','zip','veste','costume','gilet'],
+hw:['aucun','capuche','casquette','inverse','bonnet','chapeau','bandeau','durag','pompier','police','beret','bob','cowboy','fleurs'],tp:['tshirt','chemise','sweat','zip','veste','costume','gilet','debardeur','dosnu'],
 mt:['uni','rayures','camo','carreaux','taches','pois','coeurs','etoiles'],hm:['uni','rayures','camo','carreaux','taches','pois','coeurs','etoiles'],bt:['pantalon','jogging','short','salopette','jupe'],sh:['bottes','baskets','chaussures','chaussons','sandales'],ex:['sourire','content','neutre','serieux','rire','clin','amour','surpris','triste','boude','dodo','etoiles','langue','bisou','pleure','gene'],
 it:['aucun','lance','coeur','telephone','cafe','donut','trousse','bouquet','billets','manette','ballon','cle','micro','glace','sucette','cadeau','livre','pizza','poisson','baguette','banane','poele','papier','biberon','bonbon','coussin'],
 bg:['aucun','blake','billy','duo','coeurs','etoiles','arcenciel','nuages','bonbon','damier','spot','perso'],bf:['arrondi','rond','carre'],cos:['aucun','ours','lapin','chat','renard','grenouille','dino','licorne','panda','cochon','poussin','requin','vache'],hp:['aucune','gauche','milieu','droite'],hf:['aucune','courte','droite','balayee','rideau','longue','arriere'],hx:['lisse','ondule','boucle','crepu','pique','dreads'],ht:['aucune','queue','haute','couettes','chignon','tresse','demi'],hd:['normaux','courts','rases'],ms:['aucune','monstre','lapin','ours','chat','chien','oiseau'],mp:['droite','gauche','tete','mains']};
@@ -281,7 +281,7 @@ queue:{hl:4,hv:0.3,hf:'aucune',ht:'queue'},chignon:{hl:3,hv:0.3,hf:'aucune',ht:'
 dreads:{hl:3.6,hv:0.4,hf:'aucune',hx:'dreads'},rase:{hl:0.3,hv:0},chauve:{hl:0,hv:0}};
 const HDEF={hl:1,hv:0.4,hp:'aucune',hf:'courte',hx:'lisse',ht:'aucune',hd:'normaux'};
 function hair(c){const b=Object.assign({},HDEF,HSDEF[c.hs]||{});for(const k of HAIRK)if(c[k]!==undefined&&c[k]!==null)b[k]=c[k];b.h2=c.h2||'';return b;}
-const NEUTRAL=Object.assign({},PRESETS.civil,{n:'',hs:'court',fr:0,cl:0,ms:'aucune',mc:'#8ec5f0',mp:'droite',mz:1,ex:'content',gl:'aucune',hw:'aucun',hwt:'',tp:'tshirt',mt:'uni',tt:'',bt:'pantalon',sh:'baskets',gv:'',acc:'',it:'aucun',bg:'aucun',bf:'arrondi',bgc:'#ffd6e8'});
+const NEUTRAL=Object.assign({},PRESETS.civil,{n:'',hs:'court',fr:0,cl:0,ms:'aucune',mc:'#8ec5f0',mp:'droite',mz:1,ex:'content',gl:'aucune',hw:'aucun',hwt:'',tp:'tshirt',mt:'uni',tt:'',bt:'pantalon',sh:'baskets',gv:'',acc:'',it:'aucun',imf:0,bg:'aucun',bf:'arrondi',bgc:'#ffd6e8'});
 
 function clean(o,base){const d=Object.assign({},base||PRESETS.pompier);if(!o||typeof o!=='object')return d;
 for(const k in ENUM)if(ENUM[k].includes(o[k]))d[k]=o[k];
@@ -297,6 +297,7 @@ for(const k of['fr','rf','cl'])if(k in o)d[k]=o[k]&&o[k]!=='0'?1:0;
 if('mz' in o){const v=Number(o.mz);if(Number.isFinite(v))d.mz=Math.round(Math.min(2,Math.max(0.5,v))*100)/100;}
 for(const[k,lo,hi]of[['mx',-1,1],['my',-1,1],['mf',-1,1],['mr',-180,180]])if(k in o){const v=Number(o[k]);if(Number.isFinite(v))d[k]=Math.round(Math.min(hi,Math.max(lo,v))*100)/100;}
 // Imprimé découpé dans la photo : petite image en base64 (webp, png ou jpeg) et son rapport largeur/hauteur
+if('imf' in o)d.imf=o.imf&&o.imf!=='0'?1:0;
 if('im' in o)d.im=typeof o.im==='string'&&/^[A-Za-z0-9+/=]{40,16000}$/.test(o.im)?o.im:'';
 if(['webp','png','jpeg'].includes(o.imt))d.imt=o.imt;
 if('ia' in o){const v=Number(o.ia);if(Number.isFinite(v))d.ia=Math.round(Math.min(3,Math.max(0.33,v))*100)/100;}
@@ -476,13 +477,17 @@ const ARM={cross:[-0.8,-0.1,0.6],kiss:[-0.45,0.58,0.68],cheek:[-0.1,0.69,0.72],w
 // Corps et haut
 add(mk(blob(8.6,9.2,7.6,{pear:0.1}),st==='monstre'?mFur:mP),[0,9.2,0]);
 const layered=['gilet','veste','costume'].includes(c.tp);
-const shirt=add(mk(blob(9.0,9.65,7.98,{pear:0.1,lump:0,t0:0,t1:1.86}),clothMat(layered?c.t2:c.tc,!layered&&c.rf,'torse',layered?'uni':c.mt,layered?null:c.yc)),[0,9.2,0]);
+const halter=c.tp==='dosnu',bare=halter||c.tp==='debardeur';
+// Dos nu : épaules et haut du buste en peau, le haut commence sous la poitrine
+if(halter)add(mk(blob(8.95,9.6,7.94,{pear:0.1,lump:0,t0:0,t1:1.05}),mBodySkin),[0,9.2,0]);
+const shirt=add(mk(blob(9.0,9.65,7.98,{pear:0.1,lump:0,t0:halter?0.9:0,t1:1.86}),clothMat(layered?c.t2:c.tc,!layered&&c.rf,'torse',layered?'uni':c.mt,layered?null:c.yc)),[0,9.2,0]);
 let outer=shirt;
 if(c.tp==='gilet'){outer=add(mk(blob(9.15,9.78,8.1,{pear:0.1,lump:0,t0:0.62,t1:1.86}),clothMat(c.tc,c.rf,'torse',c.mt)),[0,9.2,0]);tor(9.05,0.35,FZ({color:shade(c.tc,0.85),map:FAB,roughness:0.9}),6.4,0.883);}
 if(c.tp==='veste'||c.tp==='costume'){const gap=c.tp==='costume'?0.9:0.55;outer=add(mk(blob(9.18,9.8,8.12,{pear:0.1,lump:0,t0:0.12,t1:1.86,p0:Math.PI/2+gap/2,pl:Math.PI*2-gap}),clothMat(c.tc,c.rf,'torse',c.mt)),[0,9.2,0]);
 if(c.tp==='veste')for(const s of[-1,1])for(const y of[15.0,12.6,10.2,7.8])stick(mk(blob(0.34,0.34,0.18,{lump:0}),mSilver),[outer],s*3.3,y,-0.05);}
 const collar=c.tp==='gilet'?shade(c.t2,0.9):layered?col(c.t2):shade(c.tc,0.85),mCol=FZ({color:collar,map:FAB,roughness:0.9});
-const colT=tor(4.9,0.95,mCol,17.1,0.88),colB=add(mk(blob(4.6,1.8,4.1,{lump:0}),mCol),[0,16.4,0.2]),torso=[...new Set([outer,shirt,colT,colB])];
+const colT=halter?tor(4.75,0.45,FZ({color:shade(c.tc,0.8),map:FAB,roughness:0.9}),17.3,0.88):tor(4.9,bare?0.7:0.95,mCol,17.1,0.88),colB=add(mk(blob(4.6,1.8,4.1,{lump:0}),halter?mBodySkin:mCol),[0,16.4,0.2]),torso=[...new Set([outer,shirt,colT,colB])];
+if(halter){const mH=clothMat(c.tc,false,'torse',c.mt,c.yc);for(const s of[-1,1])tube([V(s*3.4,14.6,6.6),V(s*3.0,15.9,5.6),V(s*2.6,17.0,4.2),V(s*2.2,17.4,3.3)],0.75,mH);tor(7.12,0.42,mH,9.2+9.65*Math.cos(0.9),0.887);}
 const ovr=c.bt==='salopette';
 if(!ovr){const belt=tor(8.45,0.55,FZ({color:shade(c.pc,0.45),map:FAB,roughness:0.75}),5.85,0.875);stick(mk(blob(1.0,0.7,0.3,{lump:0}),mSilver),[belt],0,5.85,-0.1);}
 else{// Salopette : ceinture du même tissu, plastron avec poche, bretelles qui passent sur les épaules et se croisent dans le dos, boutons métal
@@ -517,10 +522,11 @@ const bk=[];for(let y=7.4;y<=16.6;y+=0.6)bk.push([V(0,y,-30),V(0,0,1)]);if(!has(
 
 // Imprimé du haut découpé dans la photo, collé sur la poitrine (sur le gilet s'il y en a un)
 if(c.im&&c.tp!=='costume'){const img=new Image(),tx=own(new THREE.Texture(img));tx.anisotropy=4;img.onload=()=>{tx.needsUpdate=true;if(HOOKS.onTex)HOOKS.onTex();};img.src='data:image/'+c.imt+';base64,'+c.im;
-const S0=7.4,W=c.ia>=1?S0:S0*c.ia,H=Math.min(8.5,c.ia>=1?S0/c.ia:S0);add(mk(conform([c.tp==='gilet'?outer:shirt],V(0,11.6,0),X,Y,W,H,16,FWD,0.13),SM({map:tx,transparent:true,roughness:0.85,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3})));}
+if(c.imf){tx.wrapS=tx.wrapT=THREE.RepeatWrapping;tx.repeat.set(5,4);const mI=FZ({map:tx,roughness:0.9});for(const o of new Set([shirt,outer]))o.material=mI;}
+else{const S0=7.4,W=c.ia>=1?S0:S0*c.ia,H=Math.min(8.5,c.ia>=1?S0/c.ia:S0);add(mk(conform([c.tp==='gilet'?outer:shirt],V(0,11.6,0),X,Y,W,H,16,FWD,0.13),SM({map:tx,transparent:true,roughness:0.85,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3})));}}
 
 // Bras, mains, montre
-const longS=c.tp!=='tshirt',mSl=longS?clothMat(c.sl||(c.tp==='gilet'?c.t2:c.tc),c.rf,'manche',c.tp==='gilet'?'uni':c.mt,c.yc):null,mCap=longS?null:clothMat(c.sl||c.tc,c.rf,'manche',c.mt,c.yc),mSb=c.sb?FZ({color:c.sb,map:FAB,roughness:0.8}):null;
+const longS=!['tshirt','debardeur','dosnu'].includes(c.tp),mSl=longS?clothMat(c.sl||(c.tp==='gilet'?c.t2:c.tc),c.rf,'manche',c.tp==='gilet'?'uni':c.mt,c.yc):null,mCap=longS?null:clothMat(c.sl||c.tc,c.rf,'manche',c.mt,c.yc),mSb=c.sb?FZ({color:c.sb,map:FAB,roughness:0.8}):null;
 const mHand=c.gv?SM({color:c.gv,roughness:0.45}):mBodySkin;
 // Bras selon la pose ; debout sans rien à tenir, les bras tombent le long du corps
 const empty=showIt==='aucun'&&mpE!=='mains';
@@ -528,7 +534,7 @@ for(const s of[-1,1]){let kind=POSE.a[s<0?0:1];if(kind==='hold'&&POSE.l==='stand
 if(kind==='hold')add(a,[s*6.3,11.3,6.4],[-1.15,0,-s*0.5]);else if(kind==='down')add(a,[s*10.0,10.2,0.6],[0.1,0,s*0.2]);
 else{const d=V(s*ARM[kind][0],ARM[kind][1],ARM[kind][2]).normalize();a.position.copy(V(s*7.0,15.0,1.2)).addScaledVector(d,4.4);a.quaternion.setFromUnitVectors(V(0,-1,0),d);add(a);}
 a.userData.part='arm';
-if(!longS){const cp=mk(blob(3.1,2.7,3.1,{lump:0.01}),mCap);cp.position.set(0,2.7,0);a.add(cp);}
+if(!longS&&!bare){const cp=mk(blob(3.1,2.7,3.1,{lump:0.01}),mCap);cp.position.set(0,2.7,0);a.add(cp);}
 // Deux bandes le long de l'extérieur de la manche
 if(mSb&&longS)for(const a0 of[-0.24,0.24]){const pts=[];for(let y=4.2;y>=-3.6;y-=0.4){const r=2.8*Math.sqrt(Math.max(0,1-(y/5.1)**2))+0.05;pts.push(V(s*r*Math.cos(a0),y,r*Math.sin(a0)));}a.add(mk(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),40,0.22,6,false),mSb));}
 if(longS)seam(ring(2.2,2.2,'y',-3.3),shade(c.tp==='gilet'?c.t2:c.tc,0.55),true,a);
@@ -1223,7 +1229,7 @@ const CHOICES={hs:{court:'Courts',banane:'Banane (plaqués en arrière)',meches:
 bd:{aucune:'Aucune',barbe3j:'Barbe de 3 jours',barbe:'Barbe',longue:'Barbe longue',moustache:'Moustache',bouc:'Bouc'},ex:{sourire:'Grand sourire',content:'Petit sourire',rire:'Rire',clin:"Clin d'œil",amour:'Yeux en cœur',etoiles:'Yeux étoiles',langue:'Tire la langue',bisou:'Bisou',surpris:'Surpris',gene:'Gêné',neutre:'Neutre',serieux:'Sérieux',boude:'Boude',triste:'Triste',pleure:'Pleure',dodo:'Endormi'},
 gl:{aucune:'Aucunes',lunettes:'Lunettes de vue',soleil:'Lunettes de soleil',aviateur:'Lunettes aviateur',tete:'Lunettes relevées sur la tête',masque:'Lunettes de protection',coeur:'Lunettes cœur',rondes:'Rondes rétro',etoile:'Lunettes étoiles'},
 hw:{aucun:'Aucun',capuche:'Capuche relevée',casquette:'Casquette',inverse:"Casquette à l'envers",bonnet:'Bonnet',chapeau:'Chapeau',bandeau:'Bandeau',durag:'Durag',beret:'Béret',bob:'Bob',cowboy:'Chapeau de cowboy',fleurs:'Couronne de fleurs',pompier:'Casque de pompier',police:'Casquette de police'},
-tp:{tshirt:'T-shirt',chemise:'Chemise',sweat:'Sweat à capuche',zip:'Veste zippée fermée (survêtement)',veste:'Veste ouverte',costume:'Costume',gilet:'Gilet sur manches'},mt:{uni:'Uni',rayures:'Rayures',camo:'Camouflage',carreaux:'Carreaux',taches:'Taches',pois:'Pois',coeurs:'Cœurs',etoiles:'Étoiles'},
+tp:{tshirt:'T-shirt',chemise:'Chemise',sweat:'Sweat à capuche',zip:'Veste zippée fermée (survêtement)',veste:'Veste ouverte',costume:'Costume',gilet:'Gilet sur manches',debardeur:'Débardeur (sans manches)',dosnu:'Haut dos nu (bretelle au cou)'},mt:{uni:'Uni',rayures:'Rayures',camo:'Camouflage',carreaux:'Carreaux',taches:'Taches',pois:'Pois',coeurs:'Cœurs',etoiles:'Étoiles'},
 bt:{pantalon:'Pantalon',jogging:'Jogging',short:'Short',salopette:'Salopette',jupe:'Jupe'},sh:{bottes:'Bottes',baskets:'Baskets',chaussures:'Chaussures de ville',chaussons:'Chaussons tout doux',sandales:'Sandales'},
 it:{aucun:'Rien',lance:'Lance à incendie',coeur:'Cœur',telephone:'Téléphone',cafe:'Café',donut:'Donut',trousse:'Trousse de secours',bouquet:'Bouquet de fleurs',billets:'Liasse de billets',manette:'Manette de jeu',ballon:'Ballon de basket',cle:'Clé de voiture',micro:'Micro de chanteur',glace:'Glace',sucette:'Sucette',cadeau:'Cadeau',livre:'Livre',pizza:'Pizza',poisson:'Poisson',baguette:'Baguette',banane:'Banane',poele:'Poêle',papier:'Papier toilette',biberon:'Biberon',bonbon:'Bonbon',coussin:'Coussin cœur'}};
 CHOICES.hm=CHOICES.mt;
@@ -1264,7 +1270,7 @@ const SECTIONS=[
 {t:'Haut',f:[{k:'tp',type:'choice',l:'Haut'},{k:'mt',type:'choice',l:'Motif'},{k:'tc',type:'color',l:c=>({gilet:'Gilet',veste:'Veste',costume:'Veste de costume'})[c.tp]||'Couleur du haut'},
 {k:'t2',type:'color',l:c=>({gilet:'Manches',veste:'Haut en dessous',costume:'Chemise',sweat:'Cordons'})[c.tp]||'Dessous',show:c=>['gilet','veste','costume','sweat'].includes(c.tp)},
 {k:'yc',adv:1,type:'optcolor',l:"Épaules d'une autre couleur",show:c=>!['veste','costume','gilet'].includes(c.tp)},{k:'sl',adv:1,type:'optcolor',l:"Manches d'une autre couleur",show:c=>c.tp!=='gilet'},{k:'sb',adv:1,type:'optcolor',l:'Bandes sur les manches',show:c=>c.tp!=='tshirt'},
-{k:'im',type:'print',l:'Imprimé sur le devant (découpé dans la photo)',wide:1,show:c=>c.tp!=='costume'},{k:'tt',adv:1,type:'text',l:'Texte imprimé (dos)',max:8},{k:'rf',adv:1,type:'check',l:'Bandes réfléchissantes'},]},
+{k:'im',type:'print',l:'Imprimé sur le devant (découpé dans la photo)',wide:1,show:c=>c.tp!=='costume'},{k:'imf',type:'check',l:"Utiliser l'imprimé comme motif sur tout le haut",show:c=>!!c.im&&c.tp!=='costume'},{k:'tt',adv:1,type:'text',l:'Texte imprimé (dos)',max:8},{k:'rf',adv:1,type:'check',l:'Bandes réfléchissantes'},]},
 {t:'Bas et chaussures',f:[{k:'bt',type:'choice',l:'Bas'},{k:'pc',type:'color',l:c=>c.bt==='short'?'Couleur du short':'Couleur du bas'},{k:'pb',adv:1,type:'optcolor',l:'Bandes sur les côtés du bas',show:c=>c.bt!=='short'},
 {k:'sh',type:'choice',l:'Chaussures'},{k:'sc',type:'color',l:'Couleur des chaussures'},{k:'gv',adv:1,type:'glove',l:'Gants'}]},
 {t:'Accessoires',f:[{k:'acc',type:'flags',l:'Équipement',wide:1},{k:'ac',type:'color',l:"Couleur d'accent (par défaut pour tous les accessoires)"}]},
@@ -1418,7 +1424,7 @@ function keysText(){return "Regarde d'abord ce qui rend la personne reconnaissab
 +'- "hwc" : couleur du couvre-chef ou de la capuche, "#rrggbb"\n'
 +'- "hwt" : texte ou numéro visible sur le couvre-chef, 6 caractères maximum, sinon ""\n'
 +'- "hm" : motif de la capuche, de la casquette ou du chapeau, parmi "uni", "rayures", "camo", "carreaux", "taches" (le motif prend la couleur "ac")\n'
-+'- "tp" : haut, parmi "tshirt", "chemise", "sweat" (sweat ou pull), "zip" (veste zippée fermée, veste de survêtement, polaire zippée), "veste" (veste ouverte sur un autre haut), "costume" (veste de costume, chemise et cravate), "gilet" (gilet sans manches porté sur un autre haut)\n'
++'- "tp" : haut, parmi "tshirt", "chemise", "sweat" (sweat ou pull), "zip" (veste zippée fermée, veste de survêtement, polaire zippée), "veste" (veste ouverte sur un autre haut), "costume" (veste de costume, chemise et cravate), "gilet" (gilet sans manches porté sur un autre haut), "debardeur" (débardeur, top à fines bretelles, haut sans manches), "dosnu" (haut dos nu, top bandana ou haut noué derrière le cou, épaules nues)\n'
 +'- "mt" : motif du haut, parmi "uni", "rayures", "camo", "carreaux", "taches" (taches de vache, de dalmatien… dans la couleur "ac"), "pois", "coeurs", "etoiles"\n'
 +'- "tc" : couleur principale du haut (pour gilet, veste ou costume : la pièce du dessus), "#rrggbb"\n'
 +'- "t2" : couleur du vêtement en dessous (les manches pour un gilet, le haut sous une veste, la chemise d\'un costume, les cordons d\'un sweat), "#rrggbb"\n'
@@ -1426,6 +1432,7 @@ function keysText(){return "Regarde d'abord ce qui rend la personne reconnaissab
 +'- "sl" : couleur des manches si elles sont d\'une autre couleur que le corps du haut, "#rrggbb", sinon ""\n'
 +'- "sb" : couleur des bandes le long des manches (survêtement à bandes), "#rrggbb", sinon ""\n'
 +'- "imp" : si le haut porte un grand dessin, logo ou imprimé sur le devant, sa boîte [x, y, largeur, hauteur] dans l\'image 1, en fractions de 0 à 1 (x et y = coin en haut à gauche), bien serrée autour du dessin ; sinon null\n'
++'- "imf" : 1 si le haut est couvert d\'un motif sur toute sa surface (bandana, cachemire, fleurs, léopard, imprimé tie-dye…) : donne alors dans "imp" la boîte d\'un morceau bien net de ce motif, sans peau ni fond ; 0 sinon\n'
 +'- "tt" : texte imprimé sur le haut (par exemple LSPD, EMS, LSFD), 8 caractères maximum, sinon ""\n'
 +'- "rf" : 1 s\'il y a des bandes réfléchissantes, sinon 0\n'
 +'- "ac" : couleur d\'accent pour les rayures, la cravate, le pompon, le bandana, l\'écharpe, le sac à dos ou les bandes du jogging, "#rrggbb"\n'

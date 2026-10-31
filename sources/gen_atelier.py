@@ -343,7 +343,7 @@ const CHOICES={hs:{court:'Courts',banane:'Banane (plaqués en arrière)',meches:
 bd:{aucune:'Aucune',barbe3j:'Barbe de 3 jours',barbe:'Barbe',longue:'Barbe longue',moustache:'Moustache',bouc:'Bouc'},ex:{sourire:'Grand sourire',content:'Petit sourire',rire:'Rire',clin:"Clin d'œil",amour:'Yeux en cœur',etoiles:'Yeux étoiles',langue:'Tire la langue',bisou:'Bisou',surpris:'Surpris',gene:'Gêné',neutre:'Neutre',serieux:'Sérieux',boude:'Boude',triste:'Triste',pleure:'Pleure',dodo:'Endormi'},
 gl:{aucune:'Aucunes',lunettes:'Lunettes de vue',soleil:'Lunettes de soleil',aviateur:'Lunettes aviateur',tete:'Lunettes relevées sur la tête',masque:'Lunettes de protection',coeur:'Lunettes cœur',rondes:'Rondes rétro',etoile:'Lunettes étoiles'},
 hw:{aucun:'Aucun',capuche:'Capuche relevée',casquette:'Casquette',inverse:"Casquette à l'envers",bonnet:'Bonnet',chapeau:'Chapeau',bandeau:'Bandeau',durag:'Durag',beret:'Béret',bob:'Bob',cowboy:'Chapeau de cowboy',fleurs:'Couronne de fleurs',pompier:'Casque de pompier',police:'Casquette de police'},
-tp:{tshirt:'T-shirt',chemise:'Chemise',sweat:'Sweat à capuche',zip:'Veste zippée fermée (survêtement)',veste:'Veste ouverte',costume:'Costume',gilet:'Gilet sur manches'},mt:{uni:'Uni',rayures:'Rayures',camo:'Camouflage',carreaux:'Carreaux',taches:'Taches',pois:'Pois',coeurs:'Cœurs',etoiles:'Étoiles'},
+tp:{tshirt:'T-shirt',chemise:'Chemise',sweat:'Sweat à capuche',zip:'Veste zippée fermée (survêtement)',veste:'Veste ouverte',costume:'Costume',gilet:'Gilet sur manches',debardeur:'Débardeur (sans manches)',dosnu:'Haut dos nu (bretelle au cou)'},mt:{uni:'Uni',rayures:'Rayures',camo:'Camouflage',carreaux:'Carreaux',taches:'Taches',pois:'Pois',coeurs:'Cœurs',etoiles:'Étoiles'},
 bt:{pantalon:'Pantalon',jogging:'Jogging',short:'Short',salopette:'Salopette',jupe:'Jupe'},sh:{bottes:'Bottes',baskets:'Baskets',chaussures:'Chaussures de ville',chaussons:'Chaussons tout doux',sandales:'Sandales'},
 it:{aucun:'Rien',lance:'Lance à incendie',coeur:'Cœur',telephone:'Téléphone',cafe:'Café',donut:'Donut',trousse:'Trousse de secours',bouquet:'Bouquet de fleurs',billets:'Liasse de billets',manette:'Manette de jeu',ballon:'Ballon de basket',cle:'Clé de voiture',micro:'Micro de chanteur',glace:'Glace',sucette:'Sucette',cadeau:'Cadeau',livre:'Livre',pizza:'Pizza',poisson:'Poisson',baguette:'Baguette',banane:'Banane',poele:'Poêle',papier:'Papier toilette',biberon:'Biberon',bonbon:'Bonbon',coussin:'Coussin cœur'}};
 CHOICES.hm=CHOICES.mt;
@@ -384,7 +384,7 @@ const SECTIONS=[
 {t:'Haut',f:[{k:'tp',type:'choice',l:'Haut'},{k:'mt',type:'choice',l:'Motif'},{k:'tc',type:'color',l:c=>({gilet:'Gilet',veste:'Veste',costume:'Veste de costume'})[c.tp]||'Couleur du haut'},
 {k:'t2',type:'color',l:c=>({gilet:'Manches',veste:'Haut en dessous',costume:'Chemise',sweat:'Cordons'})[c.tp]||'Dessous',show:c=>['gilet','veste','costume','sweat'].includes(c.tp)},
 {k:'yc',adv:1,type:'optcolor',l:"Épaules d'une autre couleur",show:c=>!['veste','costume','gilet'].includes(c.tp)},{k:'sl',adv:1,type:'optcolor',l:"Manches d'une autre couleur",show:c=>c.tp!=='gilet'},{k:'sb',adv:1,type:'optcolor',l:'Bandes sur les manches',show:c=>c.tp!=='tshirt'},
-{k:'im',type:'print',l:'Imprimé sur le devant (découpé dans la photo)',wide:1,show:c=>c.tp!=='costume'},{k:'tt',adv:1,type:'text',l:'Texte imprimé (dos)',max:8},{k:'rf',adv:1,type:'check',l:'Bandes réfléchissantes'},]},
+{k:'im',type:'print',l:'Imprimé sur le devant (découpé dans la photo)',wide:1,show:c=>c.tp!=='costume'},{k:'imf',type:'check',l:"Utiliser l'imprimé comme motif sur tout le haut",show:c=>!!c.im&&c.tp!=='costume'},{k:'tt',adv:1,type:'text',l:'Texte imprimé (dos)',max:8},{k:'rf',adv:1,type:'check',l:'Bandes réfléchissantes'},]},
 {t:'Bas et chaussures',f:[{k:'bt',type:'choice',l:'Bas'},{k:'pc',type:'color',l:c=>c.bt==='short'?'Couleur du short':'Couleur du bas'},{k:'pb',adv:1,type:'optcolor',l:'Bandes sur les côtés du bas',show:c=>c.bt!=='short'},
 {k:'sh',type:'choice',l:'Chaussures'},{k:'sc',type:'color',l:'Couleur des chaussures'},{k:'gv',adv:1,type:'glove',l:'Gants'}]},
 {t:'Accessoires',f:[{k:'acc',type:'flags',l:'Équipement',wide:1},{k:'ac',type:'color',l:"Couleur d'accent (par défaut pour tous les accessoires)"}]},
@@ -538,7 +538,7 @@ function keysText(){return "Regarde d'abord ce qui rend la personne reconnaissab
 +'- "hwc" : couleur du couvre-chef ou de la capuche, "#rrggbb"\n'
 +'- "hwt" : texte ou numéro visible sur le couvre-chef, 6 caractères maximum, sinon ""\n'
 +'- "hm" : motif de la capuche, de la casquette ou du chapeau, parmi "uni", "rayures", "camo", "carreaux", "taches" (le motif prend la couleur "ac")\n'
-+'- "tp" : haut, parmi "tshirt", "chemise", "sweat" (sweat ou pull), "zip" (veste zippée fermée, veste de survêtement, polaire zippée), "veste" (veste ouverte sur un autre haut), "costume" (veste de costume, chemise et cravate), "gilet" (gilet sans manches porté sur un autre haut)\n'
++'- "tp" : haut, parmi "tshirt", "chemise", "sweat" (sweat ou pull), "zip" (veste zippée fermée, veste de survêtement, polaire zippée), "veste" (veste ouverte sur un autre haut), "costume" (veste de costume, chemise et cravate), "gilet" (gilet sans manches porté sur un autre haut), "debardeur" (débardeur, top à fines bretelles, haut sans manches), "dosnu" (haut dos nu, top bandana ou haut noué derrière le cou, épaules nues)\n'
 +'- "mt" : motif du haut, parmi "uni", "rayures", "camo", "carreaux", "taches" (taches de vache, de dalmatien… dans la couleur "ac"), "pois", "coeurs", "etoiles"\n'
 +'- "tc" : couleur principale du haut (pour gilet, veste ou costume : la pièce du dessus), "#rrggbb"\n'
 +'- "t2" : couleur du vêtement en dessous (les manches pour un gilet, le haut sous une veste, la chemise d\'un costume, les cordons d\'un sweat), "#rrggbb"\n'
@@ -546,6 +546,7 @@ function keysText(){return "Regarde d'abord ce qui rend la personne reconnaissab
 +'- "sl" : couleur des manches si elles sont d\'une autre couleur que le corps du haut, "#rrggbb", sinon ""\n'
 +'- "sb" : couleur des bandes le long des manches (survêtement à bandes), "#rrggbb", sinon ""\n'
 +'- "imp" : si le haut porte un grand dessin, logo ou imprimé sur le devant, sa boîte [x, y, largeur, hauteur] dans l\'image 1, en fractions de 0 à 1 (x et y = coin en haut à gauche), bien serrée autour du dessin ; sinon null\n'
++'- "imf" : 1 si le haut est couvert d\'un motif sur toute sa surface (bandana, cachemire, fleurs, léopard, imprimé tie-dye…) : donne alors dans "imp" la boîte d\'un morceau bien net de ce motif, sans peau ni fond ; 0 sinon\n'
 +'- "tt" : texte imprimé sur le haut (par exemple LSPD, EMS, LSFD), 8 caractères maximum, sinon ""\n'
 +'- "rf" : 1 s\'il y a des bandes réfléchissantes, sinon 0\n'
 +'- "ac" : couleur d\'accent pour les rayures, la cravate, le pompon, le bandana, l\'écharpe, le sac à dos ou les bandes du jogging, "#rrggbb"\n'
