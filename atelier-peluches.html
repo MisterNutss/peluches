@@ -1418,6 +1418,15 @@ function prompt(w,slots){return intro(w,slots)+keysText();}
 function keysText(){return "Regarde d'abord ce qui rend la personne reconnaissable (coiffure et frange, couvre-chef ou capuche, forme des lunettes, barbe, imprimé du haut, veste, motif, accessoires, animal ou mascotte) et reprends tout ce qui se voit. Sers-toi des vues de côté et de dos pour l'arrière de la coiffure, la capuche et le texte au dos. "
 +"Chaque tenue est unique : ne reprends jamais une tenue type. Décris les vêtements tels qu'ils sont sur les photos, avec leurs zones de couleur (épaules, manches, bandes, côtés du pantalon), leur fermeture et leur motif. "
 +"Prends les vraies couleurs des photos en compensant l'éclairage si la scène est sombre ou colorée, jamais des couleurs génériques.\n"
++"Avant de répondre, vérifie point par point sur la photo, sans rien inventer de ce qui ne se voit pas :\n"
++"1. Ventre : y a-t-il de la peau visible entre le bas du haut et la ceinture ? Oui → \"cr\" 1. Non (le haut descend jusqu'au pantalon ou est rentré dedans) → 0.\n"
++"2. Épaules : nues (bandeau, dos nu, débardeur, haut qui tombe d'une épaule) ou couvertes ? Choisis \"tp\" en conséquence.\n"
++"3. Manches : regarde où elles s'arrêtent sur le bras. Au poignet → \"longues\" ; au coude ou retroussées, avant-bras nus → \"coudes\" ; en haut du bras → \"courtes\" (ou \"tshirt\" pour un t-shirt ou un haut moulant à petites manches).\n"
++"4. Peau des bras : des tatouages visibles → \"ta\" 1.\n"
++"5. Couleur des cheveux : une seule couleur dans \"hc\" (la couleur moyenne, pas les reflets). \"h2\" seulement si une autre couleur est nettement teinte sur une bonne partie des cheveux (racines foncées, pointes, mèches colorées) ; la lumière, les reflets et les ombres ne comptent pas : dans le doute, \"h2\" = \"\".\n"
++"6. Attache : chignons, macarons, queue, couettes ? Regarde le haut et l'arrière de la tête.\n"
++"7. Bas : type, et couleur exacte (un jean clair délavé est bleu-gris clair, pas blanc ; un jean brut est bleu foncé), bandes éventuelles.\n"
++"8. Chaussures, ceinture, bijoux et piercings, lunettes, couvre-chef : reprends seulement ce qui se voit.\n"
 +"Réponds uniquement avec un objet JSON qui a exactement ces clés :\n"
 +'- "n" : nom court pour la peluche (métier ou surnom visible), 24 caractères maximum\n'
 +'- "sk" : couleur de peau, "#rrggbb"\n'
@@ -1487,6 +1496,7 @@ function readyMsg(){if(!(sample&&imagesOK))return "Règle la peluche à la main 
 function reviewPrompt(w,slots,nr){const cur=Object.assign({},cfg);delete cur.im;delete cur.imt;delete cur.ia;
 return intro(w,slots)+"Les "+nr+" dernières images ne sont pas des photos : c'est le rendu actuel de la peluche ("+(nr>1?'de face, puis de dos':'de face')+"), fabriquée avec ce réglage :\n"+JSON.stringify(cur)+"\n"
 +"Compare la peluche aux photos comme un client exigeant, en commençant par la coiffure (longueur, volume, raie, frange, texture, attache, côtés) et les vêtements (type de haut, zones de couleur des épaules et des manches, bandes, bas et ses bandes), puis couleurs des cheveux, de la peau et des yeux, barbe, lunettes, couvre-chef, haut et motif, couleurs des vêtements, accessoires, mascotte, objets. "
++"Vérifie en particulier : peau du ventre visible ou non (cr), épaules nues ou couvertes (tp), longueur des manches (ml), tatouages (ta), une ou deux couleurs de cheveux (h2 vide dans le doute), attache des cheveux (ht), couleur exacte du bas (pc). "
 +"Corrige tout ce qui ne ressemble pas et garde ce qui est juste. Renvoie le réglage complet corrigé.\n"+keysText();}
 function updateAnalyse(){const b=$('analyse');b.hidden=!(sample&&imagesOK&&anyPhoto());b.disabled=false;b.textContent=ctl?'Arrêter':'Relancer la création';}
 // Rendu de la peluche sur fond gris neutre, pour que Claude la compare aux photos
@@ -1500,8 +1510,10 @@ busy=true;try{say('ai-status','Claude regarde '+(use.length>1?'les photos':'la p
 let data=await sample.json(prompt(w,use),{images:imgs,signal:my.signal});if(ctl!==my)return;applyAnswer(data,keep,use[0],true);
 const nr=Math.min(maxImages-use.length,shots.dos.blob?2:1);
 if($('review').checked&&nr>=1){say('ai-status','Peluche créée. Claude la compare maintenant aux photos pour corriger ce qui ne ressemble pas…');
+// Deux tours : Claude compare le rendu aux photos, corrige, puis revérifie le résultat corrigé
+for(let pass=0;pass<2;pass++){if(pass)say('ai-status','Deuxième vérification : Claude recompare la peluche corrigée aux photos…');
 const renders=[await renderView(-0.34,512)];if(nr>1)renders.push(await renderView(Math.PI-0.34,512));
-data=await sample.json(reviewPrompt(w,use,renders.length),{images:imgs.concat(renders),signal:my.signal,cache:false});if(ctl!==my)return;applyAnswer(data,keep,use[0],false);
+const before=JSON.stringify(cfg);data=await sample.json(reviewPrompt(w,use,renders.length),{images:imgs.concat(renders),signal:my.signal,cache:false});if(ctl!==my)return;applyAnswer(data,keep,use[0],false);if(JSON.stringify(cfg)===before)break;}
 say('ai-status','Peluche créée puis vérifiée par Claude. Corrige ce qui ne va pas, puis copie le lien.');}
 else say('ai-status','Peluche créée depuis '+(use.length>1?'les photos':'la photo')+'. Corrige ce qui ne va pas, puis copie le lien.');}
 catch(e){if(ctl!==my)return;const code=e&&e.code;
