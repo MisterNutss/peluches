@@ -350,6 +350,7 @@ CHOICES.hm=CHOICES.mt;
 CHOICES.hp={aucune:'Pas de raie',gauche:"Raie à gauche de l'image",milieu:'Raie au milieu',droite:"Raie à droite de l'image"};
 CHOICES.hf={aucune:'Pas de frange (coiffés en arrière ou sur les côtés)',courte:'Frange courte',droite:'Frange droite (au ras des sourcils)',balayee:'Frange balayée sur le côté',rideau:'Frange rideau (ouverte au milieu)',longue:'Frange longue (sur les yeux)',arriere:'Relevés en arrière (banane, houppe)'};
 CHOICES.hx={lisse:'Lisses',ondule:'Ondulés',boucle:'Bouclés',crepu:'Crépus (afro)',pique:'En pics',dreads:'Dreadlocks'};
+CHOICES.ml={longues:'Longues',coudes:'Retroussées aux coudes',courtes:'Courtes'};
 CHOICES.ht={aucune:'Détachés',queue:'Queue de cheval basse',haute:'Queue de cheval haute',couettes:'Deux couettes',chignon:'Chignon',tresse:"Tresse sur l'épaule",demi:'Demi-queue (dessus attaché)',macarons:'Deux chignons en haut (macarons)'};
 CHOICES.hd={normaux:'Comme le reste',courts:'Courts (dégradé)',rases:'Rasés'};
 CHOICES.ms={aucune:'Aucune',monstre:'Petit monstre (oreilles et dents)',lapin:'Lapin',ours:'Ours',chat:'Chat',chien:'Chien',oiseau:'Oiseau / perroquet'};
@@ -381,7 +382,7 @@ const SECTIONS=[
 {k:'hx',type:'choice',l:'Texture',show:hairOn},{k:'hp',adv:1,type:'choice',l:'Raie',show:hairOn},{k:'hf',type:'choice',l:'Frange',show:hairOn},{k:'ht',adv:1,type:'choice',l:'Attache',show:hairOn},{k:'hd',adv:1,type:'choice',l:'Côtés et nuque',show:hairOn}]},
 {t:'Couvre-chef',f:[{k:'hw',type:'tiles',wide:1,l:'Couvre-chef'},{k:'hwc',type:'color',l:'Couleur du couvre-chef',show:c=>c.hw!=='aucun'},{k:'hwt',type:'text',l:'Texte ou numéro',max:6,show:c=>['casquette','bonnet','pompier'].includes(c.hw)},{k:'hm',adv:1,type:'choice',l:'Motif du couvre-chef',show:c=>['capuche','casquette','inverse','chapeau'].includes(c.hw)}]},
 {t:'Lunettes',f:[{k:'gl',type:'tiles',wide:1,l:'Lunettes'},{k:'glc',type:'color',l:'Monture',show:c=>c.gl!=='aucune'},{k:'lc',type:'color',l:'Couleur des verres',show:c=>['soleil','aviateur','tete'].includes(c.gl)}]},
-{t:'Haut',f:[{k:'tp',type:'choice',l:'Haut'},{k:'mt',type:'choice',l:'Motif'},{k:'tc',type:'color',l:c=>({gilet:'Gilet',veste:'Veste',costume:'Veste de costume'})[c.tp]||'Couleur du haut'},
+{t:'Haut',f:[{k:'tp',type:'choice',l:'Haut'},{k:'ml',type:'choice',l:'Manches',show:c=>!['tshirt','debardeur','dosnu','bandeau'].includes(c.tp)},{k:'cr',type:'check',l:'Haut court (ventre visible)',show:c=>c.tp!=='costume'},{k:'mt',type:'choice',l:'Motif'},{k:'tc',type:'color',l:c=>({gilet:'Gilet',veste:'Veste',costume:'Veste de costume'})[c.tp]||'Couleur du haut'},
 {k:'t2',type:'color',l:c=>({gilet:'Manches',veste:'Haut en dessous',costume:'Chemise',sweat:'Cordons'})[c.tp]||'Dessous',show:c=>['gilet','veste','costume','sweat'].includes(c.tp)},
 {k:'yc',adv:1,type:'optcolor',l:"Épaules d'une autre couleur",show:c=>!['veste','costume','gilet'].includes(c.tp)},{k:'sl',adv:1,type:'optcolor',l:"Manches d'une autre couleur",show:c=>c.tp!=='gilet'},{k:'sb',adv:1,type:'optcolor',l:'Bandes sur les manches',show:c=>c.tp!=='tshirt'},
 {k:'im',type:'print',l:'Imprimé sur le devant (découpé dans la photo)',wide:1,show:c=>c.tp!=='costume'},{k:'imf',type:'check',l:"Utiliser l'imprimé comme motif sur tout le haut",show:c=>!!c.im&&c.tp!=='costume'},{k:'tt',adv:1,type:'text',l:'Texte imprimé (dos)',max:8},{k:'rf',adv:1,type:'check',l:'Bandes réfléchissantes'},]},
@@ -540,6 +541,8 @@ function keysText(){return "Regarde d'abord ce qui rend la personne reconnaissab
 +'- "hm" : motif de la capuche, de la casquette ou du chapeau, parmi "uni", "rayures", "camo", "carreaux", "taches" (le motif prend la couleur "ac")\n'
 +'- "tp" : haut, parmi "tshirt", "chemise", "sweat" (sweat ou pull), "zip" (veste zippée fermée, veste de survêtement, polaire zippée), "veste" (veste ouverte sur un autre haut), "costume" (veste de costume, chemise et cravate), "gilet" (gilet sans manches porté sur un autre haut), "debardeur" (débardeur, top à fines bretelles, haut sans manches), "dosnu" (haut dos nu, top bandana ou haut noué derrière le cou, épaules nues), "bandeau" (haut bandeau ou tube sans bretelles, épaules nues)\n'
 +'- "ta" : 1 si les bras sont tatoués, sinon 0\n'
++'- "ml" : longueur des manches du haut, parmi "longues", "coudes" (manches retroussées ou s\'arrêtant aux coudes, avant-bras nus), "courtes"\n'
++'- "cr" : 1 si le haut est court et laisse voir le ventre (crop top, sweat court), sinon 0\n'
 +'- "mt" : motif du haut, parmi "uni", "rayures", "camo", "carreaux", "taches" (taches de vache, de dalmatien… dans la couleur "ac"), "pois", "coeurs", "etoiles"\n'
 +'- "tc" : couleur principale du haut (pour gilet, veste ou costume : la pièce du dessus), "#rrggbb"\n'
 +'- "t2" : couleur du vêtement en dessous (les manches pour un gilet, le haut sous une veste, la chemise d\'un costume, les cordons d\'un sweat), "#rrggbb"\n'
