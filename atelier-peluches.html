@@ -541,14 +541,17 @@ const soleMat=fluffy?shoeMat:SM({color:sandal?c.sc:lum(c.sc)<0.15?0x3a3b3f:shade
 PART='leg';const mPb=c.pb?FZ({color:c.pb,map:FAB,roughness:0.85}):mAcc,paw=st==='monstre',legMat=paw?mFur:(c.bt==='short'||c.bt==='jupe'?mBodySkin:mP),mPad=FZ({color:mix(fur,'#f2b8c0',0.55),map:FAB,roughness:1});
 for(const s of[-1,1]){
 if(POSE.l==='stand'){// Debout : jambe fuselée sous le corps, pied pointé vers l'avant, semelle à plat au sol
-const lg=add(mk(blob(2.75,4.4,2.75,{lump:0.015}),legMat),[s*4.0,-2.6,0.9]);if(!paw)seam(ring(1.75,1.75,'y',-3.4),shade(c.pc,0.55),true,lg);
-if(!paw&&c.bt==='short'){const sh2=mk(blob(3.0,2.2,3.0,{lump:0.01}),mP);sh2.position.set(0,2.4,0);lg.add(sh2);}
-if(!paw&&(c.bt==='jogging'||c.pb)&&c.bt!=='short'){const pts=[];for(let y=1.4;y>=-6.2;y-=0.5){const k=Math.sqrt(Math.max(0,1-((y+2.6)/4.4)**2));pts.push(V(s*(4.0+2.78*k),y,0.9));}tube(pts,c.pb?0.34:0.24,mPb);}
-if(!paw&&c.bt==='jogging'){add(mk(new THREE.TorusGeometry(1.9,0.42,10,28),mP),[s*4.0,-6.0,0.9],[Math.PI/2,0,0]);}
-if(paw){add(mk(blob(2.6,1.7,3.3,{lump:0.03}),mFur),[s*4.0,-7.5,1.6]);add(mk(blob(1.7,0.3,2.1,{lump:0}),mPad),[s*4.0,-9.15,1.9]);}
-else{if(c.sh==='bottes')add(mk(blob(2.95,2.2,2.95,{lump:0}),shoeMat),[s*4.0,-5.9,0.9]);
-add(mk(blob(2.7,1.75,3.7,{lump:0,sq:0.75}),shoeMat),[s*4.0,-7.6,1.9]);add(mk(blob(2.85,c.sh==='baskets'?0.6:0.42,3.85,{lump:0,sq:0.6}),c.sh==='baskets'?mWhite:soleMat),[s*4.0,-9.1,1.9]);
-if(c.sh==='baskets')add(mk(blob(1.15,0.4,1.5,{lump:0}),mWhite),[s*4.0,-6.0,3.4],[0.5,0,0]);}
+const LX=3.75,LR=y=>{const u=(2.8-y)/9.4;return u<0.12?3.45*Math.sqrt(Math.max(0,1-((0.12-u)/0.12)**2))*0.55+3.45*0.45*(u/0.12):u>0.9?(3.45-0.6*0.9)*Math.sqrt(Math.max(0,1-((u-0.9)/0.1)**2)):3.45-0.6*u;};
+const prof=[];for(let i=0;i<=40;i++){const y=2.8-i*9.4/40;prof.push(new THREE.Vector2(Math.max(0.001,LR(y)),y));}prof.reverse();
+const lg=add(mk(new THREE.LatheGeometry(prof,28),legMat),[s*LX,0,0.9]);if(!paw)seam(ring(LR(-5.2)+0.05,LR(-5.2)+0.05,'y',-5.2),shade(c.pc,0.55),true,lg);
+if(s<0)add(mk(blob(7.4,3.4,5.0,{lump:0.01}),paw?mFur:(c.bt==='short'||c.bt==='jupe'?mP:legMat)),[0,1.6,0.9]);
+if(!paw&&c.bt==='short'){const sh2=mk(blob(3.75,2.6,3.75,{lump:0.01}),mP);sh2.position.set(0,1.6,0);lg.add(sh2);}
+if(!paw&&(c.bt==='jogging'||c.pb)&&c.bt!=='short'){const pts=[];for(let y=1.6;y>=-5.8;y-=0.5)pts.push(V(s*(LX+LR(y)+0.03),y,0.9));tube(pts,c.pb?0.34:0.24,mPb);}
+if(!paw&&c.bt==='jogging'){add(mk(new THREE.TorusGeometry(LR(-5.6)+0.1,0.42,10,28),mP),[s*LX,-5.6,0.9],[Math.PI/2,0,0]);}
+if(paw){add(mk(blob(2.6,1.7,3.3,{lump:0.03}),mFur),[s*LX,-7.5,1.6]);add(mk(blob(1.7,0.3,2.1,{lump:0}),mPad),[s*LX,-9.15,1.9]);}
+else{if(c.sh==='bottes')add(mk(blob(2.95,2.2,2.95,{lump:0}),shoeMat),[s*LX,-5.9,0.9]);
+add(mk(blob(3.0,1.85,3.9,{lump:0,sq:0.75}),shoeMat),[s*LX,-7.6,1.9]);add(mk(blob(3.15,c.sh==='baskets'?0.6:0.42,4.05,{lump:0,sq:0.6}),c.sh==='baskets'?mWhite:soleMat),[s*LX,-9.1,1.9]);
+if(c.sh==='baskets')add(mk(blob(1.15,0.4,1.5,{lump:0}),mWhite),[s*LX,-6.0,3.4],[0.5,0,0]);}
 continue;}
 // Assise (jambes tendues) ou en tailleur (jambes repliées qui se croisent devant)
 const cr=POSE.l==='cross',rot=cr?[0,-s*1.2,0]:[0,s*0.25,0];
@@ -935,10 +938,10 @@ if(cs==='cochon'){for(const sx of[-1,1]){const e=mk(new THREE.ConeGeometry(1.6,2
 if(cs==='vache'){for(const sx of[-1,1]){ear(V(sx*0.75,0.62,0.1),[at(mk(blob(1.8,0.8,0.5,{lump:0}),mMain),0,0.9,0,0,0,sx*1.2)]);ear(V(sx*0.4,0.9,0.12),[at(mk(new THREE.ConeGeometry(0.55,1.8,12),SM({color:0xf2e6c8,roughness:0.5})),0,0.9)]);}}
 if(cs==='grenouille')for(const sx of[-1,1]){const g=new THREE.Group();g.add(mk(new THREE.SphereGeometry(1.7,20,16),mMain));g.add(at(mk(new THREE.SphereGeometry(1.15,18,14),mWhite),0,0.3,1.0));g.add(at(mk(new THREE.SphereGeometry(0.6,14,10),mDk),0,0.4,1.95));onHead(V(sx*0.38,0.88,0.38),g,0.6);}
 if(cs==='poussin'){for(let i=-1;i<=1;i++)ear(V(i*0.15,1,0.15),[at(mk(blob(0.45,1.6,0.3,{lump:0.02,tip:0.6}),mMain),0,1.1,0,0,0,i*0.5)]);const bk=mk(new THREE.ConeGeometry(0.9,1.6,4),SM({color:0xff9a2a,roughness:0.5}));bk.rotation.x=Math.PI/2;const g=new THREE.Group();g.add(bk);onHead(V(0,0.66,0.76),g,0.6);}
-if(cs==='dino'){const mS=FZ({color:c.t2,map:FAB,roughness:0.8});for(let i=0;i<7;i++){const a=0.25-i*0.32;ear(V(0,Math.cos(a),-Math.sin(a)+0.15),[at(mk(new THREE.ConeGeometry(1.0-i*0.06,2.0-i*0.1,4),mS),0,0.8)],0);}
+if(cs==='dino'){const mS=FZ({color:c.t2,map:FAB,roughness:0.8});for(let i=0;i<7;i++){const a=-0.05+i*0.3;ear(V(0,Math.cos(a),-Math.sin(a)+0.15),[at(mk(new THREE.ConeGeometry(1.0-i*0.06,2.0-i*0.1,4),mS),0,0.8)],0);}
 for(let i=0;i<5;i++)add(mk(new THREE.ConeGeometry(0.8-i*0.08,1.6-i*0.15,4),mS),[0,15.5-i*2.1,-8.4+i*0.25],[-0.5,0,0]);}
 if(cs==='licorne'){const hn=mk(new THREE.ConeGeometry(0.85,4.2,20,8),SM({color:0xffd75e,roughness:0.3,metalness:0.3}));ear(V(0,0.8,0.6),[at(hn,0,1.9)],0.2);const mane=['#ff9ec7','#ffd166','#8fd3b0','#7fc8f8','#c9a7ff'];
-for(let i=0;i<9;i++){const a=0.3-i*0.27;ear(V(0,Math.cos(a),-Math.sin(a)+0.1),[at(mk(blob(1.1,1.4,0.9,{lump:0.06}),FZ({color:mane[i%5],map:HAIR,roughness:1})),0,0.6)],0);}}
+for(let i=0;i<9;i++){const a=-0.2+i*0.26;ear(V(0,Math.cos(a),-Math.sin(a)+0.1),[at(mk(blob(1.1,1.4,0.9,{lump:0.06}),FZ({color:mane[i%5],map:HAIR,roughness:1})),0,0.6)],0);}}
 if(cs==='requin'){ear(V(0,1,-0.1),[at(mk(blob(0.5,3.0,2.0,{lump:0,tip:0.9}),mMain),0,1.6,0,0,0,0)],0);const mT=SM({color:0xffffff,roughness:0.4});
 for(let i=0;i<11;i++){const a=-1.2+i*0.24,t=mk(new THREE.ConeGeometry(0.42,0.9,4),mT);t.rotation.z=Math.PI;const p=V(Math.sin(a)*8.6,27.6+Math.cos(a)*0.4-Math.abs(a)*0.6,Math.cos(a)*8.2+1.4);t.position.copy(p);G.add(t);t.userData.part='head';}}
 // Ventre clair et queue
