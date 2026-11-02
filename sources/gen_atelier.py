@@ -361,7 +361,7 @@ CHOICES.ms={aucune:'Aucune',monstre:'Petit monstre (oreilles et dents)',lapin:'L
 CHOICES.po={assis:'Assise',debout:'Debout',coucou:'Coucou',bravo:'Bras levés',calin:'Câlin',coeur:'Cœur',pensif:'Pensive',tailleur:'En tailleur',dab:'Dab',joues:'Mains sur les joues',danse:'Danse',victoire:'Victoire',croises:'Bras croisés',bisou:'Envoie un bisou',salut:'Coucou assise'};
 CHOICES.ey={kawaii:'Mignons (peluche)',realiste:'Réalistes'};
 CHOICES.cos={aucun:'Aucune',ours:'Ours',lapin:'Lapin',chat:'Chat',renard:'Renard',grenouille:'Grenouille',dino:'Dino',licorne:'Licorne',panda:'Panda',cochon:'Cochon',poussin:'Poussin',requin:'Requin',vache:'Vache'};
-CHOICES.st={classique:'Classique',ours:'Ourson',lapin:'Lapin',chat:'Chaton',monstre:'Petit monstre',avatar:'Avatar'};
+CHOICES.st={classique:'Classique',ours:'Ourson',lapin:'Lapin',chat:'Chaton',monstre:'Petit monstre',avatar:'Avatar',figurine:'Figurine (jouet de collection)'};
 CHOICES.mp={droite:"Sur l'épaule, à droite de l'image",gauche:"Sur l'épaule, à gauche de l'image",tete:'Sur la tête',mains:'Dans les mains'};
 const FLAGS={m:'🎧 Micro-casque',o:"💎 Boucles d'oreilles",a:'😷 Bandana sur le visage',q:'🎀 Nœud dans les cheveux',f:'🌼 Fleur dans les cheveux',x:'👑 Couronne',j:'🐱 Oreilles de chat',M:'🐰 Oreilles de lapin',A:'👽 Antennes',B:'😈 Cornes de diable',C:'😇 Auréole',L:'🦄 Corne de licorne',D:'🧢 Casquette à hélice',R:'🎀 Bigoudis',T:'🏴‍☠️ Cache-œil',E:'🩹 Pansement',
 P:'🍎 Pomme sur la tête',Q:'🦆 Canard sur la tête',V:'🚧 Cône sur la tête',N:'🏹 Flèche dans la tête',G:'🥸 Faux nez et moustache',H:'🫧 Bulle de chewing-gum',S:'💕 Cœurs qui flottent',Y:'✨ Paillettes',I:'🥳 Chapeau de fête',U:'🌧️ Nuage de pluie',K:'💫 Étoiles qui tournent',W:'💡 Ampoule idée',O:'🍼 Tétine',X:'🖤 Harnais croisé',J:'💍 Piercings au nez',
@@ -375,11 +375,11 @@ it:{aucun:'🚫',lance:'🚒',coeur:'❤️',telephone:'📱',cafe:'☕',donut:'
 hw:{aucun:'🚫',capuche:'🧥',casquette:'🧢',inverse:'🧢',bonnet:'🧶',chapeau:'🎩',bandeau:'🎽',durag:'🖤',beret:'🎨',bob:'👒',cowboy:'🤠',fleurs:'🌸',pompier:'⛑️',police:'👮'},
 gl:{aucune:'🚫',lunettes:'👓',soleil:'🕶️',aviateur:'😎',tete:'🕶️',masque:'🥽',coeur:'💖',rondes:'🤓',etoile:'⭐'},
 cos:{aucun:'🚫',ours:'🐻',lapin:'🐰',chat:'🐱',renard:'🦊',grenouille:'🐸',dino:'🦖',licorne:'🦄',panda:'🐼',cochon:'🐷',poussin:'🐥',requin:'🦈',vache:'🐮'},
-st:{classique:'🧒',ours:'🐻',lapin:'🐰',chat:'🐱',monstre:'👹',avatar:'🙂'},
+st:{classique:'🧒',ours:'🐻',lapin:'🐰',chat:'🐱',monstre:'👹',avatar:'🙂',figurine:'🪆'},
 ms:{aucune:'🚫',monstre:'👹',lapin:'🐰',ours:'🐻',chat:'🐱',chien:'🐶',oiseau:'🦜'}};
 const hairOn=c=>!['rase','chauve','iroquoise'].includes(c.hs);
 const SECTIONS=[
-{t:'Style, pose et nom',f:[{k:'st',type:'tiles',l:'Style de peluche',wide:1},{k:'cos',type:'tiles',l:"Combinaison d'animal (capuche, oreilles, queue)",wide:1},{k:'coc',type:'optcolor',l:'Couleur de la combinaison à part',show:c=>c.cos&&c.cos!=='aucun'},{k:'po',type:'tiles',l:'Position',wide:1},{k:'fc',type:'color',l:'Couleur de la fourrure',show:c=>['ours','lapin','chat','monstre'].includes(c.st)},{k:'n',type:'text',l:'Nom',max:24,wide:1}]},
+{t:'Style, pose et nom',f:[{k:'st',type:'tiles',l:'Style de peluche',wide:1},{k:'cos',type:'tiles',l:"Combinaison d'animal (capuche, oreilles, queue)",wide:1},{k:'coc',type:'optcolor',l:'Couleur de la combinaison à part',show:c=>c.cos&&c.cos!=='aucun'},{k:'po',type:'tiles',l:'Position',wide:1},{k:'fc',type:'color',l:'Couleur de la fourrure',show:c=>['ours','lapin','chat','monstre','figurine'].includes(c.st)},{k:'n',type:'text',l:'Nom',max:24,wide:1}]},
 {t:'Visage',f:[{k:'ey',type:'chips',l:'Yeux',wide:1},{k:'sk',type:'color',l:'Peau'},{k:'ec',type:'color',l:'Yeux'},{k:'ex',type:'tiles',wide:1,l:'Expression'},{k:'ta',type:'check',l:'Tatouages sur les bras'},{k:'bd',type:'choice',l:'Barbe'},{k:'fr',adv:1,type:'check',l:'Taches de rousseur'},{k:'cl',adv:1,type:'check',l:'Longs cils'}]},
 {t:'Cheveux',f:[{k:'hs',type:'choice',l:'Coiffure de départ'},{k:'hc',type:'color',l:'Couleur des cheveux'},{k:'h2',adv:1,type:'optcolor',l:"Mèches d'une autre couleur",show:hairOn},
 {k:'hl',type:'range',l:'Longueur',min:0.3,max:5,step:0.1,fmt:'len',show:hairOn},{k:'hv',adv:1,type:'range',l:'Volume',min:0,max:1,step:0.05,fmt:'pct',show:hairOn},

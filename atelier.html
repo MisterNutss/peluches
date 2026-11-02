@@ -255,7 +255,7 @@ const PL=(()=>{
 const V=(x,y,z)=>new THREE.Vector3(x,y,z),FWD=V(0,0,-1),BACK=V(0,0,1),X=V(1,0,0),NX=V(-1,0,0),Y=V(0,1,0);
 
 // Réglages possibles (clés courtes pour que le lien reste court)
-const ENUM={st:['classique','ours','lapin','chat','monstre','avatar'],po:['assis','debout','coucou','bravo','calin','coeur','pensif','tailleur','dab','joues','danse','victoire','croises','bisou','salut'],ey:['kawaii','realiste'],hs:['court','banane','meches','herisse','iroquoise','carre','long','tresse','couettes','queue','chignon','boucle','afro','dreads','rase','chauve'],
+const ENUM={st:['classique','ours','lapin','chat','monstre','avatar','figurine'],po:['assis','debout','coucou','bravo','calin','coeur','pensif','tailleur','dab','joues','danse','victoire','croises','bisou','salut'],ey:['kawaii','realiste'],hs:['court','banane','meches','herisse','iroquoise','carre','long','tresse','couettes','queue','chignon','boucle','afro','dreads','rase','chauve'],
 bd:['aucune','barbe3j','barbe','longue','moustache','bouc'],gl:['aucune','lunettes','soleil','aviateur','tete','masque','coeur','rondes','etoile'],
 hw:['aucun','capuche','casquette','inverse','bonnet','chapeau','bandeau','durag','pompier','police','beret','bob','cowboy','fleurs'],ml:['longues','coudes','courtes'],tp:['tshirt','chemise','sweat','zip','veste','costume','gilet','debardeur','dosnu','bandeau'],
 mt:['uni','rayures','camo','carreaux','taches','pois','coeurs','etoiles'],hm:['uni','rayures','camo','carreaux','taches','pois','coeurs','etoiles'],bt:['pantalon','jogging','short','salopette','jupe'],sh:['bottes','baskets','chaussures','chaussons','sandales'],ex:['sourire','content','neutre','serieux','rire','clin','amour','surpris','triste','boude','dodo','etoiles','langue','bisou','pleure','gene'],
@@ -268,7 +268,9 @@ const ACC='rbmscowkehanudqfvyzlpxjtigABCDLMNPQVTEGHRSUKWYIOXJ';
 // Petit monstre : grosse tête ovale plus haute que large, corps trapu et dodu, petits bras et petites jambes. Avatar : grosse tête ronde, corps étroit, membres fins.
 const PROPS={classique:{h:1,b:[1,1,1],a:[1,1],l:[1,1,1]},ours:{h:1.0,b:[1.16,1.0,1.16],a:[1.25,1.05],l:[1.2,1.1,1.05]},
 lapin:{h:0.94,b:[0.9,1.14,0.9],a:[0.85,1.18],l:[0.88,0.9,1.35]},chat:{h:1.1,b:[0.92,0.92,0.92],a:[0.9,0.92],l:[0.9,0.9,0.95]},
-monstre:{h:[1.55,1.78,1.55],b:[0.98,0.88,0.98],a:[0.95,0.75],l:[1.0,0.95,0.85]},avatar:{h:1.2,b:[0.74,0.95,0.78],a:[0.6,1.0],l:[0.62,0.85,0.95]}};
+monstre:{h:[1.55,1.78,1.55],b:[0.98,0.88,0.98],a:[0.95,0.75],l:[1.0,0.95,0.85]},avatar:{h:1.2,b:[0.74,0.95,0.78],a:[0.6,1.0],l:[0.62,0.85,0.95]},
+// Figurine : grosse tête de jouet de collection, corps menu, bras et jambes en fourrure
+figurine:{h:[1.42,1.5,1.4],b:[0.92,0.9,0.92],a:[0.92,0.85],l:[0.95,0.95,0.9]}};
 const COLS=['sk','hc','ec','glc','lc','hwc','tc','t2','ac','pc','sc','gv','mc','coc','bgc'];
 const HOOKS={onTex:null};
 const PRESETS={
@@ -461,7 +463,8 @@ const ring=(r1,r2,axis,at,n)=>{const pts=[];for(let i=0;i<(n||36);i++){const a=i
 // Petit monstre : la fourrure prend la couleur de la capuche s'il en porte une (la capuche devient la fourrure), le visage est plus clair
 const st=c.st,animal=['ours','lapin','chat'].includes(st),furry=animal||st==='monstre',fur=c.fc||(st==='monstre'&&c.hw==='capuche'?c.hwc:c.hc),skinC=st==='monstre'?hex(mix(c.sk,'#fbe1cf',0.5)):c.sk;
 const mFur=FZ({color:fur,map:HAIR,bumpMap:BMP,bumpScale:0.5,roughness:1,side:THREE.DoubleSide}),mFurL=FZ({color:mix(fur,'#ffffff',0.55),map:FAB,roughness:1});
-const mSkin=st==='avatar'?SM({color:skinC,roughness:0.55}):FZ({color:skinC,map:FAB,bumpMap:BMP,bumpScale:0.08,roughness:1}),mBodySkin=furry?mFur:mSkin;
+const mSkin=st==='avatar'?SM({color:skinC,roughness:0.55}):FZ({color:skinC,map:FAB,bumpMap:BMP,bumpScale:0.08,roughness:1}),mBodySkin=furry||st==='figurine'?mFur:mSkin;
+const fig=st==='figurine';
 const mHair=st==='monstre'?mFur:FZ({color:c.hc,map:HAIR,bumpMap:BMP,bumpScale:0.45,roughness:1,side:THREE.DoubleSide});
 const mBrow=FZ({color:shade(c.hc,0.72),map:HAIR,roughness:1});
 const mBlush=FZ({color:mix(c.sk,'#f07f90',0.5),map:FAB,roughness:1}),mFreckle=SM({color:shade(c.sk,0.7),roughness:1});
@@ -729,6 +732,11 @@ const mBlushSoft=SM({map:own(new THREE.CanvasTexture(bc2)),transparent:true,dept
 const mKw=SM({color:mix('#0c0a10',eyeBase,0.22),roughness:0.07,metalness:0.15}),mKwC=SM({color:mix(eyeBase,'#ffffff',0.18),roughness:0.25,transparent:true,opacity:0.92,side:THREE.DoubleSide});
 for(const s of[-1,1]){
 const shut=['rire','dodo','pleure'].includes(c.ex)||((c.ex==='clin'||c.ex==='bisou')&&s>0);
+if(fig&&!shut&&c.ex!=='amour'&&c.ex!=='etoiles'){const e=new THREE.Group();e.add(mk(blob(1.95,2.05,0.8,{lump:0}),SM({color:mix('#120c0a',eyeBase,0.35),roughness:0.05,metalness:0.1})));
+const k1=new THREE.Mesh(new THREE.SphereGeometry(0.62,16,12),mShine);k1.scale.set(1,1.1,0.3);k1.position.set(-0.6,0.75,0.72);e.add(k1);const k2=new THREE.Mesh(new THREE.SphereGeometry(0.25,12,10),mShine);k2.scale.z=0.3;k2.position.set(0.7,-0.7,0.74);e.add(k2);
+const rim=new THREE.Mesh(new THREE.TorusGeometry(2.0,0.16,8,40),SM({color:shade(c.sk,0.75),roughness:0.6}));rim.scale.set(0.98,1.03,1);e.add(rim);
+if(c.ex==='surpris')e.scale.set(1.1,1.12,1);stick(e,[head],s*3.75,23.3,0.15);
+const br=stick(mk(blob(1.15,0.3,0.25,{lump:0}),SM({color:shade(c.sk,0.72),roughness:0.7})),[head],s*3.4,26.0,0.12);br.rotateZ(s*({triste:-0.38,pleure:-0.4,gene:-0.25,surpris:-0.12}[c.ex]||0.38));continue;}
 if(kawaii&&(shut||c.ex==='amour'||c.ex==='etoiles')){const e=new THREE.Group();
 if(shut){const arc=new THREE.Mesh(new THREE.TorusGeometry(1.15,0.27,10,28,Math.PI),mKw);if(c.ex==='dodo'||c.ex==='pleure'){arc.rotation.z=Math.PI;arc.position.y=0.4;}else arc.position.y=-0.4;arc.scale.set(1,0.8,1);e.add(arc);}
 else if(c.ex==='etoiles'){// Yeux étoiles : étoile dorée à cinq branches
@@ -764,16 +772,19 @@ if(c.fr&&st!=='avatar')for(const s of[-1,1])[[4.9,21.9],[5.7,21.4],[4.6,21.1],[5
 let muzzle=null;
 if(animal){muzzle=stick(mk(blob(3.2,2.3,1.3,{lump:0}),mFurL),[head],0,21.6,0.7);stick(mk(blob(0.95,0.62,0.5,{lump:0,tip:0.5}),SM({color:0x2a1a14,roughness:0.3})),[muzzle],0,22.5,0.15);
 if(st==='chat')for(const s of[-1,1])for(const k of[-1,0,1])add(mk(new THREE.CylinderGeometry(0.06,0.06,3.4,6),mDark),[s*3.7,21.4+k*0.55,9.7],[0,0,Math.PI/2+s*k*0.15]);}
+else if(fig){const nz=mk(new THREE.ConeGeometry(0.85,0.95,3),SM({color:0x5a3424,roughness:0.35}));nz.rotation.z=Math.PI;nz.scale.z=0.55;stick(nz,[head],0,22.2,0.18);}
 else stick(mk(blob(st==='avatar'?0.45:0.55,st==='avatar'?0.32:0.4,0.35,{lump:0}),mNose),[head],0,22.5,0.15);
 const mouthT=muzzle?[muzzle,head]:[head];
 // Bouche de chaque expression (les nouvelles expressions reprennent une bouche de base ou ont la leur)
 const mx={rire:'sourire',amour:'sourire',clin:'content',etoiles:'sourire',pleure:'surpris',gene:'neutre'}[c.ex]||c.ex;
-if(st==='monstre'){// Grand sourire plein de dents
+if(st==='monstre'||fig&&!['bisou','triste','pleure','boude','surpris','dodo'].includes(c.ex)){// Grand sourire plein de dents
 const mo=new THREE.Group(),cav=new THREE.Mesh(new THREE.CircleGeometry(1,32,Math.PI,Math.PI),mMouth);cav.scale.set(2.3,1.15,1);mo.add(cav);
-for(let i=0;i<9;i++){const t=mk(new THREE.ConeGeometry(0.27,0.62,8),mWhite);t.rotation.z=Math.PI;t.position.set(-1.9+i*0.475,-0.3,0.06);mo.add(t);}stick(mo,[head],0,21.3,0.02);}
+for(let i=0;i<9;i++){const t=mk(new THREE.ConeGeometry(0.27,0.62,8),mWhite);t.rotation.z=Math.PI;t.position.set(-1.9+i*0.475,-0.3,0.06);mo.add(t);}
+if(fig){cav.material=SM({color:shade(c.sk,0.42),roughness:0.8});cav.scale.set(3.0,1.25,1);mo.children.slice(1).forEach((t,i)=>{t.position.x=-2.6+i*0.65;t.scale.setScalar(1.25);});for(let i=0;i<8;i++){const t=mk(new THREE.ConeGeometry(0.32,0.7,8),mWhite);t.position.set(-2.3+i*0.65,-1.05,0.06);mo.add(t);}}
+stick(mo,[head],0,fig?20.9:21.3,0.02);}
 else if(mx==='sourire'){const mo=new THREE.Group();mo.add(new THREE.Mesh(new THREE.CircleGeometry(1.0,28,Math.PI,Math.PI),mMouth));const tg=new THREE.Mesh(blob(0.55,0.3,0.08,{lump:0}),mTongue);tg.position.set(0,-0.62,0.04);mo.add(tg);
 const lip=new THREE.Mesh(new THREE.TorusGeometry(1.0,0.07,6,28,Math.PI),mMouth);lip.rotation.z=Math.PI;mo.add(lip);stick(mo,mouthT,0,21.15-(muzzle?0.5:0),0.03);}
-const my=muzzle?-0.5:0,human=st!=='monstre';
+const my=muzzle?-0.5:0,human=st!=='monstre'&&!(fig&&!['bisou','triste','pleure','boude','surpris','dodo'].includes(c.ex));
 if(human&&mx==='content'){const mo=new THREE.Group(),arc=new THREE.Mesh(new THREE.TorusGeometry(0.85,0.13,8,28,Math.PI*0.8),mMouth);arc.rotation.z=Math.PI*1.1;mo.add(arc);stick(mo,mouthT,0,21.6+my,-0.02);}
 if(human&&mx==='neutre')stick(mk(blob(0.75,0.13,0.1,{lump:0}),mMouth),mouthT,0,21.0+my,-0.02);
 if(human&&(mx==='surpris'||mx==='dodo')){const o=new THREE.Mesh(new THREE.CircleGeometry(mx==='dodo'?0.32:0.5,24),mMouth);o.scale.y=1.2;stick(o,mouthT,0,21.0+my,-0.02);}
@@ -895,9 +906,9 @@ for(const s of[-1,1]){const g=new THREE.Group(),fr=mk(new THREE.TorusGeometry(1.
 stick(mk(blob(0.75,0.18,0.18,{lump:0}),mF),tg,0,32.2,-0.08);}
 
 // Oreilles d'animal ou de petit monstre, posées sur ce qui est le plus à l'extérieur (cheveux, capuche, chapeau)
-if(furry){const tg=tops.concat((st==='monstre'?[hairCap,head]:[hairCap,hairS,head]).filter(Boolean)),mIn=FZ({color:st==='monstre'?mix(fur,'#f2a6b0',0.6):mix(fur,'#ffffff',0.55),map:FAB,roughness:1});
-const E={ours:[[0.62,0.78,0],[2.3,2.3,1.1],[1.35,1.35,0.5],0],lapin:[[0.3,0.95,0],[1.4,4.6,0.7],[0.8,3.6,0.3],0.12],chat:[[0.55,0.83,0],[2.0,3.4,2.0],[1.2,2.3,1.2],0],monstre:[[0.34,0.94,-0.05],[1.6,6.0,0.7],[0.95,4.7,0.3],0.16]}[st];
-const shape=sz=>{if(st==='chat'){const q=new THREE.ConeGeometry(1,2,24);q.scale(sz[0],sz[1]/2,sz[2]);return q;}return blob(sz[0],sz[1],sz[2],{lump:0.02,pear:st==='monstre'?0.35:0});};
+if(furry||fig){const est=fig?'monstre':st,tg=tops.concat((st==='monstre'?[hairCap,head]:[hairCap,hairS,head]).filter(Boolean)),mIn=FZ({color:est==='monstre'?mix(fur,fig?'#f6d2bc':'#f2a6b0',0.6):mix(fur,'#ffffff',0.55),map:FAB,roughness:1});
+const E={ours:[[0.62,0.78,0],[2.3,2.3,1.1],[1.35,1.35,0.5],0],lapin:[[0.3,0.95,0],[1.4,4.6,0.7],[0.8,3.6,0.3],0.12],chat:[[0.55,0.83,0],[2.0,3.4,2.0],[1.2,2.3,1.2],0],monstre:[[0.34,0.94,-0.05],[1.6,6.0,0.7],[0.95,4.7,0.3],0.16]}[est];
+const shape=sz=>{if(st==='chat'){const q=new THREE.ConeGeometry(1,2,24);q.scale(sz[0],sz[1]/2,sz[2]);return q;}return blob(sz[0],sz[1],sz[2],{lump:0.02,pear:est==='monstre'?0.35:0});};
 for(const s of[-1,1]){const d=V(s*E[0][0],E[0][1],E[0][2]).normalize(),ctr=V(0,24.6,0.6);ray.set(ctr.clone().addScaledVector(d,80),d.clone().negate());const h=ray.intersectObjects(tg,false)[0];
 let n=d.clone();const p=h?h.point.clone():ctr.clone().addScaledVector(d,9.5);if(h){NM.getNormalMatrix(h.object.matrixWorld);n=h.face.normal.clone().applyMatrix3(NM).normalize();if(n.dot(d)<0)n.negate();}
 const g=new THREE.Group();g.add(mk(shape(E[1]),mFur));const inn=mk(shape(E[2]),mIn);inn.position.set(0,-E[1][1]*0.05,E[1][2]*0.55);g.add(inn);
@@ -1271,7 +1282,7 @@ CHOICES.ms={aucune:'Aucune',monstre:'Petit monstre (oreilles et dents)',lapin:'L
 CHOICES.po={assis:'Assise',debout:'Debout',coucou:'Coucou',bravo:'Bras levés',calin:'Câlin',coeur:'Cœur',pensif:'Pensive',tailleur:'En tailleur',dab:'Dab',joues:'Mains sur les joues',danse:'Danse',victoire:'Victoire',croises:'Bras croisés',bisou:'Envoie un bisou',salut:'Coucou assise'};
 CHOICES.ey={kawaii:'Mignons (peluche)',realiste:'Réalistes'};
 CHOICES.cos={aucun:'Aucune',ours:'Ours',lapin:'Lapin',chat:'Chat',renard:'Renard',grenouille:'Grenouille',dino:'Dino',licorne:'Licorne',panda:'Panda',cochon:'Cochon',poussin:'Poussin',requin:'Requin',vache:'Vache'};
-CHOICES.st={classique:'Classique',ours:'Ourson',lapin:'Lapin',chat:'Chaton',monstre:'Petit monstre',avatar:'Avatar'};
+CHOICES.st={classique:'Classique',ours:'Ourson',lapin:'Lapin',chat:'Chaton',monstre:'Petit monstre',avatar:'Avatar',figurine:'Figurine (jouet de collection)'};
 CHOICES.mp={droite:"Sur l'épaule, à droite de l'image",gauche:"Sur l'épaule, à gauche de l'image",tete:'Sur la tête',mains:'Dans les mains'};
 const FLAGS={m:'🎧 Micro-casque',o:"💎 Boucles d'oreilles",a:'😷 Bandana sur le visage',q:'🎀 Nœud dans les cheveux',f:'🌼 Fleur dans les cheveux',x:'👑 Couronne',j:'🐱 Oreilles de chat',M:'🐰 Oreilles de lapin',A:'👽 Antennes',B:'😈 Cornes de diable',C:'😇 Auréole',L:'🦄 Corne de licorne',D:'🧢 Casquette à hélice',R:'🎀 Bigoudis',T:'🏴‍☠️ Cache-œil',E:'🩹 Pansement',
 P:'🍎 Pomme sur la tête',Q:'🦆 Canard sur la tête',V:'🚧 Cône sur la tête',N:'🏹 Flèche dans la tête',G:'🥸 Faux nez et moustache',H:'🫧 Bulle de chewing-gum',S:'💕 Cœurs qui flottent',Y:'✨ Paillettes',I:'🥳 Chapeau de fête',U:'🌧️ Nuage de pluie',K:'💫 Étoiles qui tournent',W:'💡 Ampoule idée',O:'🍼 Tétine',X:'🖤 Harnais croisé',J:'💍 Piercings au nez',
@@ -1285,11 +1296,11 @@ it:{aucun:'🚫',lance:'🚒',coeur:'❤️',telephone:'📱',cafe:'☕',donut:'
 hw:{aucun:'🚫',capuche:'🧥',casquette:'🧢',inverse:'🧢',bonnet:'🧶',chapeau:'🎩',bandeau:'🎽',durag:'🖤',beret:'🎨',bob:'👒',cowboy:'🤠',fleurs:'🌸',pompier:'⛑️',police:'👮'},
 gl:{aucune:'🚫',lunettes:'👓',soleil:'🕶️',aviateur:'😎',tete:'🕶️',masque:'🥽',coeur:'💖',rondes:'🤓',etoile:'⭐'},
 cos:{aucun:'🚫',ours:'🐻',lapin:'🐰',chat:'🐱',renard:'🦊',grenouille:'🐸',dino:'🦖',licorne:'🦄',panda:'🐼',cochon:'🐷',poussin:'🐥',requin:'🦈',vache:'🐮'},
-st:{classique:'🧒',ours:'🐻',lapin:'🐰',chat:'🐱',monstre:'👹',avatar:'🙂'},
+st:{classique:'🧒',ours:'🐻',lapin:'🐰',chat:'🐱',monstre:'👹',avatar:'🙂',figurine:'🪆'},
 ms:{aucune:'🚫',monstre:'👹',lapin:'🐰',ours:'🐻',chat:'🐱',chien:'🐶',oiseau:'🦜'}};
 const hairOn=c=>!['rase','chauve','iroquoise'].includes(c.hs);
 const SECTIONS=[
-{t:'Style, pose et nom',f:[{k:'st',type:'tiles',l:'Style de peluche',wide:1},{k:'cos',type:'tiles',l:"Combinaison d'animal (capuche, oreilles, queue)",wide:1},{k:'coc',type:'optcolor',l:'Couleur de la combinaison à part',show:c=>c.cos&&c.cos!=='aucun'},{k:'po',type:'tiles',l:'Position',wide:1},{k:'fc',type:'color',l:'Couleur de la fourrure',show:c=>['ours','lapin','chat','monstre'].includes(c.st)},{k:'n',type:'text',l:'Nom',max:24,wide:1}]},
+{t:'Style, pose et nom',f:[{k:'st',type:'tiles',l:'Style de peluche',wide:1},{k:'cos',type:'tiles',l:"Combinaison d'animal (capuche, oreilles, queue)",wide:1},{k:'coc',type:'optcolor',l:'Couleur de la combinaison à part',show:c=>c.cos&&c.cos!=='aucun'},{k:'po',type:'tiles',l:'Position',wide:1},{k:'fc',type:'color',l:'Couleur de la fourrure',show:c=>['ours','lapin','chat','monstre','figurine'].includes(c.st)},{k:'n',type:'text',l:'Nom',max:24,wide:1}]},
 {t:'Visage',f:[{k:'ey',type:'chips',l:'Yeux',wide:1},{k:'sk',type:'color',l:'Peau'},{k:'ec',type:'color',l:'Yeux'},{k:'ex',type:'tiles',wide:1,l:'Expression'},{k:'ta',type:'check',l:'Tatouages sur les bras'},{k:'bd',type:'choice',l:'Barbe'},{k:'fr',adv:1,type:'check',l:'Taches de rousseur'},{k:'cl',adv:1,type:'check',l:'Longs cils'}]},
 {t:'Cheveux',f:[{k:'hs',type:'choice',l:'Coiffure de départ'},{k:'hc',type:'color',l:'Couleur des cheveux'},{k:'h2',adv:1,type:'optcolor',l:"Mèches d'une autre couleur",show:hairOn},
 {k:'hl',type:'range',l:'Longueur',min:0.3,max:5,step:0.1,fmt:'len',show:hairOn},{k:'hv',adv:1,type:'range',l:'Volume',min:0,max:1,step:0.05,fmt:'pct',show:hairOn},
