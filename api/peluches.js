@@ -54,7 +54,8 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   // La page 3D sur GitHub Pages lit les peluches ici
   res.setHeader('Access-Control-Allow-Origin', '*');
-  if (req.method === 'OPTIONS') { res.setHeader('Access-Control-Allow-Methods', 'GET'); return res.status(204).end(); }
+  // L'atelier ouvert sur la page Claude enregistre aussi ici (POST)
+  if (req.method === 'OPTIONS') { res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE'); res.setHeader('Access-Control-Allow-Headers', 'content-type'); res.setHeader('Access-Control-Max-Age', '86400'); return res.status(204).end(); }
   AUTH = authFrom(req);
   try {
     if (req.method === 'GET') {
