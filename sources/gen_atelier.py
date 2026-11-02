@@ -281,8 +281,9 @@ code{font-family:var(--mono);font-size:13px;overflow-wrap:anywhere}
             <h2>Bibliothèque</h2>
             <p class="help">Enregistre la peluche sous un nom : elle rejoint ta bibliothèque et reçoit un lien très court.</p>
             <div class="fields"><div class="field"><label for="lib-nom">Nom</label><input id="lib-nom" type="text" maxlength="40" autocomplete="off"></div>
-            <div class="field"><label for="lib-code">Code secret</label><input id="lib-code" type="password" autocomplete="off"></div></div>
+            <div class="field" id="lib-code-f"><label for="lib-code">Code secret</label><input id="lib-code" type="password" autocomplete="off"></div></div>
             <div class="row"><button class="cta" id="lib-save" type="button">Enregistrer dans la bibliothèque</button><a class="btn" id="lib-open" href="bibliotheque">Ouvrir la bibliothèque</a></div>
+            <p class="help" id="lib-code-ok" hidden>🔒 Code secret retenu sur cet appareil. <a href="#" id="lib-code-chg">Changer de code</a></p>
             <div class="field" id="lib-link" hidden><label for="lib-out">Lien court de cette peluche</label><div class="row"><input id="lib-out" type="text" readonly><button class="btn" id="lib-copy" type="button">Copier</button></div></div>
             <div class="field" id="lib-ico" hidden><label for="lib-ico-out">Icône pour « Icône URL personnalisé »</label><div class="row"><input id="lib-ico-out" type="text" readonly><button class="btn" id="lib-ico-copy" type="button">Copier</button></div></div>
             <p class="status" id="lib-status" aria-live="polite"></p>
@@ -709,6 +710,9 @@ if(/^https?:$/.test(location.protocol)){$('lib-card').hidden=false;if(!onSite){$
 function finishOnSite(nom,p){const a=document.createElement('a');a.href=SITE+'/atelier?p='+encodeURIComponent(p)+'&enregistrer='+encodeURIComponent(nom);a.target='_blank';a.rel='noopener';document.body.append(a);a.click();a.remove();
 say('lib-status',"Le site s'ouvre dans un nouvel onglet pour finir l'enregistrement (la page Claude ne peut pas l'envoyer elle-même). Si rien ne s'ouvre, autorise les fenêtres pour cette page.");}
 $('lib-code').value=store('peluches-code')||'';
+// Code déjà retenu : la case est cachée, un lien permet d'en changer
+const codeUI=()=>{const k=!!store('peluches-code');$('lib-code-f').hidden=k;$('lib-code-ok').hidden=!k;};codeUI();
+$('lib-code-chg').addEventListener('click',e=>{e.preventDefault();$('lib-code-f').hidden=false;$('lib-code-ok').hidden=true;$('lib-code').value='';$('lib-code').focus();});
 $('lib-save').addEventListener('click',async()=>{const nom=$('lib-nom').value.trim()||cfg.n,code=$('lib-code').value;if(!nom){say('lib-status','Donne un nom à la peluche.');return;}
 const p0=await PL.pack(cfg);if(!onSite&&!code){finishOnSite(nom,p0);return;}if(!code){say('lib-status','Entre le code secret.');return;}
 $('lib-save').disabled=true;say('lib-status','Enregistrement…');
@@ -716,8 +720,8 @@ try{const p=p0,image=cur?renderIcon(512).toDataURL('image/png'):'';
 let x,d;try{x=await fetch(LIBAPI,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({nom,p,image,code})});d=await x.json();}
 catch(e){if(!onSite){finishOnSite(nom,p);return;}throw e;}
 if(!x.ok&&!onSite&&!d.erreur){finishOnSite(nom,p);return;}
-if(!x.ok){say('lib-status',d.erreur||"L'enregistrement a échoué.");return;}
-store('peluches-code',code);const bid=(String(d.image||'').match(/^https:\/\/([a-z0-9]+)\.public\.blob\.vercel-storage\.com\//)||[])[1];$('lib-out').value=VIEW+'p/'+d.slug+(bid?'?b='+bid:'');$('lib-link').hidden=false;if(d.image){$('lib-ico-out').value=d.image;$('lib-ico').hidden=false;}say('lib-status',!d.github||d.github==='ok'?'Peluche enregistrée dans la bibliothèque. Le lien marche dans FiveM d\'ici une à deux minutes.':d.github==='absent'?"Peluche enregistrée. Pour qu'elle s'affiche dans FiveM, ajoute la variable GITHUB_TOKEN sur Vercel (voir le README).":'Peluche enregistrée, mais la copie sur GitHub a échoué ('+d.github+').');}
+if(!x.ok){if(x.status===403){store('peluches-code','');codeUI();}say('lib-status',d.erreur||"L'enregistrement a échoué.");return;}
+store('peluches-code',code);codeUI();const bid=(String(d.image||'').match(/^https:\/\/([a-z0-9]+)\.public\.blob\.vercel-storage\.com\//)||[])[1];$('lib-out').value=VIEW+'p/'+d.slug+(bid?'?b='+bid:'');$('lib-link').hidden=false;if(d.image){$('lib-ico-out').value=d.image;$('lib-ico').hidden=false;}say('lib-status',!d.github||d.github==='ok'?'Peluche enregistrée dans la bibliothèque. Le lien marche dans FiveM d\'ici une à deux minutes.':d.github==='absent'?"Peluche enregistrée. Pour qu'elle s'affiche dans FiveM, ajoute la variable GITHUB_TOKEN sur Vercel (voir le README).":'Peluche enregistrée, mais la copie sur GitHub a échoué ('+d.github+').');}
 catch(e){say('lib-status',"L'enregistrement a échoué. Vérifie ta connexion.");}finally{$('lib-save').disabled=false;}});
 $('lib-ico-copy').addEventListener('click',()=>{const t=$('lib-ico-out').value;try{navigator.clipboard.writeText(t).then(()=>{$('lib-ico-copy').textContent='Copié';setTimeout(()=>{$('lib-ico-copy').textContent='Copier';},1500);});}catch(e){$('lib-ico-out').select();}});
 $('lib-copy').addEventListener('click',()=>{const t=$('lib-out').value;try{navigator.clipboard.writeText(t).then(()=>{$('lib-copy').textContent='Copié';setTimeout(()=>{$('lib-copy').textContent='Copier';},1500);});}catch(e){$('lib-out').select();}});
