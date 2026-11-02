@@ -63,6 +63,7 @@ h1{font-family:var(--display);font-weight:700;font-size:clamp(26px,3.4vw,34px);l
 h2{font-family:var(--display);font-weight:600;font-size:19px;line-height:1.2;margin:0;color:var(--fg)}
 h2::before{content:'♡ ';color:var(--pink)}
 label{font-size:14px;color:var(--muted);font-weight:700}
+textarea{font:16px/1.4 var(--body);padding:10px 14px;border-radius:16px;border:1px solid var(--line);background:var(--surface-2);color:var(--fg);width:100%;box-sizing:border-box;resize:vertical;min-height:84px}
 input[type=text],input[type=url],input[type=password],select{font:16px var(--body);padding:10px 14px;border-radius:16px;border:1px solid var(--line);background:var(--surface-2);color:var(--fg);width:100%;min-width:0;box-sizing:border-box}
 input[readonly]{font-family:var(--mono);font-size:13px}
 input.example{color:var(--muted)}
@@ -181,6 +182,9 @@ code{font-family:var(--mono);font-size:13px;overflow-wrap:anywhere}
             <label class="check"><input type="checkbox" id="review" checked> Vérifier la ressemblance et corriger tout seul (plus lent, plus fidèle)</label>
             <button class="cta" id="analyse" type="button" disabled hidden>Créer la peluche avec la photo</button>
             <p class="status" id="ai-status" aria-live="polite">Ajoute une photo de face : la peluche se crée toute seule.</p>
+            <div class="field" id="fix-box" hidden><label for="fix-txt">💬 Quelque chose ne va pas ? Dis-le à Claude</label>
+            <textarea id="fix-txt" maxlength="800" placeholder="Par exemple : elle n'a pas le ventre à l'air, les cheveux sont rose uni sans mèches, le jean est plus clair, ajoute ses piercings…"></textarea>
+            <div class="row"><button class="btn" id="fix-go" type="button">Corriger avec Claude</button></div></div>
           </section>
         </div>
         <div class="tabpanel" data-tab="style" id="tab-style" hidden>
@@ -1498,7 +1502,7 @@ return intro(w,slots)+"Les "+nr+" dernières images ne sont pas des photos : c'e
 +"Compare la peluche aux photos comme un client exigeant, en commençant par la coiffure (longueur, volume, raie, frange, texture, attache, côtés) et les vêtements (type de haut, zones de couleur des épaules et des manches, bandes, bas et ses bandes), puis couleurs des cheveux, de la peau et des yeux, barbe, lunettes, couvre-chef, haut et motif, couleurs des vêtements, accessoires, mascotte, objets. "
 +"Vérifie en particulier : peau du ventre visible ou non (cr), épaules nues ou couvertes (tp), longueur des manches (ml), tatouages (ta), une ou deux couleurs de cheveux (h2 vide dans le doute), attache des cheveux (ht), couleur exacte du bas (pc). "
 +"Corrige tout ce qui ne ressemble pas et garde ce qui est juste. Renvoie le réglage complet corrigé.\n"+keysText();}
-function updateAnalyse(){const b=$('analyse');b.hidden=!(sample&&imagesOK&&anyPhoto());b.disabled=false;b.textContent=ctl?'Arrêter':'Relancer la création';}
+function updateAnalyse(){$('fix-box').hidden=!(sample&&imagesOK);$('fix-go').textContent=ctl&&ctl.fix?'Arrêter':'Corriger avec Claude';const b=$('analyse');b.hidden=!(sample&&imagesOK&&anyPhoto());b.disabled=false;b.textContent=ctl?'Arrêter':'Relancer la création';}
 // Rendu de la peluche sur fond gris neutre, pour que Claude la compare aux photos
 async function renderView(rot,S){await new Promise(res=>setTimeout(res,250));const pr=r.getPixelRatio(),keep=cur.group.rotation.y;r.setPixelRatio(1);r.setSize(S,S,false);cam.aspect=1;cam.updateProjectionMatrix();cur.group.rotation.y=rot;PL.aim(cam,cur.fit,0.12,1.05,camFill);r.render(scene,cam);
 const o=document.createElement('canvas');o.width=o.height=S;const g=o.getContext('2d');g.fillStyle='#8a929c';g.fillRect(0,0,S,S);g.drawImage(r.domElement,0,0);cur.group.rotation.y=keep;r.setPixelRatio(pr);fitSize();return new Promise(res=>o.toBlob(res,'image/jpeg',0.9));}
@@ -1523,6 +1527,24 @@ refused:"Claude n'a pas pu décrire cette photo. Essaie une autre image.",invali
 finally{busy=false;if($('stage-status'))$('stage-status').textContent='';if(ctl===my){ctl=null;updateAnalyse();}}}
 const getSample=window.claude&&window.claude.use?window.claude.use('sample'):Promise.resolve(null);
 getSample.then(async s=>{sample=s;if(s){try{const lim=await s.limits();imagesOK=!!(lim&&lim.images);if(imagesOK)maxImages=lim.images.maxCount||1;}catch(e){imagesOK=false;}}updateAnalyse();if(!pick)say('ai-status',readyMsg());if(anyPhoto())runAnalysis();},()=>{updateAnalyse();say('ai-status',readyMsg());});
+// Dialogue : la personne écrit ce qui ne va pas, Claude regarde les photos et le rendu, puis corrige seulement ça
+function fixPrompt(msg,w,slots,nr){const cur=Object.assign({},cfg);delete cur.im;delete cur.imt;delete cur.ia;
+return (slots.length?intro(w,slots):"Il n'y a pas de photo. ")+(nr?"Les "+nr+" dernières images ne sont pas des photos : c'est le rendu actuel de la peluche ("+(nr>1?'de face, puis de dos':'de face')+"), fabriquée avec ce réglage :\n":"La peluche est fabriquée avec ce réglage :\n")+JSON.stringify(cur)+"\n"
++"La personne qui fabrique la peluche te dit ce qui ne va pas : « "+msg+" »\n"
++"Applique exactement ce qu'elle demande, en t'aidant des photos pour les détails (couleurs, formes). Ne change pas ce dont elle ne parle pas. Si elle parle de la pose, tu peux aussi changer \"po\" parmi "+PL.ENUM.po.map(x=>'"'+x+'"').join(', ')+". Renvoie le réglage complet corrigé.\n"+keysText();}
+async function runFix(){const msg=$('fix-txt').value.trim();if(!msg){say('ai-status','Écris d\'abord ce qui ne va pas dans la case.');$('fix-txt').focus();return;}if(!sample||!imagesOK)return;
+if(ctl)ctl.abort();const my=new AbortController();my.fix=true;ctl=my;updateAnalyse();
+const w=$('who').value,use=photoList().slice(0,maxImages>1?maxImages-1:1),imgs=use.map(s=>shots[s].blob),nr=Math.max(0,Math.min(maxImages-use.length,shots.dos.blob?2:1));
+busy=true;try{say('ai-status','Claude corrige : « '+msg.slice(0,80)+(msg.length>80?'…':'')+' »');
+const renders=nr?[await renderView(-0.34,512)]:[];if(nr>1)renders.push(await renderView(Math.PI-0.34,512));
+const data=await sample.json(fixPrompt(msg,w,use,renders.length),{images:imgs.concat(renders),signal:my.signal,cache:false});if(ctl!==my)return;
+const prev={im:cfg.im,imt:cfg.imt,ia:cfg.ia};cfg=PL.clean(Object.assign({},cfg,data,{bg:cfg.bg,bf:cfg.bf,bgc:cfg.bgc}),PL.NEUTRAL);
+if(Array.isArray(data.imp)&&data.imp.length===4&&use[0])cropPrint(shots[use[0]].cn,data.imp.map(Number));else Object.assign(cfg,prev);
+syncForm();rebuild();updateLink();$('fix-txt').value='';say('ai-status','Corrigé. Si ce n\'est pas encore ça, réécris ce qui ne va pas (Ctrl + Z pour annuler).');}
+catch(e){if(ctl!==my)return;const code=e&&e.code;say('ai-status',({cancelled:'Correction arrêtée.',rate_limited:'Trop de demandes pour le moment. Réessaie dans un moment.',invalid_json:'La réponse était incomplète. Réessaie.',session_expired:'Reconnecte-toi à Claude, puis réessaie.'})[code]||'La correction a échoué. Réessaie.');}
+finally{busy=false;if(ctl===my){ctl=null;updateAnalyse();}}}
+$('fix-go').addEventListener('click',()=>{if(ctl&&ctl.fix){const c0=ctl;ctl=null;c0.abort();updateAnalyse();say('ai-status','Correction arrêtée.');return;}runFix();});
+$('fix-txt').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();runFix();}});
 $('analyse').addEventListener('click',()=>{if(ctl){const c0=ctl;ctl=null;c0.abort();updateAnalyse();say('ai-status','Création arrêtée.');return;}runAnalysis();});
 $('who').addEventListener('change',()=>{if(anyPhoto())runAnalysis();});
 
