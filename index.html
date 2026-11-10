@@ -29,7 +29,7 @@ const PROPS={classique:{h:1,b:[1,1,1],a:[1,1],l:[1,1,1]},ours:{h:1.0,b:[1.16,1.0
 lapin:{h:0.94,b:[0.9,1.14,0.9],a:[0.85,1.18],l:[0.88,0.9,1.35]},chat:{h:1.1,b:[0.92,0.92,0.92],a:[0.9,0.92],l:[0.9,0.9,0.95]},
 monstre:{h:[1.55,1.78,1.55],b:[0.98,0.88,0.98],a:[0.95,0.75],l:[1.0,0.95,0.85]},avatar:{h:1.2,b:[0.74,0.95,0.78],a:[0.6,1.0],l:[0.62,0.85,0.95]},
 // Figurine : grosse tête de jouet de collection, corps menu, bras et jambes en fourrure
-figurine:{h:[1.42,1.5,1.4],b:[0.92,0.9,0.92],a:[0.92,0.85],l:[0.95,0.95,0.9]}};
+figurine:{h:[1.5,1.44,1.42],b:[0.92,0.9,0.92],a:[0.92,0.85],l:[0.95,0.95,0.9]}};
 const COLS=['sk','hc','ec','glc','lc','hwc','tc','t2','ac','pc','sc','gv','mc','coc','bgc'];
 const HOOKS={onTex:null};
 const PRESETS={
@@ -341,6 +341,7 @@ if(ml==='coudes'){const up=mk(blob(3.1,3.5,3.1,{lump:0.01}),mSl);up.position.set
 if(mSb&&ml==='longues')for(const a0 of[-0.24,0.24]){const pts=[];for(let y=4.2;y>=-3.6;y-=0.4){const r=2.8*Math.sqrt(Math.max(0,1-(y/5.1)**2))+0.05;pts.push(V(s*r*Math.cos(a0),y,r*Math.sin(a0)));}a.add(mk(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),40,0.22,6,false),mSb));}
 if(ml==='longues')seam(ring(2.2,2.2,'y',-3.3),shade(c.tp==='gilet'?c.t2:c.tc,0.55),true,a);
 const gl=mk(blob(1.75,1.65,1.75),mHand);gl.position.set(0,-4.8,0);a.add(gl);const th=mk(blob(0.6,0.95,0.6,{lump:0}),mHand);th.position.set(-s*1.3,-4.1,0.9);th.rotation.z=s*0.5;a.add(th);
+if(c.po==='victoire')for(const k of[-1,1]){const fg=mk(blob(0.5,1.5,0.5,{lump:0}),mHand);fg.position.set(k*0.75,-6.5,0.1);fg.rotation.z=k*0.32;a.add(fg);}
 if(c.gv){const cf=mk(new THREE.TorusGeometry(1.75,0.35,10,32),mHand);cf.position.set(0,-4.0,0);cf.rotation.x=Math.PI/2;a.add(cf);}
 if(has('l')&&s>0){const mB1=SM({color:c.ac,roughness:0.5}),mB2=SM({color:0xd9a833,roughness:0.3,metalness:0.6});for(const[k,mt]of[[0,mB1],[1,mB2]]){const br=mk(new THREE.TorusGeometry(1.95,0.22,8,32),mt);br.position.set(0,-3.0-k*0.55,0);br.rotation.x=Math.PI/2;a.add(br);}}
 if(has('w')&&s<0){const wb=mk(new THREE.TorusGeometry(1.98,0.36,10,32),mDark);wb.position.set(0,-3.2,0);wb.rotation.x=Math.PI/2;a.add(wb);const fc=mk(new THREE.CylinderGeometry(0.75,0.75,0.35,20),mGold);fc.rotation.x=Math.PI/2;fc.position.set(0,-3.2,2.15);a.add(fc);}}
@@ -405,6 +406,13 @@ hairStrands({fur:1,hl:1,hv:0.2,hx:'lisse',hp:'aucune',hf:'aucune',ht:'aucune',hd
 // Crâne rasé ou iroquoise : fine calotte collée au crâne
 if(!animal&&(hs==='rase'||hs==='iroquoise'||(hs!=='chauve'&&hs!=='monstre'&&!strandy))){hairS=add(mk(blob(9.72,8.92,9.12,{lump:0.004,t0:0.78,t1:1.95,p0:2.52,pl:4.38}),mHair),[0,24.6,0.6]);hairCap=add(mk(blob(9.76,8.96,9.16,{lump:0.004,t0:0,t1:0.86}),mHair),[0,24.6,0.6]);}
 if(strandy)hairStrands(HH);
+// Figurine : la tête est en fourrure, le visage est un masque de vinyle ovale ; la fourrure dépasse autour des joues et du menton
+if(fig){const hasHair=!['chauve','rase'].includes(hs),sg=new THREE.SphereGeometry(1,96,72),ps=sg.attributes.position,ix=sg.index.array,keep=[],U=V(0,0,0);
+const inS=i=>{U.fromBufferAttribute(ps,i).normalize();const th=Math.acos(Math.max(-1,Math.min(1,U.y)));let ph=Math.atan2(U.z,-U.x);if(ph<0)ph+=Math.PI*2;return th<0.8||(th<1.85&&(ph>=2.62||ph<=0.52));};
+// distance au bord de l'ovale du visage : les sommets à l'intérieur sont rentrés sous le vinyle, ce qui donne un bord net et lisse
+for(let i=0;i<ps.count;i++){U.fromBufferAttribute(ps,i);const d=U.z>0?Math.sqrt((U.x/0.75)**2+((U.y+0.07)/0.68)**2):9,k=d<0.97?0.9:d<1.06?0.9+0.1*(d-0.97)/0.09:1;ps.setXYZ(i,U.x*k,U.y*k,U.z*k);}
+for(let i=0;i<ix.length;i+=3)if(!(hasHair&&inS(ix[i])&&inS(ix[i+1])&&inS(ix[i+2])))keep.push(ix[i],ix[i+1],ix[i+2]);sg.setIndex(keep);sg.scale(9.6*1.035,8.8*1.035,9.0*1.035);sg.computeVertexNormals();
+shaggy(add(mk(sg,mFur),[0,24.6,0.6]),0.014);}
 if(hs==='iroquoise'&&!hats)for(let a=0.85;a>=-1.9;a-=0.3){const s=Math.sin(a),p=V(0,Math.cos(a)*8.92,s*9.12),n=V(0,p.y/79.6,p.z/83.2).normalize(),len=4.4-Math.abs(a-0.2)*0.8;
 const m=mk(new THREE.ConeGeometry(1.35,len,10),mHair);m.position.set(0,24.6+p.y,0.6+p.z).addScaledVector(n,len*0.35);m.quaternion.setFromUnitVectors(Y,n);G.add(m);}
 if(['rase','chauve','iroquoise'].includes(hs)&&!furry)for(const s of[-1,1])add(mk(blob(1.0,2.0,1.4,{lump:0}),mSkin),[s*9.55,23.6,0.6]);
@@ -459,7 +467,7 @@ const Lh=lerpT([[0,1.6],[1,5.2],[2,9],[3,14],[4,21],[5,32]],hl)*(hx==='boucle'?0
 const blunt=H.hf==='droite'||hs==='carre',sw=H.hp==='droite'?-1:1,px={gauche:-0.3,milieu:0,droite:0.3,aucune:0}[H.hp];
 const TIES={queue:[V(0,25.2,-9.7)],haute:[V(0,31.6,-7.4)],couettes:[V(-9.2,26.2,-2.6),V(9.2,26.2,-2.6)],chignon:[V(0,31.2,-6.6)],tresse:[V(-8.6,22.6,1.2)],demi:[V(0,28.6,-9.3)],macarons:[V(-5.4,32.6,-1.6),V(5.4,32.6,-1.6)]}[H.ht]||null;
 const fringeZone=u=>u.z>0.42&&u.y>0.38&&Math.abs(u.x)<0.62;
-const N=H.fur?Math.round(1100*(QUAL<1?0.75:1)):hx==='dreads'?150:hx==='pique'?190:hx==='boucle'?420:hl<1.5?400:260,wid=hx==='dreads'?0.62:hx==='boucle'?0.8:hx==='pique'?1.45:hl<1.5?1.2:1.85,thk=hx==='dreads'||hx==='boucle'?wid:0.42;
+const N=H.fur?Math.round(1100*(QUAL<1?0.75:1)):hx==='dreads'?150:hx==='pique'?190:hx==='boucle'?420:hl<1.5?400:fig?Math.round(560*(QUAL<1?0.7:1)):260,wid=hx==='dreads'?0.62:hx==='boucle'?0.8:hx==='pique'?1.45:hl<1.5?1.2:fig?1.0:1.85,thk=hx==='dreads'||hx==='boucle'?wid:0.42;
 if(hx==='crepu'){// Afro ou cheveux crépus : volume rond fait de petites bouclettes serrées, sans cacher le visage
 const E=(hats?0.25:1)*(0.6+hl*0.55)*(0.55+H.hv*0.6),cy=25.4,R0=V(10.0+E,9.2+E*0.9,9.6+E);
 const mCurl=FZ({color:c.hc,map:HAIR,bumpMap:BMP,bumpScale:0.6,roughness:1}),mCurl2=FZ({color:shade(c.hc,0.85),map:HAIR,bumpMap:BMP,bumpScale:0.6,roughness:1});
@@ -519,11 +527,11 @@ const mKw=SM({color:mix('#0c0a10',eyeBase,0.22),roughness:0.07,metalness:0.15}),
 for(const s of[-1,1]){
 const shut=['rire','dodo','pleure'].includes(c.ex)||((c.ex==='clin'||c.ex==='bisou')&&s>0);
 if(fig&&!shut&&c.ex!=='amour'&&c.ex!=='etoiles'){const e=new THREE.Group(),[ec,eg]=cv(128),gr=eg.createRadialGradient(64,70,4,64,64,64);gr.addColorStop(0,'#0c0806');gr.addColorStop(0.45,hex(mix('#0c0806',eyeBase,0.45)));gr.addColorStop(0.9,hex(mix(eyeBase,'#ffffff',0.12)));gr.addColorStop(1,'#1a100c');eg.fillStyle=gr;eg.fillRect(0,0,128,128);
-const et=own(new THREE.CanvasTexture(ec));et.encoding=THREE.sRGBEncoding;e.add(mk(blob(1.95,2.05,0.8,{lump:0}),SM({map:et,roughness:0.04,metalness:0.1})));
-const k1=new THREE.Mesh(new THREE.SphereGeometry(0.62,16,12),mShine);k1.scale.set(1,1.1,0.3);k1.position.set(-0.6,0.75,0.72);e.add(k1);const k2=new THREE.Mesh(new THREE.SphereGeometry(0.25,12,10),mShine);k2.scale.z=0.3;k2.position.set(0.7,-0.7,0.74);e.add(k2);
-const rim=new THREE.Mesh(new THREE.TorusGeometry(2.0,0.16,8,40),SM({color:shade(c.sk,0.75),roughness:0.6}));rim.scale.set(0.98,1.03,1);e.add(rim);
-if(c.ex==='surpris')e.scale.set(1.1,1.12,1);stick(e,[head],s*3.75,23.3,0.15);
-const br=stick(mk(blob(1.7,0.42,0.55,{lump:0}),mSkin),[head],s*3.3,25.85,0.05);br.rotateZ(s*({triste:-0.38,pleure:-0.4,gene:-0.25,surpris:-0.12}[c.ex]||0.38));continue;}
+const et=own(new THREE.CanvasTexture(ec));et.encoding=THREE.sRGBEncoding;e.add(mk(blob(1.95,2.45,0.85,{lump:0}),SM({map:et,roughness:0.03,metalness:0.1})));
+const k1=new THREE.Mesh(new THREE.SphereGeometry(0.62,16,12),mShine);k1.scale.set(1,1.15,0.3);k1.position.set(-0.55,1.05,0.74);e.add(k1);const k2=new THREE.Mesh(new THREE.SphereGeometry(0.25,12,10),mShine);k2.scale.z=0.3;k2.position.set(0.7,-0.9,0.76);e.add(k2);
+const rim=new THREE.Mesh(new THREE.TorusGeometry(2.0,0.16,8,40),SM({color:shade(c.sk,0.75),roughness:0.6}));rim.scale.set(0.98,1.23,1);e.add(rim);
+if(c.ex==='surpris')e.scale.set(1.1,1.12,1);stick(e,[head],s*3.7,23.5,0.15);
+const br=stick(mk(blob(1.7,0.42,0.55,{lump:0}),mSkin),[head],s*3.2,26.45,0.05);br.rotateZ(s*({triste:-0.38,pleure:-0.4,gene:-0.25,surpris:-0.12}[c.ex]||0.38));continue;}
 if(kawaii&&(shut||c.ex==='amour'||c.ex==='etoiles')){const e=new THREE.Group();
 if(shut){const arc=new THREE.Mesh(new THREE.TorusGeometry(1.15,0.27,10,28,Math.PI),mKw);if(c.ex==='dodo'||c.ex==='pleure'){arc.rotation.z=Math.PI;arc.position.y=0.4;}else arc.position.y=-0.4;arc.scale.set(1,0.8,1);e.add(arc);}
 else if(c.ex==='etoiles'){// Yeux étoiles : étoile dorée à cinq branches
@@ -559,18 +567,17 @@ if(c.fr&&st!=='avatar')for(const s of[-1,1])[[4.9,21.9],[5.7,21.4],[4.6,21.1],[5
 let muzzle=null;
 if(animal){muzzle=stick(mk(blob(3.2,2.3,1.3,{lump:0}),mFurL),[head],0,21.6,0.7);stick(mk(blob(0.95,0.62,0.5,{lump:0,tip:0.5}),SM({color:0x2a1a14,roughness:0.3})),[muzzle],0,22.5,0.15);
 if(st==='chat')for(const s of[-1,1])for(const k of[-1,0,1])add(mk(new THREE.CylinderGeometry(0.06,0.06,3.4,6),mDark),[s*3.7,21.4+k*0.55,9.7],[0,0,Math.PI/2+s*k*0.15]);}
-else if(fig){const nz=mk(new THREE.ConeGeometry(1.05,1.1,3),SM({color:0x5a3424,roughness:0.35}));nz.rotation.z=Math.PI;nz.scale.z=0.55;stick(nz,[head],0,22.2,0.18);}
+else if(fig){const nz=mk(new THREE.ConeGeometry(1.05,1.1,3),SM({color:0x5a3424,roughness:0.35}));nz.rotation.z=Math.PI;nz.scale.z=0.55;stick(nz,[head],0,21.75,0.18);}
 else stick(mk(blob(st==='avatar'?0.45:0.55,st==='avatar'?0.32:0.4,0.35,{lump:0}),mNose),[head],0,22.5,0.15);
 const mouthT=muzzle?[muzzle,head]:[head];
 // Bouche de chaque expression (les nouvelles expressions reprennent une bouche de base ou ont la leur)
 const mx={rire:'sourire',amour:'sourire',clin:'content',etoiles:'sourire',pleure:'surpris',gene:'neutre'}[c.ex]||c.ex;
 if(fig&&!['bisou','triste','pleure','boude','surpris','dodo'].includes(c.ex)){const[cn,g]=cv(512,200),W2=256,yU=x=>38+62*(1-(x/236)**2),yL=x=>yU(x)+(c.ex==='rire'?92:78)*(1-(x/236)**2);
 g.beginPath();for(let x=-236;x<=236;x+=4)g.lineTo(W2+x,yU(x));for(let x=236;x>=-236;x-=4)g.lineTo(W2+x,yL(x));g.closePath();g.fillStyle=hex(mix(c.sk,'#3a1a14',0.55));g.fill();
-g.save();g.clip();g.fillStyle='#fbf8f2';g.strokeStyle='rgba(120,90,80,0.35)';g.lineWidth=2;const N=8,dx=472/N;
-for(let i=0;i<N;i++){const x0=-236+i*dx,x1=x0+dx,xm=(x0+x1)/2;g.beginPath();g.moveTo(W2+x0-2,yU(x0)-6);g.lineTo(W2+x1+2,yU(x1)-6);g.lineTo(W2+xm,yU(xm)+(yL(xm)-yU(xm))*0.62);g.closePath();g.fill();g.stroke();}
-for(let i=0;i<N-1;i++){const x0=-236+(i+0.5)*dx,x1=x0+dx,xm=(x0+x1)/2;g.beginPath();g.moveTo(W2+x0-2,yL(x0)+6);g.lineTo(W2+x1+2,yL(x1)+6);g.lineTo(W2+xm,yL(xm)-(yL(xm)-yU(xm))*0.6);g.closePath();g.fill();g.stroke();}g.restore();
+g.save();g.clip();g.fillStyle='#fbf8f2';g.strokeStyle='rgba(120,90,80,0.35)';g.lineWidth=2;const N=9,dx=472/N;
+for(let i=0;i<N;i++){const x0=-236+i*dx,x1=x0+dx,xm=(x0+x1)/2;g.beginPath();g.moveTo(W2+x0-1,yU(x0)-6);g.lineTo(W2+x1+1,yU(x1)-6);g.lineTo(W2+xm,yU(xm)+(yL(xm)-yU(xm))*0.82+6);g.closePath();g.fill();g.stroke();}g.restore();
 g.beginPath();for(let x=-236;x<=236;x+=4)g.lineTo(W2+x,yU(x));g.strokeStyle=hex(mix(c.sk,'#3a1a14',0.6));g.lineWidth=5;g.lineCap='round';g.stroke();
-const t=own(new THREE.CanvasTexture(cn));t.encoding=THREE.sRGBEncoding;t.anisotropy=4;add(mk(conform([head],V(0,20.35,0),X,Y,8.8,3.5,28,FWD,0.06),SM({map:t,transparent:true,depthWrite:false,roughness:0.6,polygonOffset:true,polygonOffsetFactor:-3})));}
+const t=own(new THREE.CanvasTexture(cn));t.encoding=THREE.sRGBEncoding;t.anisotropy=4;add(mk(conform([head],V(0,19.75,0),X,Y,8.6,3.3,28,FWD,0.06),SM({map:t,transparent:true,depthWrite:false,roughness:0.6,polygonOffset:true,polygonOffsetFactor:-3})));}
 else if(st==='monstre'){// Grand sourire plein de dents
 const mo=new THREE.Group(),cav=new THREE.Mesh(new THREE.CircleGeometry(1,32,Math.PI,Math.PI),mMouth);cav.scale.set(2.3,1.15,1);mo.add(cav);
 for(let i=0;i<9;i++){const t=mk(new THREE.ConeGeometry(0.27,0.62,8),mWhite);t.rotation.z=Math.PI;t.position.set(-1.9+i*0.475,-0.3,0.06);mo.add(t);}
@@ -700,11 +707,11 @@ stick(mk(blob(0.75,0.18,0.18,{lump:0}),mF),tg,0,32.2,-0.08);}
 
 // Oreilles d'animal ou de petit monstre, posées sur ce qui est le plus à l'extérieur (cheveux, capuche, chapeau)
 if(furry||fig){const est=fig?'monstre':st,tg=tops.concat((st==='monstre'?[hairCap,head]:[hairCap,hairS,head]).filter(Boolean)),mIn=FZ({color:est==='monstre'?mix(fur,fig?'#f6cdb4':'#f2a6b0',fig?0.85:0.6):mix(fur,'#ffffff',0.55),map:FAB,roughness:1});
-const E={figurine:[[0.3,0.95,-0.05],[2.1,6.2,1.0],[1.35,4.7,0.35],0.1],ours:[[0.62,0.78,0],[2.3,2.3,1.1],[1.35,1.35,0.5],0],lapin:[[0.3,0.95,0],[1.4,4.6,0.7],[0.8,3.6,0.3],0.12],chat:[[0.55,0.83,0],[2.0,3.4,2.0],[1.2,2.3,1.2],0],monstre:[[0.34,0.94,-0.05],[1.6,6.0,0.7],[0.95,4.7,0.3],0.16]}[fig?'figurine':est];
+const E={figurine:[[0.36,0.93,-0.05],[3.0,6.6,1.2],[2.0,5.0,0.4],0.12],ours:[[0.62,0.78,0],[2.3,2.3,1.1],[1.35,1.35,0.5],0],lapin:[[0.3,0.95,0],[1.4,4.6,0.7],[0.8,3.6,0.3],0.12],chat:[[0.55,0.83,0],[2.0,3.4,2.0],[1.2,2.3,1.2],0],monstre:[[0.34,0.94,-0.05],[1.6,6.0,0.7],[0.95,4.7,0.3],0.16]}[fig?'figurine':est];
 const shape=sz=>{if(st==='chat'){const q=new THREE.ConeGeometry(1,2,24);q.scale(sz[0],sz[1]/2,sz[2]);return q;}return blob(sz[0],sz[1],sz[2],{lump:0.02,pear:est==='monstre'?0.35:0});};
 for(const s of[-1,1]){const d=V(s*E[0][0],E[0][1],E[0][2]).normalize(),ctr=V(0,24.6,0.6);ray.set(ctr.clone().addScaledVector(d,80),d.clone().negate());const h=ray.intersectObjects(tg,false)[0];
 let n=d.clone();const p=h?h.point.clone():ctr.clone().addScaledVector(d,9.5);if(h){NM.getNormalMatrix(h.object.matrixWorld);n=h.face.normal.clone().applyMatrix3(NM).normalize();if(n.dot(d)<0)n.negate();}
-const g=new THREE.Group();g.add(shaggy(mk(shape(E[1]),mFur),0.035));const inn=mk(shape(E[2]),mIn);inn.position.set(0,-E[1][1]*0.05,E[1][2]*0.55);g.add(inn);
+const g=new THREE.Group();g.add(shaggy(mk(shape(E[1]),mFur),0.05));const inn=mk(shape(E[2]),mIn);inn.position.set(0,-E[1][1]*0.05,E[1][2]*0.55);g.add(inn);
 if(fig){inn.position.z=E[1][2]+0.2;for(let k=0;k<30;k++){const a=k/30*Math.PI*2+0.1,tf=mk(blob(0.42,0.6,0.5,{lump:0.15}),mFur);tf.position.set(Math.sin(a)*E[1][0]*0.86,Math.cos(a)*E[1][1]*0.9,-0.1);tf.rotation.z=-a+((k*7)%5-2)*0.15;g.add(tf);}}
 g.position.copy(p).addScaledVector(n,E[1][1]*0.55);g.quaternion.setFromUnitVectors(Y,n).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0,0,-s*E[3])));G.add(g);g.updateMatrixWorld(true);}}
 
@@ -763,8 +770,8 @@ for(const s of[-1,1]){const P=[[s*4.8,11.4],[s*2.4,13.0],[0,14.4],[-s*1.9,15.8],
 add(mk(new THREE.BoxGeometry(1.2,0.9,0.45),mK),[-s*1.55,15.3,zf(-s*1.55,15.3)+0.25],[0,0,s*0.6]);}
 recolor('X',a0,ap);adjust('X',a0);}
 if(has('F')){const a0=G.children.length,ap=useCol('F');// Casque audio sur la tête : arceau par-dessus les cheveux, gros écouteurs ronds
-const mHp=SM({color:0xf2f0ea,roughness:0.45}),mPad=FZ({color:0xe4e0d8,map:FAB,roughness:0.9}),R0=10.6+hairUp*1.1,C0=V(0,24.4,0.4);
-const band=mk(new THREE.TorusGeometry(R0,0.75,12,48,Math.PI*0.84),mHp);band.rotation.z=Math.PI*0.08;band.scale.set(1,1.04,0.6);band.position.copy(C0);G.add(band);band.userData.part='head';
+const mHp=SM({color:0xf2f0ea,roughness:0.45}),mPad=FZ({color:0xe4e0d8,map:FAB,roughness:0.9}),R0=10.0+hairUp*0.8,C0=V(0,24.4,0.4);
+const band=mk(new THREE.TorusGeometry(R0,0.75,12,48,Math.PI*0.84),mHp);band.rotation.z=Math.PI*0.08;band.scale.set(1,1.0,0.6);band.position.copy(C0);G.add(band);band.userData.part='head';
 for(const sx of[-1,1]){const cup=new THREE.Group();cup.add(mk(new THREE.CylinderGeometry(3.0,3.0,1.8,32),mHp));cup.add(at(mk(new THREE.CylinderGeometry(2.6,2.7,1.0,32),mPad),0,-1.2));cup.add(at(mk(new THREE.CylinderGeometry(1.4,1.4,0.4,24),SM({color:0xd9d4ca,roughness:0.5})),0,1.05));
 cup.rotation.z=-sx*Math.PI/2;cup.position.set(sx*(R0+0.2),23.2,0.4);G.add(cup);cup.userData.part='head';cup.traverse(o=>{o.userData.part='head';});}
 band.traverse(o=>{o.userData.part='head';});recolor('F',a0,ap);adjust('F',a0);}
