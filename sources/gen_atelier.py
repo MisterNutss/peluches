@@ -528,6 +528,7 @@ function keysText(){return "Regarde d'abord ce qui rend la personne reconnaissab
 +"7. Bas : type, et couleur exacte (un jean clair délavé est bleu-gris clair, pas blanc ; un jean brut est bleu foncé), bandes éventuelles.\n"
 +"8. Chaussures, ceinture, bijoux et piercings, lunettes, couvre-chef : reprends seulement ce qui se voit.\n"
 +"Réponds uniquement avec un objet JSON qui a exactement ces clés :\n"
++'- "vu" : en PREMIER, écris en une à trois phrases ce que tu vois vraiment sur la photo, de haut en bas : cheveux (couleur, longueur, attache), visage (barbe, lunettes, piercings), haut (type, longueur, manches, couleur, motif), bas, chaussures, accessoires, tatouages. Les clés suivantes doivent toutes correspondre à cette description\n'
 +'- "n" : nom court pour la peluche (métier ou surnom visible), 24 caractères maximum\n'
 +'- "sk" : couleur de peau, "#rrggbb"\n'
 +'- "hc" : couleur des cheveux (ou des sourcils si la personne est chauve), "#rrggbb"\n'
@@ -592,7 +593,7 @@ function keysText(){return "Regarde d'abord ce qui rend la personne reconnaissab
 +'  Exemple pour une capuche de vache : oreilles {"forme":"sphere","ancre":"tete","pos":[0.9,0.45,0],"taille":[0.2,0.34,0.08],"rot":[0,0,0],"couleur":"#f2b5a0","colle":true} et la même avec x = -0.9 ; cornes {"forme":"cone","ancre":"tete","pos":[0.35,1,0.1],"taille":[0.08,0.26,0.08],"rot":[0,0,0],"couleur":"#e8c27a","colle":true} et la même avec x = -0.35.\n'
 +"N'utilise jamais les pièces sur mesure pour une mascotte, une coiffure, des lunettes ou un vêtement : il y a des clés pour ça. Une pièce isolée qui ne ressemble à rien est pire que pas de pièce : en cas de doute, mets [].\n"
 +"Une combinaison ou un pyjama d'animal se fait avec tp sweat et hw capuche de la même couleur, le même motif sur mt et hm, puis les oreilles, cornes ou queue en pièces sur mesure.\n"
-+"Exemple de FORME seulement (les valeurs sont à remplacer par ce que montrent les photos, ne les recopie pas) : "+JSON.stringify({n:'Surnom',sk:'#d9a07c',hc:'#2a1c14',h2:'',hs:'court',hl:1.2,hv:0.4,hx:'lisse',hp:'aucune',hf:'courte',ht:'aucune',hd:'courts',ec:'#5a3b22',ex:'neutre',bd:'barbe',fr:0,cl:0,gl:'aucune',glc:'#2b2b2b',lc:'#3a2a1e',hw:'aucun',hwc:'#1c1c1e',hwt:'',hm:'uni',tp:'zip',mt:'uni',tc:'#1c1c1e',t2:'#f2f2f2',yc:'#f2f2f2',sl:'',sb:'',imp:null,tt:'',rf:0,ac:'#f2f2f2',bt:'jogging',pc:'#f2f2f2',pb:'#1c1c1e',sh:'baskets',sc:'#f2f2f2',gv:'',acc:'',it:'aucun',ms:'aucune',mc:'#8ec5f0',mp:'droite',mz:1,pz:[]});}
++"Exemple de FORME seulement (les valeurs sont à remplacer par ce que montrent les photos, ne les recopie pas) : "+JSON.stringify({vu:'Homme barbu aux cheveux bruns courts, veste de survêtement noire à épaules blanches, jogging blanc à bandes noires, baskets blanches.',n:'Surnom',sk:'#d9a07c',hc:'#2a1c14',h2:'',hs:'court',hl:1.2,hv:0.4,hx:'lisse',hp:'aucune',hf:'courte',ht:'aucune',hd:'courts',ec:'#5a3b22',ex:'neutre',bd:'barbe',fr:0,cl:0,gl:'aucune',glc:'#2b2b2b',lc:'#3a2a1e',hw:'aucun',hwc:'#1c1c1e',hwt:'',hm:'uni',tp:'zip',mt:'uni',tc:'#1c1c1e',t2:'#f2f2f2',yc:'#f2f2f2',sl:'',sb:'',imp:null,tt:'',rf:0,ac:'#f2f2f2',bt:'jogging',pc:'#f2f2f2',pb:'#1c1c1e',sh:'baskets',sc:'#f2f2f2',gv:'',acc:'',it:'aucun',ms:'aucune',mc:'#8ec5f0',mp:'droite',mz:1,pz:[]});}
 function readyMsg(){if(!(sample&&imagesOK))return "Règle la peluche à la main : le bouton Pipette prend une couleur sur la photo. Pour reprendre une peluche déjà faite, colle son lien dans l'onglet « Style et pose ».";return anyPhoto()?'Peluche prête. Tu peux relancer la création ou corriger les réglages.':'Ajoute une photo de face : la peluche se crée toute seule.';}
 function reviewPrompt(w,slots,nr){const cur=Object.assign({},cfg);delete cur.im;delete cur.imt;delete cur.ia;
 return intro(w,slots)+"Les "+nr+" dernières images ne sont pas des photos : c'est le rendu actuel de la peluche ("+(nr>1?'de face, puis de dos':'de face')+"), fabriquée avec ce réglage :\n"+JSON.stringify(cur)+"\n"
@@ -608,13 +609,13 @@ if(Array.isArray(data.imp)&&data.imp.length===4)cropPrint(shots[first0].cn,data.
 async function runAnalysis(){const slots=photoList();if(!slots.length||!sample||!imagesOK)return;clearTimeout(anaT);if(ctl)ctl.abort();const my=new AbortController();ctl=my;updateAnalyse();
 const w=$('who').value,keep={st:cfg.st,po:cfg.po,ey:cfg.ey,fc:''},use=slots.slice(0,Math.max(1,maxImages)),imgs=use.map(s=>shots[s].blob);
 busy=true;try{say('ai-status','Claude regarde '+(use.length>1?'les photos':'la photo')+'… Ça prend souvent 10 à 40 secondes.');
-let data=await sample.json(prompt(w,use),{images:imgs,signal:my.signal});if(ctl!==my)return;applyAnswer(data,keep,use[0],true);
+let data=await sample.json(prompt(w,use),{images:imgs,signal:my.signal,modelTier:'complex'});if(ctl!==my)return;applyAnswer(data,keep,use[0],true);
 const nr=Math.min(maxImages-use.length,shots.dos.blob?2:1);
 if($('review').checked&&nr>=1){say('ai-status','Peluche créée. Claude la compare maintenant aux photos pour corriger ce qui ne ressemble pas…');
 // Deux tours : Claude compare le rendu aux photos, corrige, puis revérifie le résultat corrigé
 for(let pass=0;pass<2;pass++){if(pass)say('ai-status','Deuxième vérification : Claude recompare la peluche corrigée aux photos…');
 const renders=[await renderView(-0.34,512)];if(nr>1)renders.push(await renderView(Math.PI-0.34,512));
-const before=JSON.stringify(cfg);data=await sample.json(reviewPrompt(w,use,renders.length),{images:imgs.concat(renders),signal:my.signal,cache:false});if(ctl!==my)return;applyAnswer(data,keep,use[0],false);if(JSON.stringify(cfg)===before)break;}
+const before=JSON.stringify(cfg);data=await sample.json(reviewPrompt(w,use,renders.length),{images:imgs.concat(renders),signal:my.signal,cache:false,modelTier:'complex'});if(ctl!==my)return;applyAnswer(data,keep,use[0],false);if(JSON.stringify(cfg)===before)break;}
 say('ai-status','Peluche créée puis vérifiée par Claude. Corrige ce qui ne va pas, puis copie le lien.');}
 else say('ai-status','Peluche créée depuis '+(use.length>1?'les photos':'la photo')+'. Corrige ce qui ne va pas, puis copie le lien.');}
 catch(e){if(ctl!==my)return;const code=e&&e.code;
@@ -634,7 +635,7 @@ if(ctl)ctl.abort();const my=new AbortController();my.fix=true;ctl=my;updateAnaly
 const w=$('who').value,use=photoList().slice(0,maxImages>1?maxImages-1:1),imgs=use.map(s=>shots[s].blob),nr=Math.max(0,Math.min(maxImages-use.length,shots.dos.blob?2:1));
 busy=true;try{say('ai-status','Claude corrige : « '+msg.slice(0,80)+(msg.length>80?'…':'')+' »');
 const renders=nr?[await renderView(-0.34,512)]:[];if(nr>1)renders.push(await renderView(Math.PI-0.34,512));
-const data=await sample.json(fixPrompt(msg,w,use,renders.length),{images:imgs.concat(renders),signal:my.signal,cache:false});if(ctl!==my)return;
+const data=await sample.json(fixPrompt(msg,w,use,renders.length),{images:imgs.concat(renders),signal:my.signal,cache:false,modelTier:'complex'});if(ctl!==my)return;
 const prev={im:cfg.im,imt:cfg.imt,ia:cfg.ia};cfg=PL.clean(Object.assign({},cfg,data,{bg:cfg.bg,bf:cfg.bf,bgc:cfg.bgc}),PL.NEUTRAL);
 if(Array.isArray(data.imp)&&data.imp.length===4&&use[0])cropPrint(shots[use[0]].cn,data.imp.map(Number));else Object.assign(cfg,prev);
 syncForm();rebuild();updateLink();$('fix-txt').value='';say('ai-status','Corrigé. Si ce n\'est pas encore ça, réécris ce qui ne va pas (Ctrl + Z pour annuler).');}
